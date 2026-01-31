@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS user_email_credentials (
     verification_token_expires_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+CREATE INDEX IF NOT EXISTS idx_user_email_credentials_token ON user_email_credentials(verification_token);
 
 CREATE TABLE IF NOT EXISTS recipes (
     id SERIAL PRIMARY KEY,
@@ -24,6 +25,7 @@ CREATE TABLE IF NOT EXISTS recipes (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+CREATE INDEX IF NOT EXISTS idx_recipes_user_id ON recipes(user_id);
 
 CREATE TABLE IF NOT EXISTS tags (
     id SERIAL PRIMARY KEY,
@@ -35,6 +37,7 @@ CREATE TABLE IF NOT EXISTS recipe_tags (
     tag_id INTEGER NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
     PRIMARY KEY (recipe_id, tag_id)
 );
+CREATE INDEX IF NOT EXISTS idx_recipe_tags_tag_id ON recipe_tags(tag_id);
 
 CREATE TABLE IF NOT EXISTS recipe_images (
     id SERIAL PRIMARY KEY,
@@ -42,9 +45,4 @@ CREATE TABLE IF NOT EXISTS recipe_images (
     image_path VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
-
--- Indexes
-CREATE INDEX IF NOT EXISTS idx_recipes_user_id ON recipes(user_id);
-CREATE INDEX IF NOT EXISTS idx_recipe_tags_tag_id ON recipe_tags(tag_id);
 CREATE INDEX IF NOT EXISTS idx_recipe_images_recipe_id ON recipe_images(recipe_id);
-CREATE INDEX IF NOT EXISTS idx_user_email_credentials_token ON user_email_credentials(verification_token);
