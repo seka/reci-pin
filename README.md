@@ -34,7 +34,7 @@
 - **Frontend**: Angular (最新版) + TypeScript + Angular Material
 - **Backend**: Go + chi ルーター
 - **Database**: PostgreSQL
-- **Web Server**: Nginx (Reverse Proxy)
+- **Proxy Server**: Nginx (Reverse Proxy)
 - **Infrastructure**: Docker Compose
 
 ## アーキテクチャ
@@ -126,7 +126,7 @@ docker-compose exec backend ./cmd/migrate
 │           ├── shared/   # 共通コンポーネント
 │           ├── auth/     # 認証機能
 │           └── recipes/  # レシピ機能
-├── nginx/           # Nginx 設定
+├── proxy/           # プロキシサーバー設定 (Nginx)
 ├── docker-compose.yml
 └── AGENTS.md        # AI エージェント用ガイドライン
 ```
