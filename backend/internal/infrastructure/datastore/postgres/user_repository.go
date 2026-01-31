@@ -55,7 +55,6 @@ func (r *UserRepository) GetByID(ctx context.Context, id int64) (*model.User, er
 		return nil, fmt.Errorf("failed to get user by id: %w", err)
 	}
 
-	// 簡易変換（converter.goのuserEntityToModelを使うにはentity構造体が必要だが、ここでは内部構造体で受けているため手動マッピング）
 	return &model.User{
 		ID:   entityUser.ID,
 		Name: entityUser.Name,

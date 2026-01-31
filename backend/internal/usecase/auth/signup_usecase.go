@@ -39,12 +39,10 @@ func (uc *SignupUseCase) Execute(ctx context.Context, input SignupInput) (int64,
 	// Check if email already exists
 	existingCred, err := uc.credentialRepo.GetByEmail(ctx, input.Email)
 	if err == nil && existingCred != nil {
-		// すでに存在する場合
 		if existingCred.IsVerified() {
 			return 0, errors.New("user with this email already exists")
 		}
-		// 未認証なら再送処理などを行うべきだが、今回は簡単のためエラーにする（または上書きフローを実装）
-		// ここではエラーとして返す（実装計画通り）
+		// TODO: 未認証ユーザーへの確認メール再送フローを実装する
 		return 0, errors.New("registration pending for this email")
 	}
 
@@ -81,12 +79,12 @@ func (uc *SignupUseCase) Execute(ctx context.Context, input SignupInput) (int64,
 	}
 
 	if err := uc.credentialRepo.Create(ctx, credential); err != nil {
-		// User作成のロールバックが必要だが、今回は省略（トランザクション推奨）
+		// TODO: ユーザー作成失敗時のロールバック（トランザクション）を実装する
 		return 0, fmt.Errorf("failed to create user credential: %w", err)
 	}
 
-	// Send verification email (Mock)
-	// TODO: Implement actual EmailSender service
+	// 検証用メール送信（現在はログ出力のみ）
+	// TODO: EmailSenderサービスの実装
 	log.Printf("==============================================")
 	log.Printf("Email Sent to: %s", input.Email)
 	log.Printf("Verification Link: /verify?token=%s", token)

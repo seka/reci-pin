@@ -73,7 +73,7 @@ func toUserResponse(user *model.User) *UserResponse {
 	return &UserResponse{
 		ID:   user.ID,
 		Name: user.Name,
-		// Email must be filled by caller as it's not in User model anymore
+		// EmailはUser(Profile)モデルに含まれないため、呼び出し元で設定する必要がある
 	}
 }
 
@@ -92,6 +92,7 @@ func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		Name:     req.Name,
 	}
 
+	// 登録完了メッセージのみ返却（トークンはメール認証後に発行）
 	_, err := h.signupUseCase.Execute(r.Context(), input)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -125,14 +126,14 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get user
+	// ユーザープロファイル取得
 	user, err := h.getUserUseCase.Execute(r.Context(), userID)
 	if err != nil {
 		http.Error(w, "failed to get user", http.StatusInternalServerError)
 		return
 	}
 
-	// Generate token
+	// 認証トークン生成
 	token, err := h.generateTokenUseCase.Execute(userID)
 	if err != nil {
 		http.Error(w, "failed to generate token", http.StatusInternalServerError)
@@ -140,7 +141,8 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userResp := toUserResponse(user)
-	userResp.Email = req.Email // Set email from request
+	// UserモデルにEmailがないため、リクエストの値を使用
+	userResp.Email = req.Email
 
 	response := AuthResponse{
 		Token: token,
