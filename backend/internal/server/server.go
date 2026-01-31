@@ -34,7 +34,7 @@ func NewServer(db *postgres.DB) *Server {
 	// UseCases - Auth
 	signupUseCase := authUC.NewSignupUseCase(userRepo, credentialRepo)
 	loginUseCase := authUC.NewLoginUseCase(credentialRepo)
-	generateTokenUseCase := authUC.NewGenerateTokenUseCase(userRepo, "secret-key") // TODO: Config
+	generateTokenUseCase := authUC.NewGenerateTokenUseCase("secret-key", 24) // TODO: Config
 	getUserUseCase := authUC.NewGetUserUseCase(userRepo)
 	validateTokenUseCase := authUC.NewValidateTokenUseCase("secret-key") // TODO: Config
 	verifyEmailUseCase := authUC.NewVerifyEmailUseCase(credentialRepo)
