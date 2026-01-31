@@ -1,8 +1,8 @@
 package postgres
 
 import (
-	"github.com/seka/reci-pin/backend/internal/domain/entity"
 	"github.com/seka/reci-pin/backend/internal/domain/model"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/entity"
 )
 
 // User conversions
