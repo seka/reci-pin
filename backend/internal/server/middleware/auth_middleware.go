@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/seka/reci-pin/backend/internal/usecase"
+	"github.com/seka/reci-pin/backend/internal/usecase/auth"
 )
 
 type contextKey string
@@ -13,11 +13,11 @@ type contextKey string
 const UserIDKey contextKey = "user_id"
 
 type AuthMiddleware struct {
-	authUseCase *usecase.AuthUseCase
+	validateTokenUseCase *auth.ValidateTokenUseCase
 }
 
-func NewAuthMiddleware(authUseCase *usecase.AuthUseCase) *AuthMiddleware {
-	return &AuthMiddleware{authUseCase: authUseCase}
+func NewAuthMiddleware(validateTokenUseCase *auth.ValidateTokenUseCase) *AuthMiddleware {
+	return &AuthMiddleware{validateTokenUseCase: validateTokenUseCase}
 }
 
 func (m *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
@@ -36,7 +36,7 @@ func (m *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 		}
 
 		token := parts[1]
-		userID, err := m.authUseCase.ValidateToken(token)
+		userID, err := m.validateTokenUseCase.Execute(token)
 		if err != nil {
 			http.Error(w, "invalid or expired token", http.StatusUnauthorized)
 			return

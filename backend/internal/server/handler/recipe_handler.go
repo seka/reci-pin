@@ -7,15 +7,55 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/seka/reci-pin/backend/internal/server/middleware"
-	"github.com/seka/reci-pin/backend/internal/usecase"
+	"github.com/seka/reci-pin/backend/internal/usecase/recipe"
+	"github.com/seka/reci-pin/backend/internal/usecase/recipe_image"
+	"github.com/seka/reci-pin/backend/internal/usecase/recipe_tag"
+	"github.com/seka/reci-pin/backend/internal/usecase/tag"
 )
 
 type RecipeHandler struct {
-	recipeUseCase *usecase.RecipeUseCase
+	createRecipeUseCase   *recipe.CreateRecipeUseCase
+	getRecipeUseCase      *recipe.GetRecipeUseCase
+	getUserRecipesUseCase *recipe.GetUserRecipesUseCase
+	updateRecipeUseCase   *recipe.UpdateRecipeUseCase
+	deleteRecipeUseCase   *recipe.DeleteRecipeUseCase
+	searchRecipesUseCase  *recipe.SearchRecipesUseCase
+	addTagsUseCase        *recipe_tag.AddTagsUseCase
+	removeTagsUseCase     *recipe_tag.RemoveTagsUseCase
+	addImageUseCase       *recipe_image.AddImageUseCase
+	createTagUseCase      *tag.CreateTagUseCase
+	getAllTagsUseCase     *tag.GetAllTagsUseCase
+	deleteTagUseCase      *tag.DeleteTagUseCase
 }
 
-func NewRecipeHandler(recipeUseCase *usecase.RecipeUseCase) *RecipeHandler {
-	return &RecipeHandler{recipeUseCase: recipeUseCase}
+func NewRecipeHandler(
+	createRecipeUseCase *recipe.CreateRecipeUseCase,
+	getRecipeUseCase *recipe.GetRecipeUseCase,
+	getUserRecipesUseCase *recipe.GetUserRecipesUseCase,
+	updateRecipeUseCase *recipe.UpdateRecipeUseCase,
+	deleteRecipeUseCase *recipe.DeleteRecipeUseCase,
+	searchRecipesUseCase *recipe.SearchRecipesUseCase,
+	addTagsUseCase *recipe_tag.AddTagsUseCase,
+	removeTagsUseCase *recipe_tag.RemoveTagsUseCase,
+	addImageUseCase *recipe_image.AddImageUseCase,
+	createTagUseCase *tag.CreateTagUseCase,
+	getAllTagsUseCase *tag.GetAllTagsUseCase,
+	deleteTagUseCase *tag.DeleteTagUseCase,
+) *RecipeHandler {
+	return &RecipeHandler{
+		createRecipeUseCase:   createRecipeUseCase,
+		getRecipeUseCase:      getRecipeUseCase,
+		getUserRecipesUseCase: getUserRecipesUseCase,
+		updateRecipeUseCase:   updateRecipeUseCase,
+		deleteRecipeUseCase:   deleteRecipeUseCase,
+		searchRecipesUseCase:  searchRecipesUseCase,
+		addTagsUseCase:        addTagsUseCase,
+		removeTagsUseCase:     removeTagsUseCase,
+		addImageUseCase:       addImageUseCase,
+		createTagUseCase:      createTagUseCase,
+		getAllTagsUseCase:     getAllTagsUseCase,
+		deleteTagUseCase:      deleteTagUseCase,
+	}
 }
 
 type CreateRecipeRequest struct {
@@ -61,7 +101,7 @@ func (h *RecipeHandler) CreateRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := usecase.CreateRecipeInput{
+	input := recipe.CreateRecipeInput{
 		UserID: userID,
 		Name:   req.Name,
 		URL:    req.URL,
@@ -69,7 +109,7 @@ func (h *RecipeHandler) CreateRecipe(w http.ResponseWriter, r *http.Request) {
 		TagIDs: req.TagIDs,
 	}
 
-	recipe, err := h.recipeUseCase.CreateRecipe(r.Context(), input)
+	result, err := h.createRecipeUseCase.Execute(r.Context(), input)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -77,7 +117,7 @@ func (h *RecipeHandler) CreateRecipe(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(recipe)
+	json.NewEncoder(w).Encode(result)
 }
 
 func (h *RecipeHandler) GetRecipe(w http.ResponseWriter, r *http.Request) {
@@ -94,14 +134,14 @@ func (h *RecipeHandler) GetRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	recipe, err := h.recipeUseCase.GetRecipe(r.Context(), id, userID)
+	result, err := h.getRecipeUseCase.Execute(r.Context(), id, userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(recipe)
+	json.NewEncoder(w).Encode(result)
 }
 
 func (h *RecipeHandler) GetUserRecipes(w http.ResponseWriter, r *http.Request) {
@@ -111,7 +151,7 @@ func (h *RecipeHandler) GetUserRecipes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	recipes, err := h.recipeUseCase.GetUserRecipes(r.Context(), userID)
+	recipes, err := h.getUserRecipesUseCase.Execute(r.Context(), userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -134,13 +174,13 @@ func (h *RecipeHandler) SearchRecipes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := usecase.SearchRecipeInput{
+	input := recipe.SearchRecipesInput{
 		UserID: userID,
 		Query:  req.Query,
 		TagIDs: req.TagIDs,
 	}
 
-	recipes, err := h.recipeUseCase.SearchRecipes(r.Context(), input)
+	recipes, err := h.searchRecipesUseCase.Execute(r.Context(), input)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -170,7 +210,7 @@ func (h *RecipeHandler) UpdateRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := usecase.UpdateRecipeInput{
+	input := recipe.UpdateRecipeInput{
 		ID:     id,
 		UserID: userID,
 		Name:   req.Name,
@@ -178,14 +218,14 @@ func (h *RecipeHandler) UpdateRecipe(w http.ResponseWriter, r *http.Request) {
 		Memo:   req.Memo,
 	}
 
-	recipe, err := h.recipeUseCase.UpdateRecipe(r.Context(), input)
+	result, err := h.updateRecipeUseCase.Execute(r.Context(), input)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(recipe)
+	json.NewEncoder(w).Encode(result)
 }
 
 func (h *RecipeHandler) DeleteRecipe(w http.ResponseWriter, r *http.Request) {
@@ -202,7 +242,7 @@ func (h *RecipeHandler) DeleteRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.recipeUseCase.DeleteRecipe(r.Context(), id, userID); err != nil {
+	if err := h.deleteRecipeUseCase.Execute(r.Context(), id, userID); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -230,7 +270,7 @@ func (h *RecipeHandler) AddTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.recipeUseCase.AddTagsToRecipe(r.Context(), id, userID, req.TagIDs); err != nil {
+	if err := h.addTagsUseCase.Execute(r.Context(), id, userID, req.TagIDs); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -258,7 +298,7 @@ func (h *RecipeHandler) RemoveTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.recipeUseCase.RemoveTagsFromRecipe(r.Context(), id, userID, req.TagIDs); err != nil {
+	if err := h.removeTagsUseCase.Execute(r.Context(), id, userID, req.TagIDs); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -286,7 +326,7 @@ func (h *RecipeHandler) AddImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	image, err := h.recipeUseCase.AddImageToRecipe(r.Context(), id, userID, req.ImagePath)
+	image, err := h.addImageUseCase.Execute(r.Context(), id, userID, req.ImagePath)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -306,7 +346,7 @@ func (h *RecipeHandler) CreateTag(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tag, err := h.recipeUseCase.CreateTag(r.Context(), req.Name)
+	tag, err := h.createTagUseCase.Execute(r.Context(), req.Name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -318,7 +358,7 @@ func (h *RecipeHandler) CreateTag(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *RecipeHandler) GetAllTags(w http.ResponseWriter, r *http.Request) {
-	tags, err := h.recipeUseCase.GetAllTags(r.Context())
+	tags, err := h.getAllTagsUseCase.Execute(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -336,7 +376,7 @@ func (h *RecipeHandler) DeleteTag(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.recipeUseCase.DeleteTag(r.Context(), id); err != nil {
+	if err := h.deleteTagUseCase.Execute(r.Context(), id); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

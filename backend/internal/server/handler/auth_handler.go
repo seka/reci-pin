@@ -4,15 +4,29 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/seka/reci-pin/backend/internal/usecase"
+	"github.com/seka/reci-pin/backend/internal/domain/entity"
+	"github.com/seka/reci-pin/backend/internal/usecase/auth"
 )
 
 type AuthHandler struct {
-	authUseCase *usecase.AuthUseCase
+	signupUseCase        *auth.SignupUseCase
+	loginUseCase         *auth.LoginUseCase
+	generateTokenUseCase *auth.GenerateTokenUseCase
+	getUserUseCase       *auth.GetUserUseCase
 }
 
-func NewAuthHandler(authUseCase *usecase.AuthUseCase) *AuthHandler {
-	return &AuthHandler{authUseCase: authUseCase}
+func NewAuthHandler(
+	signupUseCase *auth.SignupUseCase,
+	loginUseCase *auth.LoginUseCase,
+	generateTokenUseCase *auth.GenerateTokenUseCase,
+	getUserUseCase *auth.GetUserUseCase,
+) *AuthHandler {
+	return &AuthHandler{
+		signupUseCase:        signupUseCase,
+		loginUseCase:         loginUseCase,
+		generateTokenUseCase: generateTokenUseCase,
+		getUserUseCase:       getUserUseCase,
+	}
 }
 
 type SignupRequest struct {
@@ -26,6 +40,11 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
+type AuthResponse struct {
+	Token string       `json:"token"`
+	User  *entity.User `json:"user"`
+}
+
 func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	var req SignupRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -33,16 +52,35 @@ func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := usecase.SignupInput{
+	input := auth.SignupInput{
 		Email:    req.Email,
 		Password: req.Password,
 		Name:     req.Name,
 	}
 
-	response, err := h.authUseCase.Signup(r.Context(), input)
+	userID, err := h.signupUseCase.Execute(r.Context(), input)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
+	}
+
+	// Get user
+	user, err := h.getUserUseCase.Execute(r.Context(), userID)
+	if err != nil {
+		http.Error(w, "failed to get user", http.StatusInternalServerError)
+		return
+	}
+
+	// Generate token
+	token, err := h.generateTokenUseCase.Execute(userID)
+	if err != nil {
+		http.Error(w, "failed to generate token", http.StatusInternalServerError)
+		return
+	}
+
+	response := AuthResponse{
+		Token: token,
+		User:  user,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -57,15 +95,34 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := usecase.LoginInput{
+	input := auth.LoginInput{
 		Email:    req.Email,
 		Password: req.Password,
 	}
 
-	response, err := h.authUseCase.Login(r.Context(), input)
+	userID, err := h.loginUseCase.Execute(r.Context(), input)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
+	}
+
+	// Get user
+	user, err := h.getUserUseCase.Execute(r.Context(), userID)
+	if err != nil {
+		http.Error(w, "failed to get user", http.StatusInternalServerError)
+		return
+	}
+
+	// Generate token
+	token, err := h.generateTokenUseCase.Execute(userID)
+	if err != nil {
+		http.Error(w, "failed to generate token", http.StatusInternalServerError)
+		return
+	}
+
+	response := AuthResponse{
+		Token: token,
+		User:  user,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

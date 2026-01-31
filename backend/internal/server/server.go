@@ -9,7 +9,11 @@ import (
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/seka/reci-pin/backend/internal/server/handler"
 	"github.com/seka/reci-pin/backend/internal/server/middleware"
-	"github.com/seka/reci-pin/backend/internal/usecase"
+	authUC "github.com/seka/reci-pin/backend/internal/usecase/auth"
+	recipeUC "github.com/seka/reci-pin/backend/internal/usecase/recipe"
+	recipeImageUC "github.com/seka/reci-pin/backend/internal/usecase/recipe_image"
+	recipeTagUC "github.com/seka/reci-pin/backend/internal/usecase/recipe_tag"
+	tagUC "github.com/seka/reci-pin/backend/internal/usecase/tag"
 )
 
 type Server struct {
@@ -19,12 +23,48 @@ type Server struct {
 	authMiddleware *middleware.AuthMiddleware
 }
 
-func New(authUseCase *usecase.AuthUseCase, recipeUseCase *usecase.RecipeUseCase) *Server {
+func New(
+	signupUseCase *authUC.SignupUseCase,
+	loginUseCase *authUC.LoginUseCase,
+	generateTokenUseCase *authUC.GenerateTokenUseCase,
+	validateTokenUseCase *authUC.ValidateTokenUseCase,
+	getUserUseCase *authUC.GetUserUseCase,
+	createRecipeUseCase *recipeUC.CreateRecipeUseCase,
+	getRecipeUseCase *recipeUC.GetRecipeUseCase,
+	getUserRecipesUseCase *recipeUC.GetUserRecipesUseCase,
+	updateRecipeUseCase *recipeUC.UpdateRecipeUseCase,
+	deleteRecipeUseCase *recipeUC.DeleteRecipeUseCase,
+	searchRecipesUseCase *recipeUC.SearchRecipesUseCase,
+	addTagsUseCase *recipeTagUC.AddTagsUseCase,
+	removeTagsUseCase *recipeTagUC.RemoveTagsUseCase,
+	addImageUseCase *recipeImageUC.AddImageUseCase,
+	createTagUseCase *tagUC.CreateTagUseCase,
+	getAllTagsUseCase *tagUC.GetAllTagsUseCase,
+	deleteTagUseCase *tagUC.DeleteTagUseCase,
+) *Server {
 	s := &Server{
-		router:         chi.NewRouter(),
-		authHandler:    handler.NewAuthHandler(authUseCase),
-		recipeHandler:  handler.NewRecipeHandler(recipeUseCase),
-		authMiddleware: middleware.NewAuthMiddleware(authUseCase),
+		router: chi.NewRouter(),
+		authHandler: handler.NewAuthHandler(
+			signupUseCase,
+			loginUseCase,
+			generateTokenUseCase,
+			getUserUseCase,
+		),
+		recipeHandler: handler.NewRecipeHandler(
+			createRecipeUseCase,
+			getRecipeUseCase,
+			getUserRecipesUseCase,
+			updateRecipeUseCase,
+			deleteRecipeUseCase,
+			searchRecipesUseCase,
+			addTagsUseCase,
+			removeTagsUseCase,
+			addImageUseCase,
+			createTagUseCase,
+			getAllTagsUseCase,
+			deleteTagUseCase,
+		),
+		authMiddleware: middleware.NewAuthMiddleware(validateTokenUseCase),
 	}
 
 	s.setupMiddleware()
