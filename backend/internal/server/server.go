@@ -1,12 +1,12 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/datastore/postgres"
 	"github.com/seka/reci-pin/backend/internal/server/handler"
 	"github.com/seka/reci-pin/backend/internal/server/middleware"
 	authUC "github.com/seka/reci-pin/backend/internal/usecase/auth"
@@ -23,26 +23,38 @@ type Server struct {
 	authMiddleware *middleware.AuthMiddleware
 }
 
-func New(
-	signupUseCase *authUC.SignupUseCase,
-	loginUseCase *authUC.LoginUseCase,
-	generateTokenUseCase *authUC.GenerateTokenUseCase,
-	validateTokenUseCase *authUC.ValidateTokenUseCase,
-	getUserUseCase *authUC.GetUserUseCase,
-	verifyEmailUseCase *authUC.VerifyEmailUseCase, // Added
-	createRecipeUseCase *recipeUC.CreateRecipeUseCase,
-	getRecipeUseCase *recipeUC.GetRecipeUseCase,
-	getUserRecipesUseCase *recipeUC.GetUserRecipesUseCase,
-	updateRecipeUseCase *recipeUC.UpdateRecipeUseCase,
-	deleteRecipeUseCase *recipeUC.DeleteRecipeUseCase,
-	searchRecipesUseCase *recipeUC.SearchRecipesUseCase,
-	addTagsUseCase *recipeTagUC.AddTagsUseCase,
-	removeTagsUseCase *recipeTagUC.RemoveTagsUseCase,
-	addImageUseCase *recipeImageUC.AddImageUseCase,
-	createTagUseCase *tagUC.CreateTagUseCase,
-	getAllTagsUseCase *tagUC.GetAllTagsUseCase,
-	deleteTagUseCase *tagUC.DeleteTagUseCase,
-) *Server {
+func NewServer(db *postgres.DB) *Server {
+	// Repositories
+	userRepo := postgres.NewUserRepository(db)
+	recipeRepo := postgres.NewRecipeRepository(db)
+	tagRepo := postgres.NewTagRepository(db)
+	recipeImageRepo := postgres.NewRecipeImageRepository(db)
+	credentialRepo := postgres.NewUserEmailCredentialRepository(db)
+
+	// UseCases - Auth
+	signupUseCase := authUC.NewSignupUseCase(userRepo, credentialRepo)
+	loginUseCase := authUC.NewLoginUseCase(credentialRepo)
+	generateTokenUseCase := authUC.NewGenerateTokenUseCase(userRepo, "secret-key") // TODO: Config
+	getUserUseCase := authUC.NewGetUserUseCase(userRepo)
+	validateTokenUseCase := authUC.NewValidateTokenUseCase("secret-key") // TODO: Config
+	verifyEmailUseCase := authUC.NewVerifyEmailUseCase(credentialRepo)
+
+	// UseCases - Recipe
+	createRecipeUseCase := recipeUC.NewCreateRecipeUseCase(recipeRepo)
+	getRecipeUseCase := recipeUC.NewGetRecipeUseCase(recipeRepo, recipeImageRepo)
+	getUserRecipesUseCase := recipeUC.NewGetUserRecipesUseCase(recipeRepo, recipeImageRepo)
+	updateRecipeUseCase := recipeUC.NewUpdateRecipeUseCase(recipeRepo)
+	deleteRecipeUseCase := recipeUC.NewDeleteRecipeUseCase(recipeRepo)
+	searchRecipesUseCase := recipeUC.NewSearchRecipesUseCase(recipeRepo, recipeImageRepo)
+	addImageUseCase := recipeImageUC.NewAddImageUseCase(recipeRepo, recipeImageRepo)
+
+	// Usecases - Tag
+	createTagUseCase := tagUC.NewCreateTagUseCase(tagRepo)
+	getAllTagsUseCase := tagUC.NewGetAllTagsUseCase(tagRepo)
+	deleteTagUseCase := tagUC.NewDeleteTagUseCase(tagRepo)
+	addTagsUseCase := recipeTagUC.NewAddTagsUseCase(recipeRepo)
+	removeTagsUseCase := recipeTagUC.NewRemoveTagsUseCase(recipeRepo)
+
 	s := &Server{
 		router: chi.NewRouter(),
 		authHandler: handler.NewAuthHandler(
@@ -50,7 +62,7 @@ func New(
 			loginUseCase,
 			generateTokenUseCase,
 			getUserUseCase,
-			verifyEmailUseCase, // Added
+			verifyEmailUseCase,
 		),
 		recipeHandler: handler.NewRecipeHandler(
 			createRecipeUseCase,
@@ -108,7 +120,7 @@ func (s *Server) setupRoutes() {
 	// Public routes
 	s.router.Post("/auth/signup", s.authHandler.Signup)
 	s.router.Post("/auth/login", s.authHandler.Login)
-	s.router.Post("/auth/verify", s.authHandler.Verify) // Added
+	s.router.Post("/auth/verify", s.authHandler.Verify)
 
 	// Protected routes
 	s.router.Group(func(r chi.Router) {
@@ -139,8 +151,6 @@ func (s *Server) setupRoutes() {
 	})
 }
 
-func (s *Server) Start(port int) error {
-	addr := fmt.Sprintf(":%d", port)
-	fmt.Printf("Server starting on %s\n", addr)
-	return http.ListenAndServe(addr, s.router)
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.router.ServeHTTP(w, r)
 }
