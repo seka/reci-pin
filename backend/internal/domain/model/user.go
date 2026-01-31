@@ -1,8 +1,7 @@
 package model
 
-// User represents a user in business logic
+// User represents a user identity
 type User struct {
-	ID    int64
-	Email string
-	Name  string
+	ID   int64
+	Name string
 }

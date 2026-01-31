@@ -12,21 +12,48 @@ func userEntityToModel(e *entity.User) *model.User {
 		return nil
 	}
 	return &model.User{
-		ID:    e.ID,
-		Email: e.Email,
-		Name:  e.Name,
+		ID:   e.ID,
+		Name: e.Name,
 	}
 }
 
-func userModelToEntity(m *model.User, passwordHash string) *entity.User {
+func userModelToEntity(m *model.User) *entity.User {
 	if m == nil {
 		return nil
 	}
 	return &entity.User{
-		ID:           m.ID,
-		Email:        m.Email,
-		PasswordHash: passwordHash,
-		Name:         m.Name,
+		ID:   m.ID,
+		Name: m.Name,
+	}
+}
+
+// UserEmailCredential conversions
+
+func userEmailCredentialEntityToModel(e *entity.UserEmailCredential) *model.UserEmailCredential {
+	if e == nil {
+		return nil
+	}
+	return &model.UserEmailCredential{
+		UserID:                     e.UserID,
+		Email:                      e.Email,
+		PasswordHash:               e.PasswordHash,
+		EmailVerifiedAt:            e.EmailVerifiedAt,
+		VerificationToken:          e.VerificationToken,
+		VerificationTokenExpiresAt: e.VerificationTokenExpiresAt,
+	}
+}
+
+func userEmailCredentialModelToEntity(m *model.UserEmailCredential) *entity.UserEmailCredential {
+	if m == nil {
+		return nil
+	}
+	return &entity.UserEmailCredential{
+		UserID:                     m.UserID,
+		Email:                      m.Email,
+		PasswordHash:               m.PasswordHash,
+		EmailVerifiedAt:            m.EmailVerifiedAt,
+		VerificationToken:          m.VerificationToken,
+		VerificationTokenExpiresAt: m.VerificationTokenExpiresAt,
 	}
 }
 
