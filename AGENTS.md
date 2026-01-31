@@ -23,6 +23,15 @@
   - `infrastructure`: Database, External APIs (Depends on domain repository interfaces)
   - `server/handler`: HTTP Transport (Depends on usecase)
 
-## Workflow
+## Workflow / Standard Operating Procedure
+Strictly follow these 5 phases for every task:
+
+1. **Plan**: Create a work plan and get approval.
+2. **Worktree**: Create a git worktree for the task.
+3. **Execute**: Perform the work.
+4. **Review**: Confirm the work with the user.
+5. **Merge**: Merge the work into the base branch.
+
+### Execution Guidelines
 - **Task Boundaries**: Use `task_boundary` tool frequently to update progress.
 - **Verification**: Run tests (`go test ./...`) after every logical change set.
