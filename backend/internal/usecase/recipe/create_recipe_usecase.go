@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/seka/reci-pin/backend/internal/domain/entity"
+	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
 )
 
@@ -24,8 +24,8 @@ type CreateRecipeInput struct {
 	TagIDs []int64
 }
 
-func (uc *CreateRecipeUseCase) Execute(ctx context.Context, input CreateRecipeInput) (*entity.Recipe, error) {
-	recipe := &entity.Recipe{
+func (uc *CreateRecipeUseCase) Execute(ctx context.Context, input CreateRecipeInput) (*model.Recipe, error) {
+	recipe := &model.Recipe{
 		UserID: input.UserID,
 		Name:   input.Name,
 		URL:    input.URL,

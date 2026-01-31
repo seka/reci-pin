@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/datastore/postgres"
 )
@@ -25,7 +26,7 @@ type SignupInput struct {
 
 func (uc *SignupUseCase) Execute(ctx context.Context, input SignupInput) (int64, error) {
 	// Check if user already exists
-	existingUser, err := uc.userRepo.GetByEmail(ctx, input.Email)
+	existingUser, _, err := uc.userRepo.GetByEmail(ctx, input.Email)
 	if err == nil && existingUser != nil {
 		return 0, errors.New("user with this email already exists")
 	}
@@ -37,25 +38,12 @@ func (uc *SignupUseCase) Execute(ctx context.Context, input SignupInput) (int64,
 	}
 
 	// Create user
-	user := &struct {
-		ID           int64
-		Email        string
-		PasswordHash string
-		Name         string
-	}{
-		Email:        input.Email,
-		PasswordHash: hashedPassword,
-		Name:         input.Name,
+	user := &model.User{
+		Email: input.Email,
+		Name:  input.Name,
 	}
 
-	if err := uc.userRepo.Create(ctx, (*struct {
-		ID           int64
-		Email        string
-		PasswordHash string
-		Name         string
-		CreatedAt    string
-		UpdatedAt    string
-	})(user)); err != nil {
+	if err := uc.userRepo.Create(ctx, user, hashedPassword); err != nil {
 		return 0, fmt.Errorf("failed to create user: %w", err)
 	}
 

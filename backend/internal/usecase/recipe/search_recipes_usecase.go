@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/seka/reci-pin/backend/internal/domain/entity"
+	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
 )
 
@@ -29,7 +29,7 @@ type SearchRecipesInput struct {
 	TagIDs []int64
 }
 
-func (uc *SearchRecipesUseCase) Execute(ctx context.Context, input SearchRecipesInput) ([]entity.Recipe, error) {
+func (uc *SearchRecipesUseCase) Execute(ctx context.Context, input SearchRecipesInput) ([]model.Recipe, error) {
 	recipes, err := uc.recipeRepo.Search(ctx, input.UserID, input.Query, input.TagIDs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search recipes: %w", err)

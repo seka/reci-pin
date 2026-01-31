@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/seka/reci-pin/backend/internal/domain/entity"
+	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
 )
 
@@ -24,7 +24,7 @@ func NewGetRecipeUseCase(
 	}
 }
 
-func (uc *GetRecipeUseCase) Execute(ctx context.Context, id, userID int64) (*entity.Recipe, error) {
+func (uc *GetRecipeUseCase) Execute(ctx context.Context, id, userID int64) (*model.Recipe, error) {
 	recipe, err := uc.recipeRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get recipe: %w", err)

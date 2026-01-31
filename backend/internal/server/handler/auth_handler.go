@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/seka/reci-pin/backend/internal/domain/entity"
+	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/usecase/auth"
 )
 
@@ -29,6 +29,8 @@ func NewAuthHandler(
 	}
 }
 
+// Request/Response structures
+
 type SignupRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -40,10 +42,31 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
-type AuthResponse struct {
-	Token string       `json:"token"`
-	User  *entity.User `json:"user"`
+type UserResponse struct {
+	ID    int64  `json:"id"`
+	Email string `json:"email"`
+	Name  string `json:"name"`
 }
+
+type AuthResponse struct {
+	Token string        `json:"token"`
+	User  *UserResponse `json:"user"`
+}
+
+// Converters
+
+func toUserResponse(user *model.User) *UserResponse {
+	if user == nil {
+		return nil
+	}
+	return &UserResponse{
+		ID:    user.ID,
+		Email: user.Email,
+		Name:  user.Name,
+	}
+}
+
+// Handlers
 
 func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	var req SignupRequest
@@ -80,7 +103,7 @@ func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
 
 	response := AuthResponse{
 		Token: token,
-		User:  user,
+		User:  toUserResponse(user),
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -122,7 +145,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	response := AuthResponse{
 		Token: token,
-		User:  user,
+		User:  toUserResponse(user),
 	}
 
 	w.Header().Set("Content-Type", "application/json")

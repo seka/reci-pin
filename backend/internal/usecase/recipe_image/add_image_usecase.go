@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/seka/reci-pin/backend/internal/domain/entity"
+	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
 )
 
@@ -24,7 +24,7 @@ func NewAddImageUseCase(
 	}
 }
 
-func (uc *AddImageUseCase) Execute(ctx context.Context, recipeID, userID int64, imagePath string) (*entity.RecipeImage, error) {
+func (uc *AddImageUseCase) Execute(ctx context.Context, recipeID, userID int64, imagePath string) (*model.RecipeImage, error) {
 	// Verify ownership
 	recipe, err := uc.recipeRepo.GetByID(ctx, recipeID)
 	if err != nil {
@@ -35,7 +35,7 @@ func (uc *AddImageUseCase) Execute(ctx context.Context, recipeID, userID int64, 
 		return nil, errors.New("unauthorized access to recipe")
 	}
 
-	image := &entity.RecipeImage{
+	image := &model.RecipeImage{
 		RecipeID:  recipeID,
 		ImagePath: imagePath,
 	}

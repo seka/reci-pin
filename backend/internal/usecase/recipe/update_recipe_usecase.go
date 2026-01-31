@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/seka/reci-pin/backend/internal/domain/entity"
+	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
 )
 
@@ -25,7 +25,7 @@ type UpdateRecipeInput struct {
 	Memo   string
 }
 
-func (uc *UpdateRecipeUseCase) Execute(ctx context.Context, input UpdateRecipeInput) (*entity.Recipe, error) {
+func (uc *UpdateRecipeUseCase) Execute(ctx context.Context, input UpdateRecipeInput) (*model.Recipe, error) {
 	// Get existing recipe to verify ownership
 	recipe, err := uc.recipeRepo.GetByID(ctx, input.ID)
 	if err != nil {

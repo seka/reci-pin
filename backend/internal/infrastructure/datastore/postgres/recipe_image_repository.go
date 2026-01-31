@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/seka/reci-pin/backend/internal/domain/entity"
+	"github.com/seka/reci-pin/backend/internal/domain/model"
 )
 
 type RecipeImageRepository struct {
@@ -15,26 +16,25 @@ func NewRecipeImageRepository(db *DB) *RecipeImageRepository {
 	return &RecipeImageRepository{db: db}
 }
 
-func (r *RecipeImageRepository) Create(ctx context.Context, image *entity.RecipeImage) error {
+func (r *RecipeImageRepository) Create(ctx context.Context, image *model.RecipeImage) error {
 	query := `
 		INSERT INTO recipe_images (recipe_id, image_path, created_at)
 		VALUES ($1, $2, NOW())
-		RETURNING id, created_at
+		RETURNING id
 	`
-	err := r.db.Pool.QueryRow(ctx, query, image.RecipeID, image.ImagePath).
-		Scan(&image.ID, &image.CreatedAt)
+	err := r.db.Pool.QueryRow(ctx, query, image.RecipeID, image.ImagePath).Scan(&image.ID)
 	if err != nil {
 		return fmt.Errorf("failed to create recipe image: %w", err)
 	}
 	return nil
 }
 
-func (r *RecipeImageRepository) GetByRecipeID(ctx context.Context, recipeID int64) ([]entity.RecipeImage, error) {
+func (r *RecipeImageRepository) GetByRecipeID(ctx context.Context, recipeID int64) ([]model.RecipeImage, error) {
 	query := `
-		SELECT id, recipe_id, image_path, created_at
+		SELECT id, recipe_id, image_path
 		FROM recipe_images
 		WHERE recipe_id = $1
-		ORDER BY created_at DESC
+		ORDER BY created_at
 	`
 	rows, err := r.db.Pool.Query(ctx, query, recipeID)
 	if err != nil {
@@ -42,15 +42,15 @@ func (r *RecipeImageRepository) GetByRecipeID(ctx context.Context, recipeID int6
 	}
 	defer rows.Close()
 
-	var images []entity.RecipeImage
+	var imageEntities []entity.RecipeImage
 	for rows.Next() {
-		var image entity.RecipeImage
-		if err := rows.Scan(&image.ID, &image.RecipeID, &image.ImagePath, &image.CreatedAt); err != nil {
+		var img entity.RecipeImage
+		if err := rows.Scan(&img.ID, &img.RecipeID, &img.ImagePath); err != nil {
 			return nil, fmt.Errorf("failed to scan recipe image: %w", err)
 		}
-		images = append(images, image)
+		imageEntities = append(imageEntities, img)
 	}
-	return images, nil
+	return recipeImageEntitiesToModels(imageEntities), nil
 }
 
 func (r *RecipeImageRepository) Delete(ctx context.Context, id int64) error {

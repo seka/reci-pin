@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/seka/reci-pin/backend/internal/domain/entity"
+	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -16,59 +17,57 @@ func NewUserRepository(db *DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
-func (r *UserRepository) Create(ctx context.Context, user *entity.User) error {
+func (r *UserRepository) Create(ctx context.Context, user *model.User, passwordHash string) error {
 	query := `
 		INSERT INTO users (email, password_hash, name, created_at, updated_at)
 		VALUES ($1, $2, $3, NOW(), NOW())
-		RETURNING id, created_at, updated_at
+		RETURNING id
 	`
-	err := r.db.Pool.QueryRow(ctx, query, user.Email, user.PasswordHash, user.Name).
-		Scan(&user.ID, &user.CreatedAt, &user.UpdatedAt)
+	err := r.db.Pool.QueryRow(ctx, query, user.Email, passwordHash, user.Name).
+		Scan(&user.ID)
 	if err != nil {
 		return fmt.Errorf("failed to create user: %w", err)
 	}
 	return nil
 }
 
-func (r *UserRepository) GetByID(ctx context.Context, id int64) (*entity.User, error) {
+func (r *UserRepository) GetByID(ctx context.Context, id int64) (*model.User, error) {
 	query := `
-		SELECT id, email, password_hash, name, created_at, updated_at
+		SELECT id, email, name
 		FROM users
 		WHERE id = $1
 	`
-	user := &entity.User{}
+	var userEntity entity.User
 	err := r.db.Pool.QueryRow(ctx, query, id).
-		Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.CreatedAt, &user.UpdatedAt)
+		Scan(&userEntity.ID, &userEntity.Email, &userEntity.Name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user by id: %w", err)
 	}
-	return user, nil
+	return userEntityToModel(&userEntity), nil
 }
 
-func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*entity.User, error) {
+func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*model.User, string, error) {
 	query := `
-		SELECT id, email, password_hash, name, created_at, updated_at
+		SELECT id, email, password_hash, name
 		FROM users
 		WHERE email = $1
 	`
-	user := &entity.User{}
+	var userEntity entity.User
 	err := r.db.Pool.QueryRow(ctx, query, email).
-		Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.CreatedAt, &user.UpdatedAt)
+		Scan(&userEntity.ID, &userEntity.Email, &userEntity.PasswordHash, &userEntity.Name)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get user by email: %w", err)
+		return nil, "", fmt.Errorf("failed to get user by email: %w", err)
 	}
-	return user, nil
+	return userEntityToModel(&userEntity), userEntity.PasswordHash, nil
 }
 
-func (r *UserRepository) Update(ctx context.Context, user *entity.User) error {
+func (r *UserRepository) Update(ctx context.Context, user *model.User) error {
 	query := `
 		UPDATE users
 		SET email = $1, name = $2, updated_at = NOW()
 		WHERE id = $3
-		RETURNING updated_at
 	`
-	err := r.db.Pool.QueryRow(ctx, query, user.Email, user.Name, user.ID).
-		Scan(&user.UpdatedAt)
+	_, err := r.db.Pool.Exec(ctx, query, user.Email, user.Name, user.ID)
 	if err != nil {
 		return fmt.Errorf("failed to update user: %w", err)
 	}

@@ -23,13 +23,13 @@ type LoginInput struct {
 
 func (uc *LoginUseCase) Execute(ctx context.Context, input LoginInput) (int64, error) {
 	// Get user by email
-	user, err := uc.userRepo.GetByEmail(ctx, input.Email)
+	user, passwordHash, err := uc.userRepo.GetByEmail(ctx, input.Email)
 	if err != nil {
 		return 0, errors.New("invalid email or password")
 	}
 
 	// Check password
-	if !postgres.CheckPasswordHash(input.Password, user.PasswordHash) {
+	if !postgres.CheckPasswordHash(input.Password, passwordHash) {
 		return 0, errors.New("invalid email or password")
 	}
 
