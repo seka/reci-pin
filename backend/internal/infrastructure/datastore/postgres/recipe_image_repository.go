@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
+	"github.com/seka/reci-pin/backend/internal/domain/repository"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/entity"
 )
 
@@ -12,26 +13,28 @@ type RecipeImageRepository struct {
 	db *DB
 }
 
-func NewRecipeImageRepository(db *DB) *RecipeImageRepository {
+func NewRecipeImageRepository(db *DB) repository.RecipeImageRepository {
 	return &RecipeImageRepository{db: db}
 }
 
 func (r *RecipeImageRepository) Create(ctx context.Context, image *model.RecipeImage) error {
+	e := entity.NewRecipeImageFromModel(image)
 	query := `
 		INSERT INTO recipe_images (recipe_id, image_path, created_at)
 		VALUES ($1, $2, NOW())
-		RETURNING id
+		RETURNING id, created_at
 	`
-	err := r.db.Pool.QueryRow(ctx, query, image.RecipeID, image.ImagePath).Scan(&image.ID)
+	err := r.db.Pool.QueryRow(ctx, query, e.RecipeID, e.ImagePath).Scan(&e.ID, &e.CreatedAt)
 	if err != nil {
 		return fmt.Errorf("failed to create recipe image: %w", err)
 	}
+	image.ID = e.ID
 	return nil
 }
 
 func (r *RecipeImageRepository) GetByRecipeID(ctx context.Context, recipeID int64) ([]model.RecipeImage, error) {
 	query := `
-		SELECT id, recipe_id, image_path
+		SELECT id, recipe_id, image_path, created_at
 		FROM recipe_images
 		WHERE recipe_id = $1
 		ORDER BY created_at
@@ -42,15 +45,16 @@ func (r *RecipeImageRepository) GetByRecipeID(ctx context.Context, recipeID int6
 	}
 	defer rows.Close()
 
-	var imageEntities []entity.RecipeImage
+	var entities []entity.RecipeImage
 	for rows.Next() {
-		var img entity.RecipeImage
-		if err := rows.Scan(&img.ID, &img.RecipeID, &img.ImagePath); err != nil {
+		var e entity.RecipeImage
+		if err := rows.Scan(&e.ID, &e.RecipeID, &e.ImagePath, &e.CreatedAt); err != nil {
 			return nil, fmt.Errorf("failed to scan recipe image: %w", err)
 		}
-		imageEntities = append(imageEntities, img)
+		entities = append(entities, e)
 	}
-	return recipeImageEntitiesToModels(imageEntities), nil
+
+	return r.toModels(entities), nil
 }
 
 func (r *RecipeImageRepository) Delete(ctx context.Context, id int64) error {
@@ -60,4 +64,12 @@ func (r *RecipeImageRepository) Delete(ctx context.Context, id int64) error {
 		return fmt.Errorf("failed to delete recipe image: %w", err)
 	}
 	return nil
+}
+
+func (r *RecipeImageRepository) toModels(entities []entity.RecipeImage) []model.RecipeImage {
+	models := make([]model.RecipeImage, len(entities))
+	for i, e := range entities {
+		models[i] = *e.ToModel()
+	}
+	return models
 }

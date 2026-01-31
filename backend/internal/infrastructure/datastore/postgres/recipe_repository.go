@@ -18,37 +18,44 @@ func NewRecipeRepository(db *DB) *RecipeRepository {
 }
 
 func (r *RecipeRepository) Create(ctx context.Context, recipe *model.Recipe) error {
+	e := entity.NewRecipeFromModel(recipe)
 	query := `
 		INSERT INTO recipes (user_id, name, url, memo, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, NOW(), NOW())
-		RETURNING id
+		RETURNING id, created_at, updated_at
 	`
-	err := r.db.Pool.QueryRow(ctx, query, recipe.UserID, recipe.Name, recipe.URL, recipe.Memo).
-		Scan(&recipe.ID)
+	// Scan directly into entity fields
+	err := r.db.Pool.QueryRow(ctx, query,
+		e.UserID, e.Name, e.URL, e.Memo,
+	).Scan(&e.ID, &e.CreatedAt, &e.UpdatedAt)
+
 	if err != nil {
 		return fmt.Errorf("failed to create recipe: %w", err)
 	}
+	recipe.ID = e.ID
 	return nil
 }
 
 func (r *RecipeRepository) GetByID(ctx context.Context, id int64) (*model.Recipe, error) {
 	query := `
-		SELECT id, user_id, name, url, memo
+		SELECT id, user_id, name, url, memo, created_at, updated_at
 		FROM recipes
 		WHERE id = $1
 	`
-	var recipeEntity entity.Recipe
-	err := r.db.Pool.QueryRow(ctx, query, id).
-		Scan(&recipeEntity.ID, &recipeEntity.UserID, &recipeEntity.Name, &recipeEntity.URL, &recipeEntity.Memo)
+	var e entity.Recipe
+	// Manual Scan
+	err := r.db.Pool.QueryRow(ctx, query, id).Scan(
+		&e.ID, &e.UserID, &e.Name, &e.URL, &e.Memo, &e.CreatedAt, &e.UpdatedAt,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get recipe by id: %w", err)
 	}
-	return recipeEntityToModel(&recipeEntity), nil
+	return e.ToModel(), nil
 }
 
 func (r *RecipeRepository) GetByUserID(ctx context.Context, userID int64) ([]model.Recipe, error) {
 	query := `
-		SELECT id, user_id, name, url, memo
+		SELECT id, user_id, name, url, memo, created_at, updated_at
 		FROM recipes
 		WHERE user_id = $1
 		ORDER BY created_at DESC
@@ -62,17 +69,17 @@ func (r *RecipeRepository) GetByUserID(ctx context.Context, userID int64) ([]mod
 	var recipeEntities []entity.Recipe
 	for rows.Next() {
 		var r entity.Recipe
-		if err := rows.Scan(&r.ID, &r.UserID, &r.Name, &r.URL, &r.Memo); err != nil {
+		if err := rows.Scan(&r.ID, &r.UserID, &r.Name, &r.URL, &r.Memo, &r.CreatedAt, &r.UpdatedAt); err != nil {
 			return nil, fmt.Errorf("failed to scan recipe: %w", err)
 		}
 		recipeEntities = append(recipeEntities, r)
 	}
-	return recipeEntitiesToModels(recipeEntities), nil
+	return r.toRecipeModels(recipeEntities), nil
 }
 
 func (r *RecipeRepository) Search(ctx context.Context, userID int64, query string, tagIDs []int64) ([]model.Recipe, error) {
 	sqlQuery := `
-		SELECT DISTINCT r.id, r.user_id, r.name, r.url, r.memo
+		SELECT DISTINCT r.id, r.user_id, r.name, r.url, r.memo, r.created_at, r.updated_at
 		FROM recipes r
 	`
 	args := []interface{}{userID}
@@ -108,21 +115,22 @@ func (r *RecipeRepository) Search(ctx context.Context, userID int64, query strin
 	var recipeEntities []entity.Recipe
 	for rows.Next() {
 		var rec entity.Recipe
-		if err := rows.Scan(&rec.ID, &rec.UserID, &rec.Name, &rec.URL, &rec.Memo); err != nil {
+		if err := rows.Scan(&rec.ID, &rec.UserID, &rec.Name, &rec.URL, &rec.Memo, &rec.CreatedAt, &rec.UpdatedAt); err != nil {
 			return nil, fmt.Errorf("failed to scan recipe: %w", err)
 		}
 		recipeEntities = append(recipeEntities, rec)
 	}
-	return recipeEntitiesToModels(recipeEntities), nil
+	return r.toRecipeModels(recipeEntities), nil
 }
 
 func (r *RecipeRepository) Update(ctx context.Context, recipe *model.Recipe) error {
+	e := entity.NewRecipeFromModel(recipe)
 	query := `
 		UPDATE recipes
 		SET name = $1, url = $2, memo = $3, updated_at = NOW()
 		WHERE id = $4
 	`
-	_, err := r.db.Pool.Exec(ctx, query, recipe.Name, recipe.URL, recipe.Memo, recipe.ID)
+	_, err := r.db.Pool.Exec(ctx, query, e.Name, e.URL, e.Memo, e.ID)
 	if err != nil {
 		return fmt.Errorf("failed to update recipe: %w", err)
 	}
@@ -160,7 +168,7 @@ func (r *RecipeRepository) GetTags(ctx context.Context, recipeID int64) ([]model
 		}
 		tagEntities = append(tagEntities, tag)
 	}
-	return tagEntitiesToModels(tagEntities), nil
+	return r.toTagModels(tagEntities), nil
 }
 
 func (r *RecipeRepository) AddTags(ctx context.Context, recipeID int64, tagIDs []int64) error {
@@ -187,4 +195,22 @@ func (r *RecipeRepository) RemoveTags(ctx context.Context, recipeID int64, tagID
 		}
 	}
 	return nil
+}
+
+// Helpers
+
+func (r *RecipeRepository) toRecipeModels(entities []entity.Recipe) []model.Recipe {
+	models := make([]model.Recipe, len(entities))
+	for i, e := range entities {
+		models[i] = *e.ToModel()
+	}
+	return models
+}
+
+func (r *RecipeRepository) toTagModels(entities []entity.Tag) []model.Tag {
+	models := make([]model.Tag, len(entities))
+	for i, e := range entities {
+		models[i] = *e.ToModel()
+	}
+	return models
 }

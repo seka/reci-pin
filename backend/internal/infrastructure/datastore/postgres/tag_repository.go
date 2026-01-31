@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
+	"github.com/seka/reci-pin/backend/internal/domain/repository"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/entity"
 )
 
@@ -12,41 +13,43 @@ type TagRepository struct {
 	db *DB
 }
 
-func NewTagRepository(db *DB) *TagRepository {
+func NewTagRepository(db *DB) repository.TagRepository {
 	return &TagRepository{db: db}
 }
 
 func (r *TagRepository) Create(ctx context.Context, tag *model.Tag) error {
+	e := entity.NewTagFromModel(tag)
 	query := `
 		INSERT INTO tags (name)
 		VALUES ($1)
 		RETURNING id
 	`
-	err := r.db.Pool.QueryRow(ctx, query, tag.Name).Scan(&tag.ID)
+	err := r.db.Pool.QueryRow(ctx, query, e.Name).Scan(&e.ID)
 	if err != nil {
 		return fmt.Errorf("failed to create tag: %w", err)
 	}
+	tag.ID = e.ID
 	return nil
 }
 
 func (r *TagRepository) GetByID(ctx context.Context, id int64) (*model.Tag, error) {
 	query := `SELECT id, name FROM tags WHERE id = $1`
-	var tagEntity entity.Tag
-	err := r.db.Pool.QueryRow(ctx, query, id).Scan(&tagEntity.ID, &tagEntity.Name)
+	var e entity.Tag
+	err := r.db.Pool.QueryRow(ctx, query, id).Scan(&e.ID, &e.Name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tag by id: %w", err)
 	}
-	return tagEntityToModel(&tagEntity), nil
+	return e.ToModel(), nil
 }
 
 func (r *TagRepository) GetByName(ctx context.Context, name string) (*model.Tag, error) {
 	query := `SELECT id, name FROM tags WHERE name = $1`
-	var tagEntity entity.Tag
-	err := r.db.Pool.QueryRow(ctx, query, name).Scan(&tagEntity.ID, &tagEntity.Name)
+	var e entity.Tag
+	err := r.db.Pool.QueryRow(ctx, query, name).Scan(&e.ID, &e.Name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tag by name: %w", err)
 	}
-	return tagEntityToModel(&tagEntity), nil
+	return e.ToModel(), nil
 }
 
 func (r *TagRepository) GetAll(ctx context.Context) ([]model.Tag, error) {
@@ -57,15 +60,16 @@ func (r *TagRepository) GetAll(ctx context.Context) ([]model.Tag, error) {
 	}
 	defer rows.Close()
 
-	var tagEntities []entity.Tag
+	var entities []entity.Tag
 	for rows.Next() {
-		var tag entity.Tag
-		if err := rows.Scan(&tag.ID, &tag.Name); err != nil {
+		var e entity.Tag
+		if err := rows.Scan(&e.ID, &e.Name); err != nil {
 			return nil, fmt.Errorf("failed to scan tag: %w", err)
 		}
-		tagEntities = append(tagEntities, tag)
+		entities = append(entities, e)
 	}
-	return tagEntitiesToModels(tagEntities), nil
+
+	return r.toModels(entities), nil
 }
 
 func (r *TagRepository) Delete(ctx context.Context, id int64) error {
@@ -75,4 +79,12 @@ func (r *TagRepository) Delete(ctx context.Context, id int64) error {
 		return fmt.Errorf("failed to delete tag: %w", err)
 	}
 	return nil
+}
+
+func (r *TagRepository) toModels(entities []entity.Tag) []model.Tag {
+	models := make([]model.Tag, len(entities))
+	for i, e := range entities {
+		models[i] = *e.ToModel()
+	}
+	return models
 }

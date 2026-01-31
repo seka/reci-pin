@@ -2,9 +2,12 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/seka/reci-pin/backend/internal/domain/model"
+	"github.com/seka/reci-pin/backend/internal/domain/repository"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/entity"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -13,12 +16,12 @@ type UserEmailCredentialRepository struct {
 	db *DB
 }
 
-func NewUserEmailCredentialRepository(db *DB) *UserEmailCredentialRepository {
+func NewUserEmailCredentialRepository(db *DB) repository.UserEmailCredentialRepository {
 	return &UserEmailCredentialRepository{db: db}
 }
 
 func (r *UserEmailCredentialRepository) Create(ctx context.Context, credential *model.UserEmailCredential) error {
-	e := userEmailCredentialModelToEntity(credential)
+	e := entity.NewUserEmailCredentialFromModel(credential)
 	query := `
 		INSERT INTO user_email_credentials (
 			user_id, email, password_hash, email_verified_at, 
@@ -49,9 +52,12 @@ func (r *UserEmailCredentialRepository) GetByEmail(ctx context.Context, email st
 		&e.VerificationToken, &e.VerificationTokenExpiresAt, &e.UpdatedAt,
 	)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil // Not found
+		}
 		return nil, fmt.Errorf("failed to get credential by email: %w", err)
 	}
-	return userEmailCredentialEntityToModel(&e), nil
+	return e.ToModel(), nil
 }
 
 func (r *UserEmailCredentialRepository) GetByUserID(ctx context.Context, userID int64) (*model.UserEmailCredential, error) {
@@ -67,9 +73,12 @@ func (r *UserEmailCredentialRepository) GetByUserID(ctx context.Context, userID 
 		&e.VerificationToken, &e.VerificationTokenExpiresAt, &e.UpdatedAt,
 	)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
 		return nil, fmt.Errorf("failed to get credential by user_id: %w", err)
 	}
-	return userEmailCredentialEntityToModel(&e), nil
+	return e.ToModel(), nil
 }
 
 func (r *UserEmailCredentialRepository) GetByToken(ctx context.Context, token string) (*model.UserEmailCredential, error) {
@@ -85,13 +94,16 @@ func (r *UserEmailCredentialRepository) GetByToken(ctx context.Context, token st
 		&e.VerificationToken, &e.VerificationTokenExpiresAt, &e.UpdatedAt,
 	)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
 		return nil, fmt.Errorf("failed to get credential by token: %w", err)
 	}
-	return userEmailCredentialEntityToModel(&e), nil
+	return e.ToModel(), nil
 }
 
 func (r *UserEmailCredentialRepository) Update(ctx context.Context, credential *model.UserEmailCredential) error {
-	e := userEmailCredentialModelToEntity(credential)
+	e := entity.NewUserEmailCredentialFromModel(credential)
 	query := `
 		UPDATE user_email_credentials
 		SET email = $2, password_hash = $3, email_verified_at = $4,
@@ -108,10 +120,11 @@ func (r *UserEmailCredentialRepository) Update(ctx context.Context, credential *
 	return nil
 }
 
-// Password utility
+// Password utility (Keep this here or move to a service?)
+// Keeping here as part of infrastructure implementation details for now.
 
 func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(bytes), err
 }
 

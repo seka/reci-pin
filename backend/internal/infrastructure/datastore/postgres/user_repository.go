@@ -3,9 +3,9 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/entity"
 )
 
 type UserRepository struct {
@@ -17,7 +17,7 @@ func NewUserRepository(db *DB) *UserRepository {
 }
 
 func (r *UserRepository) Create(ctx context.Context, user *model.User) error {
-	e := userModelToEntity(user)
+	e := entity.NewUserFromModel(user)
 	query := `
 		INSERT INTO users (name, created_at, updated_at)
 		VALUES ($1, NOW(), NOW())
@@ -38,25 +38,17 @@ func (r *UserRepository) GetByID(ctx context.Context, id int64) (*model.User, er
 		FROM users
 		WHERE id = $1
 	`
-	var entityUser struct {
-		ID        int64     `db:"id"`
-		Name      string    `db:"name"`
-		CreatedAt time.Time `db:"created_at"`
-		UpdatedAt time.Time `db:"updated_at"`
-	}
+	var e entity.User // Use shared entity struct
 
 	err := r.db.Pool.QueryRow(ctx, query, id).Scan(
-		&entityUser.ID,
-		&entityUser.Name,
-		&entityUser.CreatedAt,
-		&entityUser.UpdatedAt,
+		&e.ID,
+		&e.Name,
+		&e.CreatedAt,
+		&e.UpdatedAt,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user by id: %w", err)
 	}
 
-	return &model.User{
-		ID:   entityUser.ID,
-		Name: entityUser.Name,
-	}, nil
+	return e.ToModel(), nil
 }
