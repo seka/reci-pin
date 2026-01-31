@@ -21,7 +21,7 @@ func NewUserEmailCredentialRepository(db *DB) repository.UserEmailCredentialRepo
 }
 
 func (r *UserEmailCredentialRepository) Create(ctx context.Context, credential *model.UserEmailCredential) error {
-	e := entity.NewUserEmailCredentialFromModel(credential)
+	e := entity.NewUserEmailCredential(credential)
 	query := `
 		INSERT INTO user_email_credentials (
 			user_id, email, password_hash, email_verified_at, 
@@ -103,7 +103,7 @@ func (r *UserEmailCredentialRepository) GetByToken(ctx context.Context, token st
 }
 
 func (r *UserEmailCredentialRepository) Update(ctx context.Context, credential *model.UserEmailCredential) error {
-	e := entity.NewUserEmailCredentialFromModel(credential)
+	e := entity.NewUserEmailCredential(credential)
 	query := `
 		UPDATE user_email_credentials
 		SET email = $2, password_hash = $3, email_verified_at = $4,

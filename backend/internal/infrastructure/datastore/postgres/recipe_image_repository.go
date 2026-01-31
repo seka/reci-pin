@@ -18,7 +18,7 @@ func NewRecipeImageRepository(db *DB) repository.RecipeImageRepository {
 }
 
 func (r *RecipeImageRepository) Create(ctx context.Context, image *model.RecipeImage) error {
-	e := entity.NewRecipeImageFromModel(image)
+	e := entity.NewRecipeImage(image)
 	query := `
 		INSERT INTO recipe_images (recipe_id, image_path, created_at)
 		VALUES ($1, $2, NOW())

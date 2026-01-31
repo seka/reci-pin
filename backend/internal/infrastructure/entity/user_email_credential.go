@@ -30,7 +30,7 @@ func (e *UserEmailCredential) ToModel() *model.UserEmailCredential {
 	}
 }
 
-func NewUserEmailCredentialFromModel(m *model.UserEmailCredential) *UserEmailCredential {
+func NewUserEmailCredential(m *model.UserEmailCredential) *UserEmailCredential {
 	if m == nil {
 		return nil
 	}

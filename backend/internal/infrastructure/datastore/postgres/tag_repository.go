@@ -18,7 +18,7 @@ func NewTagRepository(db *DB) repository.TagRepository {
 }
 
 func (r *TagRepository) Create(ctx context.Context, tag *model.Tag) error {
-	e := entity.NewTagFromModel(tag)
+	e := entity.NewTag(tag)
 	query := `
 		INSERT INTO tags (name)
 		VALUES ($1)

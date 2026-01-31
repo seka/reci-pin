@@ -23,7 +23,7 @@ func (e *User) ToModel() *model.User {
 	}
 }
 
-func NewUserFromModel(m *model.User) *User {
+func NewUser(m *model.User) *User {
 	if m == nil {
 		return nil
 	}

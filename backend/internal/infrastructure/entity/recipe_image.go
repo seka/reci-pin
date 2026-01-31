@@ -24,7 +24,7 @@ func (e *RecipeImage) ToModel() *model.RecipeImage {
 	}
 }
 
-func NewRecipeImageFromModel(m *model.RecipeImage) *RecipeImage {
+func NewRecipeImage(m *model.RecipeImage) *RecipeImage {
 	if m == nil {
 		return nil
 	}

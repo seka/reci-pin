@@ -17,7 +17,7 @@ func (e *Tag) ToModel() *model.Tag {
 	}
 }
 
-func NewTagFromModel(m *model.Tag) *Tag {
+func NewTag(m *model.Tag) *Tag {
 	if m == nil {
 		return nil
 	}

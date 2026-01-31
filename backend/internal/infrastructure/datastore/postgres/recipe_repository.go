@@ -18,7 +18,7 @@ func NewRecipeRepository(db *DB) *RecipeRepository {
 }
 
 func (r *RecipeRepository) Create(ctx context.Context, recipe *model.Recipe) error {
-	e := entity.NewRecipeFromModel(recipe)
+	e := entity.NewRecipe(recipe)
 	query := `
 		INSERT INTO recipes (user_id, name, url, memo, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, NOW(), NOW())
@@ -124,7 +124,7 @@ func (r *RecipeRepository) Search(ctx context.Context, userID int64, query strin
 }
 
 func (r *RecipeRepository) Update(ctx context.Context, recipe *model.Recipe) error {
-	e := entity.NewRecipeFromModel(recipe)
+	e := entity.NewRecipe(recipe)
 	query := `
 		UPDATE recipes
 		SET name = $1, url = $2, memo = $3, updated_at = NOW()

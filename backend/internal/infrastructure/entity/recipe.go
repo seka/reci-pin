@@ -29,7 +29,7 @@ func (e *Recipe) ToModel() *model.Recipe {
 	}
 }
 
-func NewRecipeFromModel(m *model.Recipe) *Recipe {
+func NewRecipe(m *model.Recipe) *Recipe {
 	if m == nil {
 		return nil
 	}

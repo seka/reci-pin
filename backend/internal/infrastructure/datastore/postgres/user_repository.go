@@ -17,7 +17,7 @@ func NewUserRepository(db *DB) *UserRepository {
 }
 
 func (r *UserRepository) Create(ctx context.Context, user *model.User) error {
-	e := entity.NewUserFromModel(user)
+	e := entity.NewUser(user)
 	query := `
 		INSERT INTO users (name, created_at, updated_at)
 		VALUES ($1, NOW(), NOW())
