@@ -29,6 +29,7 @@ func New(
 	generateTokenUseCase *authUC.GenerateTokenUseCase,
 	validateTokenUseCase *authUC.ValidateTokenUseCase,
 	getUserUseCase *authUC.GetUserUseCase,
+	verifyEmailUseCase *authUC.VerifyEmailUseCase, // Added
 	createRecipeUseCase *recipeUC.CreateRecipeUseCase,
 	getRecipeUseCase *recipeUC.GetRecipeUseCase,
 	getUserRecipesUseCase *recipeUC.GetUserRecipesUseCase,
@@ -49,6 +50,7 @@ func New(
 			loginUseCase,
 			generateTokenUseCase,
 			getUserUseCase,
+			verifyEmailUseCase, // Added
 		),
 		recipeHandler: handler.NewRecipeHandler(
 			createRecipeUseCase,
@@ -106,6 +108,7 @@ func (s *Server) setupRoutes() {
 	// Public routes
 	s.router.Post("/auth/signup", s.authHandler.Signup)
 	s.router.Post("/auth/login", s.authHandler.Login)
+	s.router.Post("/auth/verify", s.authHandler.Verify) // Added
 
 	// Protected routes
 	s.router.Group(func(r chi.Router) {

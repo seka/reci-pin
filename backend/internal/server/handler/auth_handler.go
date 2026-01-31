@@ -13,6 +13,7 @@ type AuthHandler struct {
 	loginUseCase         *auth.LoginUseCase
 	generateTokenUseCase *auth.GenerateTokenUseCase
 	getUserUseCase       *auth.GetUserUseCase
+	verifyEmailUseCase   *auth.VerifyEmailUseCase
 }
 
 func NewAuthHandler(
@@ -20,12 +21,14 @@ func NewAuthHandler(
 	loginUseCase *auth.LoginUseCase,
 	generateTokenUseCase *auth.GenerateTokenUseCase,
 	getUserUseCase *auth.GetUserUseCase,
+	verifyEmailUseCase *auth.VerifyEmailUseCase,
 ) *AuthHandler {
 	return &AuthHandler{
 		signupUseCase:        signupUseCase,
 		loginUseCase:         loginUseCase,
 		generateTokenUseCase: generateTokenUseCase,
 		getUserUseCase:       getUserUseCase,
+		verifyEmailUseCase:   verifyEmailUseCase,
 	}
 }
 
@@ -42,6 +45,10 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
+type VerifyRequest struct {
+	Token string `json:"token"`
+}
+
 type UserResponse struct {
 	ID    int64  `json:"id"`
 	Email string `json:"email"`
@@ -53,6 +60,10 @@ type AuthResponse struct {
 	User  *UserResponse `json:"user"`
 }
 
+type MessageResponse struct {
+	Message string `json:"message"`
+}
+
 // Converters
 
 func toUserResponse(user *model.User) *UserResponse {
@@ -60,9 +71,9 @@ func toUserResponse(user *model.User) *UserResponse {
 		return nil
 	}
 	return &UserResponse{
-		ID:    user.ID,
-		Email: user.Email,
-		Name:  user.Name,
+		ID:   user.ID,
+		Name: user.Name,
+		// Email must be filled by caller as it's not in User model anymore
 	}
 }
 
@@ -81,29 +92,14 @@ func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		Name:     req.Name,
 	}
 
-	userID, err := h.signupUseCase.Execute(r.Context(), input)
+	_, err := h.signupUseCase.Execute(r.Context(), input)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// Get user
-	user, err := h.getUserUseCase.Execute(r.Context(), userID)
-	if err != nil {
-		http.Error(w, "failed to get user", http.StatusInternalServerError)
-		return
-	}
-
-	// Generate token
-	token, err := h.generateTokenUseCase.Execute(userID)
-	if err != nil {
-		http.Error(w, "failed to generate token", http.StatusInternalServerError)
-		return
-	}
-
-	response := AuthResponse{
-		Token: token,
-		User:  toUserResponse(user),
+	response := MessageResponse{
+		Message: "Verification email sent. Please check your inbox.",
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -143,9 +139,32 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userResp := toUserResponse(user)
+	userResp.Email = req.Email // Set email from request
+
 	response := AuthResponse{
 		Token: token,
-		User:  toUserResponse(user),
+		User:  userResp,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (h *AuthHandler) Verify(w http.ResponseWriter, r *http.Request) {
+	var req VerifyRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.verifyEmailUseCase.Execute(r.Context(), req.Token); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	response := MessageResponse{
+		Message: "Email verified successfully",
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -153,6 +172,5 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	// For JWT, logout is handled client-side by removing the token
 	w.WriteHeader(http.StatusNoContent)
 }
