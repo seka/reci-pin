@@ -9,11 +9,11 @@ import (
 )
 
 type LoginUseCase struct {
-	userRepo repository.UserRepository
+	credentialRepo repository.UserEmailCredentialRepository
 }
 
-func NewLoginUseCase(userRepo repository.UserRepository) *LoginUseCase {
-	return &LoginUseCase{userRepo: userRepo}
+func NewLoginUseCase(credentialRepo repository.UserEmailCredentialRepository) *LoginUseCase {
+	return &LoginUseCase{credentialRepo: credentialRepo}
 }
 
 type LoginInput struct {
@@ -22,16 +22,21 @@ type LoginInput struct {
 }
 
 func (uc *LoginUseCase) Execute(ctx context.Context, input LoginInput) (int64, error) {
-	// Get user by email
-	user, passwordHash, err := uc.userRepo.GetByEmail(ctx, input.Email)
+	// メールアドレスから認証情報を取得
+	credential, err := uc.credentialRepo.GetByEmail(ctx, input.Email)
 	if err != nil {
 		return 0, errors.New("invalid email or password")
 	}
 
-	// Check password
-	if !postgres.CheckPasswordHash(input.Password, passwordHash) {
+	// パスワードチェック
+	if !postgres.CheckPasswordHash(input.Password, credential.PasswordHash) {
 		return 0, errors.New("invalid email or password")
 	}
 
-	return user.ID, nil
+	// 認証済みかチェック
+	if !credential.IsVerified() {
+		return 0, errors.New("email not verified")
+	}
+
+	return credential.UserID, nil
 }
