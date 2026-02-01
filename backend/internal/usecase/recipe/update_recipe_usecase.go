@@ -9,12 +9,16 @@ import (
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
 )
 
-type UpdateRecipeUseCase struct {
+type UpdateRecipeUseCase interface {
+	Execute(ctx context.Context, input UpdateRecipeInput) (*model.Recipe, error)
+}
+
+type updateRecipeInteractor struct {
 	recipeRepo repository.RecipeRepository
 }
 
-func NewUpdateRecipeUseCase(recipeRepo repository.RecipeRepository) *UpdateRecipeUseCase {
-	return &UpdateRecipeUseCase{recipeRepo: recipeRepo}
+func NewUpdateRecipeUseCase(recipeRepo repository.RecipeRepository) UpdateRecipeUseCase {
+	return &updateRecipeInteractor{recipeRepo: recipeRepo}
 }
 
 type UpdateRecipeInput struct {
@@ -25,7 +29,7 @@ type UpdateRecipeInput struct {
 	Memo   string
 }
 
-func (uc *UpdateRecipeUseCase) Execute(ctx context.Context, input UpdateRecipeInput) (*model.Recipe, error) {
+func (uc *updateRecipeInteractor) Execute(ctx context.Context, input UpdateRecipeInput) (*model.Recipe, error) {
 	// Get existing recipe to verify ownership
 	recipe, err := uc.recipeRepo.GetByID(ctx, input.ID)
 	if err != nil {

@@ -8,7 +8,11 @@ import (
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
 )
 
-type SearchRecipesUseCase struct {
+type SearchRecipesUseCase interface {
+	Execute(ctx context.Context, input SearchRecipesInput) ([]model.Recipe, error)
+}
+
+type searchRecipesInteractor struct {
 	recipeRepo      repository.RecipeRepository
 	recipeImageRepo repository.RecipeImageRepository
 }
@@ -16,8 +20,8 @@ type SearchRecipesUseCase struct {
 func NewSearchRecipesUseCase(
 	recipeRepo repository.RecipeRepository,
 	recipeImageRepo repository.RecipeImageRepository,
-) *SearchRecipesUseCase {
-	return &SearchRecipesUseCase{
+) SearchRecipesUseCase {
+	return &searchRecipesInteractor{
 		recipeRepo:      recipeRepo,
 		recipeImageRepo: recipeImageRepo,
 	}
@@ -29,7 +33,7 @@ type SearchRecipesInput struct {
 	TagIDs []int64
 }
 
-func (uc *SearchRecipesUseCase) Execute(ctx context.Context, input SearchRecipesInput) ([]model.Recipe, error) {
+func (uc *searchRecipesInteractor) Execute(ctx context.Context, input SearchRecipesInput) ([]model.Recipe, error) {
 	recipes, err := uc.recipeRepo.Search(ctx, input.UserID, input.Query, input.TagIDs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search recipes: %w", err)

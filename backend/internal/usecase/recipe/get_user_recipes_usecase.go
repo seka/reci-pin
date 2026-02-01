@@ -8,7 +8,11 @@ import (
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
 )
 
-type GetUserRecipesUseCase struct {
+type GetUserRecipesUseCase interface {
+	Execute(ctx context.Context, userID int64) ([]model.Recipe, error)
+}
+
+type getUserRecipesInteractor struct {
 	recipeRepo      repository.RecipeRepository
 	recipeImageRepo repository.RecipeImageRepository
 }
@@ -16,14 +20,14 @@ type GetUserRecipesUseCase struct {
 func NewGetUserRecipesUseCase(
 	recipeRepo repository.RecipeRepository,
 	recipeImageRepo repository.RecipeImageRepository,
-) *GetUserRecipesUseCase {
-	return &GetUserRecipesUseCase{
+) GetUserRecipesUseCase {
+	return &getUserRecipesInteractor{
 		recipeRepo:      recipeRepo,
 		recipeImageRepo: recipeImageRepo,
 	}
 }
 
-func (uc *GetUserRecipesUseCase) Execute(ctx context.Context, userID int64) ([]model.Recipe, error) {
+func (uc *getUserRecipesInteractor) Execute(ctx context.Context, userID int64) ([]model.Recipe, error) {
 	recipes, err := uc.recipeRepo.GetByUserID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user recipes: %w", err)

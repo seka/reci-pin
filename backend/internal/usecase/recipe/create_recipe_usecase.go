@@ -8,12 +8,16 @@ import (
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
 )
 
-type CreateRecipeUseCase struct {
+type CreateRecipeUseCase interface {
+	Execute(ctx context.Context, input CreateRecipeInput) (*model.Recipe, error)
+}
+
+type createRecipeInteractor struct {
 	recipeRepo repository.RecipeRepository
 }
 
-func NewCreateRecipeUseCase(recipeRepo repository.RecipeRepository) *CreateRecipeUseCase {
-	return &CreateRecipeUseCase{recipeRepo: recipeRepo}
+func NewCreateRecipeUseCase(recipeRepo repository.RecipeRepository) CreateRecipeUseCase {
+	return &createRecipeInteractor{recipeRepo: recipeRepo}
 }
 
 type CreateRecipeInput struct {
@@ -24,7 +28,7 @@ type CreateRecipeInput struct {
 	TagIDs []int64
 }
 
-func (uc *CreateRecipeUseCase) Execute(ctx context.Context, input CreateRecipeInput) (*model.Recipe, error) {
+func (uc *createRecipeInteractor) Execute(ctx context.Context, input CreateRecipeInput) (*model.Recipe, error) {
 	recipe := &model.Recipe{
 		UserID: input.UserID,
 		Name:   input.Name,
