@@ -6,15 +6,14 @@ import (
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/datastore"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/entity"
 )
 
 type TagRepository struct {
-	db datastore.Database
+	db Database
 }
 
-func NewTagRepository(db datastore.Database) repository.TagRepository {
+func NewTagRepository(db Database) repository.TagRepository {
 	return &TagRepository{db: db}
 }
 

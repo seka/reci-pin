@@ -8,7 +8,7 @@ import (
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository/mock"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/datastore/postgres"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/postgres"
 	"github.com/seka/reci-pin/backend/internal/usecase/auth"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"

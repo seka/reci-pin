@@ -2,22 +2,19 @@ package postgres
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/datastore"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/entity"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserEmailCredentialRepository struct {
-	db datastore.Database
+	db Database
 }
 
-func NewUserEmailCredentialRepository(db datastore.Database) repository.UserEmailCredentialRepository {
+func NewUserEmailCredentialRepository(db Database) repository.UserEmailCredentialRepository {
 	return &UserEmailCredentialRepository{db: db}
 }
 
@@ -47,16 +44,23 @@ func (r *UserEmailCredentialRepository) GetByEmail(ctx context.Context, email st
 		FROM user_email_credentials
 		WHERE email = $1
 	`
+	rows, err := r.db.Query(ctx, query, email)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get credential by email: %w", err)
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return nil, nil // Not found
+	}
+
 	var e entity.UserEmailCredential
-	err := r.db.QueryRow(ctx, query, email).Scan(
+	err = rows.Scan(
 		&e.UserID, &e.Email, &e.PasswordHash, &e.EmailVerifiedAt,
 		&e.VerificationToken, &e.VerificationTokenExpiresAt, &e.UpdatedAt,
 	)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil // Not found
-		}
-		return nil, fmt.Errorf("failed to get credential by email: %w", err)
+		return nil, fmt.Errorf("failed to scan credential: %w", err)
 	}
 	return e.ToModel(), nil
 }
@@ -68,16 +72,23 @@ func (r *UserEmailCredentialRepository) GetByUserID(ctx context.Context, userID 
 		FROM user_email_credentials
 		WHERE user_id = $1
 	`
+	rows, err := r.db.Query(ctx, query, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get credential by user_id: %w", err)
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return nil, nil
+	}
+
 	var e entity.UserEmailCredential
-	err := r.db.QueryRow(ctx, query, userID).Scan(
+	err = rows.Scan(
 		&e.UserID, &e.Email, &e.PasswordHash, &e.EmailVerifiedAt,
 		&e.VerificationToken, &e.VerificationTokenExpiresAt, &e.UpdatedAt,
 	)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("failed to get credential by user_id: %w", err)
+		return nil, fmt.Errorf("failed to scan credential: %w", err)
 	}
 	return e.ToModel(), nil
 }
@@ -89,16 +100,23 @@ func (r *UserEmailCredentialRepository) GetByToken(ctx context.Context, token st
 		FROM user_email_credentials
 		WHERE verification_token = $1
 	`
+	rows, err := r.db.Query(ctx, query, token)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get credential by token: %w", err)
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return nil, nil
+	}
+
 	var e entity.UserEmailCredential
-	err := r.db.QueryRow(ctx, query, token).Scan(
+	err = rows.Scan(
 		&e.UserID, &e.Email, &e.PasswordHash, &e.EmailVerifiedAt,
 		&e.VerificationToken, &e.VerificationTokenExpiresAt, &e.UpdatedAt,
 	)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("failed to get credential by token: %w", err)
+		return nil, fmt.Errorf("failed to scan credential: %w", err)
 	}
 	return e.ToModel(), nil
 }

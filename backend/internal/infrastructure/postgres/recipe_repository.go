@@ -6,15 +6,14 @@ import (
 	"strings"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/datastore"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/entity"
 )
 
 type RecipeRepository struct {
-	db datastore.Database
+	db Database
 }
 
-func NewRecipeRepository(db datastore.Database) *RecipeRepository {
+func NewRecipeRepository(db Database) *RecipeRepository {
 	return &RecipeRepository{db: db}
 }
 

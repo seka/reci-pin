@@ -11,7 +11,7 @@ import (
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/datastore/postgres"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/postgres"
 )
 
 type SignupUseCase interface {

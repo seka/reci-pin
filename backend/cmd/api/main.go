@@ -8,7 +8,7 @@ import (
 	"syscall"
 
 	"github.com/seka/reci-pin/backend/config"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/datastore/postgres"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/postgres"
 	"github.com/seka/reci-pin/backend/internal/registry"
 	"github.com/seka/reci-pin/backend/internal/server"
 )

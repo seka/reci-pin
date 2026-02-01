@@ -5,15 +5,14 @@ import (
 	"fmt"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/datastore"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/entity"
 )
 
 type UserRepository struct {
-	db datastore.Database
+	db Database
 }
 
-func NewUserRepository(db datastore.Database) *UserRepository {
+func NewUserRepository(db Database) *UserRepository {
 	return &UserRepository{db: db}
 }
 

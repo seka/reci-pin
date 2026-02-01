@@ -6,6 +6,11 @@ import (
 	"testing"
 
 	"github.com/seka/reci-pin/backend/config"
+	"github.com/seka/reci-pin/backend/internal/usecase/auth"
+	"github.com/seka/reci-pin/backend/internal/usecase/recipe"
+	"github.com/seka/reci-pin/backend/internal/usecase/recipe_image"
+	"github.com/seka/reci-pin/backend/internal/usecase/recipe_tag"
+	"github.com/seka/reci-pin/backend/internal/usecase/tag"
 )
 
 // mockRepository implements registry.Repository for testing
@@ -21,33 +26,37 @@ func (m *mockRepository) Close() error                        { return nil }
 // mockUseCase implements registry.UseCase for testing
 type mockUseCase struct{}
 
-func (m *mockUseCase) NewSignupUseCase() interface{}         { return nil }
-func (m *mockUseCase) NewLoginUseCase() interface{}          { return nil }
-func (m *mockUseCase) NewGenerateTokenUseCase() interface{}  { return nil }
-func (m *mockUseCase) NewValidateTokenUseCase() interface{}  { return nil }
-func (m *mockUseCase) NewGetUserUseCase() interface{}        { return nil }
-func (m *mockUseCase) NewVerifyEmailUseCase() interface{}    { return nil }
-func (m *mockUseCase) NewCreateRecipeUseCase() interface{}   { return nil }
-func (m *mockUseCase) NewGetRecipeUseCase() interface{}      { return nil }
-func (m *mockUseCase) NewGetUserRecipesUseCase() interface{} { return nil }
-func (m *mockUseCase) NewUpdateRecipeUseCase() interface{}   { return nil }
-func (m *mockUseCase) NewDeleteRecipeUseCase() interface{}   { return nil }
-func (m *mockUseCase) NewSearchRecipesUseCase() interface{}  { return nil }
-func (m *mockUseCase) NewAddTagsUseCase() interface{}        { return nil }
-func (m *mockUseCase) NewRemoveTagsUseCase() interface{}     { return nil }
-func (m *mockUseCase) NewAddImageUseCase() interface{}       { return nil }
-func (m *mockUseCase) NewCreateTagUseCase() interface{}      { return nil }
-func (m *mockUseCase) NewGetAllTagsUseCase() interface{}     { return nil }
-func (m *mockUseCase) NewDeleteTagUseCase() interface{}      { return nil }
+func (m *mockUseCase) NewSignupUseCase() auth.SignupUseCase               { return nil }
+func (m *mockUseCase) NewLoginUseCase() auth.LoginUseCase                 { return nil }
+func (m *mockUseCase) NewGenerateTokenUseCase() auth.GenerateTokenUseCase { return nil }
+func (m *mockUseCase) NewValidateTokenUseCase() auth.ValidateTokenUseCase { return nil }
+func (m *mockUseCase) NewGetUserUseCase() auth.GetUserUseCase             { return nil }
+func (m *mockUseCase) NewVerifyEmailUseCase() auth.VerifyEmailUseCase     { return nil }
+func (m *mockUseCase) NewCreateRecipeUseCase() recipe.CreateRecipeUseCase { return nil }
+func (m *mockUseCase) NewGetRecipeUseCase() recipe.GetRecipeUseCase       { return nil }
+func (m *mockUseCase) NewGetUserRecipesUseCase() recipe.GetUserRecipesUseCase {
+	return nil
+}
+func (m *mockUseCase) NewUpdateRecipeUseCase() recipe.UpdateRecipeUseCase { return nil }
+func (m *mockUseCase) NewDeleteRecipeUseCase() recipe.DeleteRecipeUseCase { return nil }
+func (m *mockUseCase) NewSearchRecipesUseCase() recipe.SearchRecipesUseCase {
+	return nil
+}
+func (m *mockUseCase) NewAddTagsUseCase() recipe_tag.AddTagsUseCase       { return nil }
+func (m *mockUseCase) NewRemoveTagsUseCase() recipe_tag.RemoveTagsUseCase { return nil }
+func (m *mockUseCase) NewAddImageUseCase() recipe_image.AddImageUseCase   { return nil }
+func (m *mockUseCase) NewCreateTagUseCase() tag.CreateTagUseCase          { return nil }
+func (m *mockUseCase) NewGetAllTagsUseCase() tag.GetAllTagsUseCase        { return nil }
+func (m *mockUseCase) NewDeleteTagUseCase() tag.DeleteTagUseCase          { return nil }
 
 func TestNew(t *testing.T) {
 	cfg := &config.Config{
 		Server: config.ServerConfig{Port: 8080},
 	}
-	mockRepo := &mockRepository{}
+	// mockRepo := &mockRepository{}
 	mockUC := &mockUseCase{}
 
-	srv := New(cfg, mockRepo, mockUC)
+	srv := New(cfg, mockUC)
 
 	if srv == nil {
 		t.Fatal("Server should not be nil")
@@ -62,10 +71,10 @@ func TestNew(t *testing.T) {
 
 func TestServer_HealthEndpoint(t *testing.T) {
 	cfg := &config.Config{}
-	mockRepo := &mockRepository{}
+	// mockRepo := &mockRepository{}
 	mockUC := &mockUseCase{}
 
-	srv := New(cfg, mockRepo, mockUC)
+	srv := New(cfg, mockUC)
 
 	req := httptest.NewRequest("GET", "/health", nil)
 	w := httptest.NewRecorder()
@@ -82,10 +91,10 @@ func TestServer_HealthEndpoint(t *testing.T) {
 
 func TestServer_CORSHeaders(t *testing.T) {
 	cfg := &config.Config{}
-	mockRepo := &mockRepository{}
+	// mockRepo := &mockRepository{}
 	mockUC := &mockUseCase{}
 
-	srv := New(cfg, mockRepo, mockUC)
+	srv := New(cfg, mockUC)
 
 	req := httptest.NewRequest("OPTIONS", "/health", nil)
 	w := httptest.NewRecorder()
@@ -112,10 +121,10 @@ func TestServer_RoutingExists(t *testing.T) {
 	}
 
 	cfg := &config.Config{}
-	mockRepo := &mockRepository{}
+	// mockRepo := &mockRepository{}
 	mockUC := &mockUseCase{}
 
-	srv := New(cfg, mockRepo, mockUC)
+	srv := New(cfg, mockUC)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
