@@ -7,6 +7,8 @@ import (
 )
 
 // Database defines the interface for database operations
+//
+//go:generate mockgen -source=$GOFILE -destination=mock/database_mock.go -package=mock
 type Database interface {
 	Connect(ctx context.Context) error
 
