@@ -1,0 +1,280 @@
+package main
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"flag"
+	"fmt"
+	"log"
+	"net/http"
+	"net/http/cookiejar"
+	"os"
+	"time"
+
+	"github.com/seka/reci-pin/backend/config"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/postgres"
+	"github.com/seka/reci-pin/backend/internal/registry"
+	"github.com/seka/reci-pin/backend/internal/server"
+)
+
+var (
+	cfg config.Config
+)
+
+func init() {
+	flag.StringVar(&cfg.Database.Host, "db-host", "localhost", "Database host")
+	flag.IntVar(&cfg.Database.Port, "db-port", 5432, "Database port")
+	flag.StringVar(&cfg.Database.User, "db-user", "postgres", "Database user")
+	flag.StringVar(&cfg.Database.Password, "db-password", "postgres", "Database password")
+	flag.StringVar(&cfg.Database.SSLMode, "db-sslmode", "disable", "Database SSL mode")
+	// Note: db-name will be generated dynamically
+	flag.IntVar(&cfg.Server.Port, "port", 0, "Server port (0 for random)")
+	flag.StringVar(&cfg.JWT.Secret, "jwt-secret", "test-secret", "JWT secret")
+}
+
+func main() {
+	flag.Parse()
+
+	if err := run(); err != nil {
+		log.Fatalf("Integration test failed: %v", err)
+	}
+	log.Println("Integration test passed successfully!")
+}
+
+func run() error {
+	ctx := context.Background()
+
+	// 1. Setup Test Database
+	testDBName := fmt.Sprintf("recipin_test_%d", time.Now().UnixNano())
+	log.Printf("Setting up test database: %s", testDBName)
+
+	if err := createDatabase(ctx, testDBName); err != nil {
+		return fmt.Errorf("creating test database: %w", err)
+	}
+	defer func() {
+		if err := dropDatabase(ctx, testDBName); err != nil {
+			log.Printf("Failed to drop test database: %v", err)
+		} else {
+			log.Println("Test database dropped")
+		}
+	}()
+
+	// 2. Start Server
+	// Override DB Name in config
+	testCfg := cfg
+	testCfg.Database.DBName = testDBName
+	// Set specific port for test, e.g. 8081
+	testCfg.Server.Port = 8081
+
+	// Connect to the NEW test database
+	db := postgres.New(testCfg.Database.DSN())
+	if err := db.Connect(ctx); err != nil {
+		return fmt.Errorf("connecting to test database: %w", err)
+	}
+	defer db.Close()
+
+	// Initialize Server
+	repoReg := registry.NewRepository(db)
+	useCaseReg := registry.NewUseCase(repoReg, &testCfg)
+	srv := server.New(&testCfg, useCaseReg)
+
+	// Run Server in Goroutine
+	serverErrCh := make(chan error, 1)
+	go func() {
+		log.Printf("Starting test server on port %d", testCfg.Server.Port)
+		if err := srv.Run(); err != nil && err != http.ErrServerClosed {
+			serverErrCh <- err
+		}
+	}()
+
+	// Wait for server to be ready
+	baseURL := fmt.Sprintf("http://localhost:%d/api", testCfg.Server.Port)
+	if err := waitForServer(baseURL + "/health"); err != nil {
+		return fmt.Errorf("server failed to start: %w", err)
+	}
+
+	// 3. Run Scenarios
+	log.Println("Starting api scenarios...")
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+	// Use CookieJar if needed, but for now assuming JWT in header or cookie?
+	// If cookie, need jar.
+	jar, _ := cookiejar.New(nil)
+	client.Jar = jar
+
+	if err := runScenario(client, baseURL); err != nil {
+		return fmt.Errorf("scenario failed: %w", err)
+	}
+
+	// Graceful shutdown not strictly needed for test runner exit, but nice
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	srv.Shutdown(shutdownCtx)
+
+	return nil
+}
+
+func createDatabase(ctx context.Context, dbName string) error {
+	// Connect to default 'postgres' database to create new DB
+	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=postgres sslmode=%s",
+		cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Password, cfg.Database.SSLMode)
+
+	adminDB := postgres.New(dsn)
+	if err := adminDB.Connect(ctx); err != nil {
+		return err
+	}
+	defer adminDB.Close()
+
+	// EXECUTE CREATE DATABASE
+	// Note: Parametrized queries cannot be used for identifiers (DB name).
+	// Must validate dbName first to prevent injection (though it's test code).
+	query := fmt.Sprintf("CREATE DATABASE %s", dbName)
+	if _, err := adminDB.Execute(ctx, query); err != nil {
+		return err
+	}
+
+	// We also need to run migrations.
+	// Since we don't have a migration tool integrated in code (external sql files),
+	// we assume 'schema' is needed.
+	// If migrations are in 001_initial.sql, we need to read and execute it against the NEW DB.
+
+	return runMigrations(ctx, dbName)
+}
+
+func dropDatabase(ctx context.Context, dbName string) error {
+	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=postgres sslmode=%s",
+		cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Password, cfg.Database.SSLMode)
+
+	adminDB := postgres.New(dsn)
+	if err := adminDB.Connect(ctx); err != nil {
+		return err
+	}
+	defer adminDB.Close()
+
+	// Force drop keys
+	query := fmt.Sprintf("DROP DATABASE %s", dbName)
+	// Usually requires disconnecting other users.
+	// "DROP DATABASE IF EXISTS %s WITH (FORCE)" covers modern PG.
+	query = fmt.Sprintf("DROP DATABASE IF EXISTS %s WITH (FORCE)", dbName)
+
+	if _, err := adminDB.Execute(ctx, query); err != nil {
+		return err
+	}
+	return nil
+}
+
+func runMigrations(ctx context.Context, dbName string) error {
+	// Connect to the new DB
+	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Password, dbName, cfg.Database.SSLMode)
+
+	db := postgres.New(dsn)
+	if err := db.Connect(ctx); err != nil {
+		return err
+	}
+	defer db.Close()
+
+	// Read migration file
+	// Assuming migrations are at backend/migrations/001_init.sql or similiar?
+	// Need to find where the migrations are.
+	// I recall user consolidating them into '001_init.sql'.
+	// Path relative to execution? 'migrations/001_init.sql'.
+	// I'll try to read it.
+
+	content, err := os.ReadFile("migrations/001_init.sql")
+	if err != nil {
+		// Try absolute path or search?
+		// Fallback to checking typical locations or fail.
+		return fmt.Errorf("reading migration file: %w", err)
+	}
+
+	if _, err := db.Execute(ctx, string(content)); err != nil {
+		return fmt.Errorf("executing migration: %w", err)
+	}
+	return nil
+}
+
+func waitForServer(url string) error {
+	deadline := time.Now().Add(10 * time.Second)
+	for time.Now().Before(deadline) {
+		resp, err := http.Get(url)
+		if err == nil && resp.StatusCode == http.StatusOK {
+			resp.Body.Close()
+			return nil
+		}
+		if resp != nil {
+			resp.Body.Close()
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+	return fmt.Errorf("timeout waiting for server %s", url)
+}
+
+func runScenario(client *http.Client, baseURL string) error {
+	// 1. Sign Up
+	email := fmt.Sprintf("test_%d@example.com", time.Now().Unix())
+	password := "password123"
+
+	log.Println("1. Signing up...")
+	payload := map[string]string{
+		"name":     "Integration User",
+		"email":    email,
+		"password": password,
+	}
+	resp, err := postJSON(client, baseURL+"/signup", payload)
+	if err != nil {
+		return fmt.Errorf("signup request: %w", err)
+	}
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		return fmt.Errorf("signup failed status: %d", resp.StatusCode)
+	}
+
+	// 2. Login
+	log.Println("2. Logging in...")
+	loginPayload := map[string]string{
+		"email":    email,
+		"password": password,
+	}
+	resp, err = postJSON(client, baseURL+"/login", loginPayload)
+	if err != nil {
+		return fmt.Errorf("login request: %w", err)
+	}
+	// Check cookie? Client should handle it.
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("login failed status: %d", resp.StatusCode)
+	}
+
+	// 3. Create Recipe
+	log.Println("3. Creating recipe...")
+	recipePayload := map[string]interface{}{
+		"name":    "Integration Recipe",
+		"url":     "http://example.com/integration",
+		"memo":    "Created by integration test",
+		"tag_ids": []int{}, // Empty for now
+	}
+	resp, err = postJSON(client, baseURL+"/recipes", recipePayload)
+	if err != nil {
+		return fmt.Errorf("create recipe request: %w", err)
+	}
+	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK { // Adjust expected status
+		return fmt.Errorf("create recipe failed status: %d", resp.StatusCode)
+	}
+
+	log.Println("Scenario completed!")
+	return nil
+}
+
+func postJSON(client *http.Client, url string, data interface{}) (*http.Response, error) {
+	b, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(b))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	return client.Do(req)
+}
