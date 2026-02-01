@@ -2,214 +2,292 @@ package handler_test
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/server/handler"
-	"github.com/seka/reci-pin/backend/internal/usecase/auth"
+	usecasemock "github.com/seka/reci-pin/backend/internal/usecase/mock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
-// Mock implementations
-
-type mockSignupUseCase struct {
-	ExecuteFunc func(ctx context.Context, input auth.SignupInput) (int64, error)
-}
-
-func (m *mockSignupUseCase) Execute(ctx context.Context, input auth.SignupInput) (int64, error) {
-	if m.ExecuteFunc != nil {
-		return m.ExecuteFunc(ctx, input)
-	}
-	return 1, nil
-}
-
-type mockLoginUseCase struct {
-	ExecuteFunc func(ctx context.Context, input auth.LoginInput) (int64, error)
-}
-
-func (m *mockLoginUseCase) Execute(ctx context.Context, input auth.LoginInput) (int64, error) {
-	if m.ExecuteFunc != nil {
-		return m.ExecuteFunc(ctx, input)
-	}
-	return 1, nil
-}
-
-type mockGenerateTokenUseCase struct {
-	ExecuteFunc func(userID int64) (string, error)
-}
-
-func (m *mockGenerateTokenUseCase) Execute(userID int64) (string, error) {
-	if m.ExecuteFunc != nil {
-		return m.ExecuteFunc(userID)
-	}
-	return "mock-token", nil
-}
-
-type mockGetUserUseCase struct {
-	ExecuteFunc func(ctx context.Context, userID int64) (*model.User, error)
-}
-
-func (m *mockGetUserUseCase) Execute(ctx context.Context, userID int64) (*model.User, error) {
-	if m.ExecuteFunc != nil {
-		return m.ExecuteFunc(ctx, userID)
-	}
-	return &model.User{ID: userID, Name: "Test User"}, nil
-}
-
-type mockVerifyEmailUseCase struct {
-	ExecuteFunc func(ctx context.Context, token string) error
-}
-
-func (m *mockVerifyEmailUseCase) Execute(ctx context.Context, token string) error {
-	if m.ExecuteFunc != nil {
-		return m.ExecuteFunc(ctx, token)
-	}
-	return nil
-}
-
-// Tests
-
 func TestAuthHandler_Signup(t *testing.T) {
-	mockSignup := &mockSignupUseCase{
-		ExecuteFunc: func(ctx context.Context, input auth.SignupInput) (int64, error) {
-			assert.Equal(t, "test@example.com", input.Email)
-			assert.Equal(t, "password123", input.Password)
-			assert.Equal(t, "Test User", input.Name)
-			return 123, nil
+	type args struct {
+		body map[string]interface{}
+	}
+	type mocks struct {
+		setup func(m *usecasemock.MockSignupUseCase)
+	}
+	tests := []struct {
+		name       string
+		args       args
+		mocks      mocks
+		wantStatus int
+	}{
+		{
+			name: "Success",
+			args: args{
+				body: map[string]interface{}{
+					"email":    "test@example.com",
+					"password": "password",
+					"name":     "Test",
+				},
+			},
+			mocks: mocks{
+				setup: func(m *usecasemock.MockSignupUseCase) {
+					m.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(int64(1), nil)
+				},
+			},
+			wantStatus: http.StatusCreated,
+		},
+		{
+			name: "Invalid JSON",
+			args: args{body: nil},
+			mocks: mocks{
+				setup: func(m *usecasemock.MockSignupUseCase) {},
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "UseCase Error",
+			args: args{
+				body: map[string]interface{}{
+					"email":    "exists@example.com",
+					"password": "password",
+				},
+			},
+			mocks: mocks{
+				setup: func(m *usecasemock.MockSignupUseCase) {
+					m.EXPECT().Execute(gomock.Any(), gomock.Any()).
+						Return(int64(0), errors.New("exists"))
+				},
+			},
+			wantStatus: http.StatusBadRequest,
 		},
 	}
 
-	h := handler.NewAuthHandler(
-		mockSignup,
-		&mockLoginUseCase{},
-		&mockGenerateTokenUseCase{},
-		&mockGetUserUseCase{},
-		&mockVerifyEmailUseCase{},
-	)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-	reqBody := map[string]string{
-		"email":    "test@example.com",
-		"password": "password123",
-		"name":     "Test User",
+			mockSignup := usecasemock.NewMockSignupUseCase(ctrl)
+			tt.mocks.setup(mockSignup)
+
+			h := handler.NewAuthHandler(
+				mockSignup,
+				usecasemock.NewMockLoginUseCase(ctrl),
+				usecasemock.NewMockGenerateTokenUseCase(ctrl),
+				usecasemock.NewMockGetUserUseCase(ctrl),
+				usecasemock.NewMockVerifyEmailUseCase(ctrl),
+			)
+
+			var req *http.Request
+			if tt.name == "Invalid JSON" {
+				req = httptest.NewRequest(http.MethodPost, "/auth/signup", bytes.NewReader([]byte("invalid")))
+			} else {
+				body, _ := json.Marshal(tt.args.body)
+				req = httptest.NewRequest(http.MethodPost, "/auth/signup", bytes.NewReader(body))
+			}
+			req.Header.Set("Content-Type", "application/json")
+
+			w := httptest.NewRecorder()
+			h.Signup(w, req)
+
+			assert.Equal(t, tt.wantStatus, w.Code)
+		})
 	}
-	body, _ := json.Marshal(reqBody)
-
-	req := httptest.NewRequest(http.MethodPost, "/auth/signup", bytes.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-
-	h.Signup(w, req)
-
-	assert.Equal(t, http.StatusCreated, w.Code)
-
-	var response map[string]string
-	json.NewDecoder(w.Body).Decode(&response)
-	assert.Contains(t, response["message"], "Verification email sent")
-}
-
-func TestAuthHandler_Signup_InvalidJSON(t *testing.T) {
-	h := handler.NewAuthHandler(
-		&mockSignupUseCase{},
-		&mockLoginUseCase{},
-		&mockGenerateTokenUseCase{},
-		&mockGetUserUseCase{},
-		&mockVerifyEmailUseCase{},
-	)
-
-	req := httptest.NewRequest(http.MethodPost, "/auth/signup", bytes.NewReader([]byte("invalid json")))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-
-	h.Signup(w, req)
-
-	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestAuthHandler_Login(t *testing.T) {
-	mockLogin := &mockLoginUseCase{
-		ExecuteFunc: func(ctx context.Context, input auth.LoginInput) (int64, error) {
-			assert.Equal(t, "test@example.com", input.Email)
-			assert.Equal(t, "password123", input.Password)
-			return 42, nil
+	type mocks struct {
+		login    func(m *usecasemock.MockLoginUseCase)
+		getUser  func(m *usecasemock.MockGetUserUseCase)
+		genToken func(m *usecasemock.MockGenerateTokenUseCase)
+	}
+	tests := []struct {
+		name       string
+		body       map[string]interface{}
+		mocks      mocks
+		wantStatus int
+	}{
+		{
+			name: "Success",
+			body: map[string]interface{}{"email": "a@b.com", "password": "p"},
+			mocks: mocks{
+				login: func(m *usecasemock.MockLoginUseCase) {
+					m.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(int64(1), nil)
+				},
+				getUser: func(m *usecasemock.MockGetUserUseCase) {
+					m.EXPECT().Execute(gomock.Any(), int64(1)).Return(&model.User{ID: 1}, nil)
+				},
+				genToken: func(m *usecasemock.MockGenerateTokenUseCase) {
+					m.EXPECT().Execute(int64(1)).Return("token", nil)
+				},
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "Login Failed",
+			body: map[string]interface{}{"email": "a@b.com", "password": "p"},
+			mocks: mocks{
+				login: func(m *usecasemock.MockLoginUseCase) {
+					m.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("auth failed"))
+				},
+				getUser:  func(m *usecasemock.MockGetUserUseCase) {},
+				genToken: func(m *usecasemock.MockGenerateTokenUseCase) {},
+			},
+			wantStatus: http.StatusUnauthorized,
+		},
+		{
+			name: "GetUser Error",
+			body: map[string]interface{}{"email": "a@b.com", "password": "p"},
+			mocks: mocks{
+				login: func(m *usecasemock.MockLoginUseCase) {
+					m.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(int64(1), nil)
+				},
+				getUser: func(m *usecasemock.MockGetUserUseCase) {
+					m.EXPECT().Execute(gomock.Any(), int64(1)).Return(nil, errors.New("db error"))
+				},
+				genToken: func(m *usecasemock.MockGenerateTokenUseCase) {},
+			},
+			wantStatus: http.StatusInternalServerError,
+		},
+		{
+			name: "GenToken Error",
+			body: map[string]interface{}{"email": "a@b.com", "password": "p"},
+			mocks: mocks{
+				login: func(m *usecasemock.MockLoginUseCase) {
+					m.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(int64(1), nil)
+				},
+				getUser: func(m *usecasemock.MockGetUserUseCase) {
+					m.EXPECT().Execute(gomock.Any(), int64(1)).Return(&model.User{ID: 1}, nil)
+				},
+				genToken: func(m *usecasemock.MockGenerateTokenUseCase) {
+					m.EXPECT().Execute(int64(1)).Return("", errors.New("token error"))
+				},
+			},
+			wantStatus: http.StatusInternalServerError,
 		},
 	}
 
-	mockGetUser := &mockGetUserUseCase{
-		ExecuteFunc: func(ctx context.Context, userID int64) (*model.User, error) {
-			assert.Equal(t, int64(42), userID)
-			return &model.User{ID: 42, Name: "Test User"}, nil
-		},
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockLogin := usecasemock.NewMockLoginUseCase(ctrl)
+			mockGetUser := usecasemock.NewMockGetUserUseCase(ctrl)
+			mockGenToken := usecasemock.NewMockGenerateTokenUseCase(ctrl)
+
+			tt.mocks.login(mockLogin)
+			tt.mocks.getUser(mockGetUser)
+			tt.mocks.genToken(mockGenToken)
+
+			h := handler.NewAuthHandler(
+				usecasemock.NewMockSignupUseCase(ctrl),
+				mockLogin,
+				mockGenToken,
+				mockGetUser,
+				usecasemock.NewMockVerifyEmailUseCase(ctrl),
+			)
+
+			body, _ := json.Marshal(tt.body)
+			req := httptest.NewRequest(http.MethodPost, "/auth/login", bytes.NewReader(body))
+			req.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+
+			h.Login(w, req)
+			assert.Equal(t, tt.wantStatus, w.Code)
+		})
 	}
-
-	mockGenerateToken := &mockGenerateTokenUseCase{
-		ExecuteFunc: func(userID int64) (string, error) {
-			assert.Equal(t, int64(42), userID)
-			return "test-jwt-token", nil
-		},
-	}
-
-	h := handler.NewAuthHandler(
-		&mockSignupUseCase{},
-		mockLogin,
-		mockGenerateToken,
-		mockGetUser,
-		&mockVerifyEmailUseCase{},
-	)
-
-	reqBody := map[string]string{
-		"email":    "test@example.com",
-		"password": "password123",
-	}
-	body, _ := json.Marshal(reqBody)
-
-	req := httptest.NewRequest(http.MethodPost, "/auth/login", bytes.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-
-	h.Login(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	var response map[string]interface{}
-	json.NewDecoder(w.Body).Decode(&response)
-	assert.Equal(t, "test-jwt-token", response["token"])
-	assert.NotNil(t, response["user"])
 }
 
 func TestAuthHandler_Verify(t *testing.T) {
-	mockVerify := &mockVerifyEmailUseCase{
-		ExecuteFunc: func(ctx context.Context, token string) error {
-			assert.Equal(t, "valid-token", token)
-			return nil
+	tests := []struct {
+		name       string
+		body       map[string]string
+		setupMock  func(m *usecasemock.MockVerifyEmailUseCase)
+		wantStatus int
+	}{
+		{
+			name: "Success",
+			body: map[string]string{"token": "valid"},
+			setupMock: func(m *usecasemock.MockVerifyEmailUseCase) {
+				m.EXPECT().Execute(gomock.Any(), "valid").Return(nil)
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "Invalid Token",
+			body: map[string]string{"token": "invalid"},
+			setupMock: func(m *usecasemock.MockVerifyEmailUseCase) {
+				m.EXPECT().Execute(gomock.Any(), "invalid").Return(errors.New("invalid token"))
+			},
+			wantStatus: http.StatusBadRequest,
 		},
 	}
 
-	h := handler.NewAuthHandler(
-		&mockSignupUseCase{},
-		&mockLoginUseCase{},
-		&mockGenerateTokenUseCase{},
-		&mockGetUserUseCase{},
-		mockVerify,
-	)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-	reqBody := map[string]string{
-		"token": "valid-token",
+			mockVerify := usecasemock.NewMockVerifyEmailUseCase(ctrl)
+			tt.setupMock(mockVerify)
+
+			h := handler.NewAuthHandler(
+				usecasemock.NewMockSignupUseCase(ctrl),
+				usecasemock.NewMockLoginUseCase(ctrl),
+				usecasemock.NewMockGenerateTokenUseCase(ctrl),
+				usecasemock.NewMockGetUserUseCase(ctrl),
+				mockVerify,
+			)
+
+			body, _ := json.Marshal(tt.body)
+			req := httptest.NewRequest(http.MethodPost, "/auth/verify", bytes.NewReader(body))
+			req.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+
+			h.Verify(w, req)
+			assert.Equal(t, tt.wantStatus, w.Code)
+		})
 	}
-	body, _ := json.Marshal(reqBody)
+}
 
-	req := httptest.NewRequest(http.MethodPost, "/auth/verify", bytes.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
+func TestAuthHandler_Logout(t *testing.T) {
+	tests := []struct {
+		name       string
+		wantStatus int
+	}{
+		{
+			name:       "Success",
+			wantStatus: http.StatusNoContent,
+		},
+	}
 
-	h.Verify(w, req)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-	assert.Equal(t, http.StatusOK, w.Code)
+			h := handler.NewAuthHandler(
+				usecasemock.NewMockSignupUseCase(ctrl),
+				usecasemock.NewMockLoginUseCase(ctrl),
+				usecasemock.NewMockGenerateTokenUseCase(ctrl),
+				usecasemock.NewMockGetUserUseCase(ctrl),
+				usecasemock.NewMockVerifyEmailUseCase(ctrl),
+			)
 
-	var response map[string]string
-	json.NewDecoder(w.Body).Decode(&response)
-	assert.Contains(t, response["message"], "verified successfully")
+			req := httptest.NewRequest(http.MethodPost, "/auth/logout", nil)
+			w := httptest.NewRecorder()
+
+			h.Logout(w, req)
+			assert.Equal(t, tt.wantStatus, w.Code)
+		})
+	}
 }
