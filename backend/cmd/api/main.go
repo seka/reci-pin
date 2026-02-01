@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 	"os"
 	"os/signal"
@@ -14,9 +15,36 @@ import (
 )
 
 func main() {
-	cfg, err := config.Load()
-	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
+	// Parse command line flags
+	var (
+		serverPort    = flag.Int("port", 8080, "Server port")
+		dbHost        = flag.String("db-host", "localhost", "Database host")
+		dbPort        = flag.Int("db-port", 5432, "Database port")
+		dbUser        = flag.String("db-user", "postgres", "Database user")
+		dbPassword    = flag.String("db-password", "postgres", "Database password")
+		dbName        = flag.String("db-name", "recipin_dev", "Database name")
+		dbSSLMode     = flag.String("db-sslmode", "disable", "Database SSL mode")
+		jwtSecret     = flag.String("jwt-secret", "change-me", "JWT secret key")
+		jwtExpiration = flag.Int("jwt-expiration", 24, "JWT expiration hours")
+	)
+	flag.Parse()
+
+	cfg := &config.Config{
+		Database: config.DatabaseConfig{
+			Host:     *dbHost,
+			Port:     *dbPort,
+			User:     *dbUser,
+			Password: *dbPassword,
+			DBName:   *dbName,
+			SSLMode:  *dbSSLMode,
+		},
+		Server: config.ServerConfig{
+			Port: *serverPort,
+		},
+		JWT: config.JWTConfig{
+			Secret:          *jwtSecret,
+			ExpirationHours: *jwtExpiration,
+		},
 	}
 
 	// Create database instance and connect
