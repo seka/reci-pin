@@ -23,6 +23,7 @@ type Server struct {
 	httpServer      *http.Server
 	repoRegistry    registry.Repository
 	useCaseRegistry registry.UseCase
+	cfg             *config.Config
 }
 
 // New creates a new server with all dependencies initialized
@@ -42,6 +43,7 @@ func New(ctx context.Context, cfg *config.Config) (*Server, error) {
 		router:          chi.NewRouter(),
 		repoRegistry:    repoRegistry,
 		useCaseRegistry: useCaseRegistry,
+		cfg:             cfg,
 	}
 
 	s.setupMiddleware()
@@ -137,9 +139,10 @@ func (s *Server) setupRoutes() {
 }
 
 // Run starts the HTTP server and handles graceful shutdown
-func (s *Server) Run(addr string) error {
+func (s *Server) Run() error {
 	defer s.repoRegistry.Close()
 
+	addr := fmt.Sprintf(":%d", s.cfg.Server.Port)
 	s.httpServer = &http.Server{
 		Addr:    addr,
 		Handler: s.router,

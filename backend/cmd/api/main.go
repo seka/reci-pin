@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/seka/reci-pin/backend/config"
@@ -22,8 +21,7 @@ func main() {
 		log.Fatalf("Failed to create server: %v", err)
 	}
 
-	addr := fmt.Sprintf(":%d", cfg.Server.Port)
-	if err := srv.Run(addr); err != nil {
+	if err := srv.Run(); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}
 }
