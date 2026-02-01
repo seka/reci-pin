@@ -5,14 +5,15 @@ import (
 	"fmt"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/datastore"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/entity"
 )
 
 type UserRepository struct {
-	db *DB
+	db datastore.Database
 }
 
-func NewUserRepository(db *DB) *UserRepository {
+func NewUserRepository(db datastore.Database) *UserRepository {
 	return &UserRepository{db: db}
 }
 
@@ -23,7 +24,7 @@ func (r *UserRepository) Create(ctx context.Context, user *model.User) error {
 		VALUES ($1, NOW(), NOW())
 		RETURNING id, created_at, updated_at
 	`
-	err := r.db.Pool.QueryRow(ctx, query, e.Name).Scan(&e.ID, &e.CreatedAt, &e.UpdatedAt)
+	err := r.db.QueryRow(ctx, query, e.Name).Scan(&e.ID, &e.CreatedAt, &e.UpdatedAt)
 	if err != nil {
 		return fmt.Errorf("failed to create user: %w", err)
 	}
@@ -40,7 +41,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id int64) (*model.User, er
 	`
 	var e entity.User // Use shared entity struct
 
-	err := r.db.Pool.QueryRow(ctx, query, id).Scan(
+	err := r.db.QueryRow(ctx, query, id).Scan(
 		&e.ID,
 		&e.Name,
 		&e.CreatedAt,

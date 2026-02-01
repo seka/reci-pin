@@ -6,14 +6,15 @@ import (
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/datastore"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/entity"
 )
 
 type TagRepository struct {
-	db *DB
+	db datastore.Database
 }
 
-func NewTagRepository(db *DB) repository.TagRepository {
+func NewTagRepository(db datastore.Database) repository.TagRepository {
 	return &TagRepository{db: db}
 }
 
@@ -24,7 +25,7 @@ func (r *TagRepository) Create(ctx context.Context, tag *model.Tag) error {
 		VALUES ($1)
 		RETURNING id
 	`
-	err := r.db.Pool.QueryRow(ctx, query, e.Name).Scan(&e.ID)
+	err := r.db.QueryRow(ctx, query, e.Name).Scan(&e.ID)
 	if err != nil {
 		return fmt.Errorf("failed to create tag: %w", err)
 	}
@@ -35,7 +36,7 @@ func (r *TagRepository) Create(ctx context.Context, tag *model.Tag) error {
 func (r *TagRepository) GetByID(ctx context.Context, id int64) (*model.Tag, error) {
 	query := `SELECT id, name FROM tags WHERE id = $1`
 	var e entity.Tag
-	err := r.db.Pool.QueryRow(ctx, query, id).Scan(&e.ID, &e.Name)
+	err := r.db.QueryRow(ctx, query, id).Scan(&e.ID, &e.Name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tag by id: %w", err)
 	}
@@ -45,7 +46,7 @@ func (r *TagRepository) GetByID(ctx context.Context, id int64) (*model.Tag, erro
 func (r *TagRepository) GetByName(ctx context.Context, name string) (*model.Tag, error) {
 	query := `SELECT id, name FROM tags WHERE name = $1`
 	var e entity.Tag
-	err := r.db.Pool.QueryRow(ctx, query, name).Scan(&e.ID, &e.Name)
+	err := r.db.QueryRow(ctx, query, name).Scan(&e.ID, &e.Name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tag by name: %w", err)
 	}
@@ -54,7 +55,7 @@ func (r *TagRepository) GetByName(ctx context.Context, name string) (*model.Tag,
 
 func (r *TagRepository) GetAll(ctx context.Context) ([]model.Tag, error) {
 	query := `SELECT id, name FROM tags ORDER BY name`
-	rows, err := r.db.Pool.Query(ctx, query)
+	rows, err := r.db.Query(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get all tags: %w", err)
 	}
@@ -74,7 +75,7 @@ func (r *TagRepository) GetAll(ctx context.Context) ([]model.Tag, error) {
 
 func (r *TagRepository) Delete(ctx context.Context, id int64) error {
 	query := `DELETE FROM tags WHERE id = $1`
-	_, err := r.db.Pool.Exec(ctx, query, id)
+	_, err := r.db.Exec(ctx, query, id)
 	if err != nil {
 		return fmt.Errorf("failed to delete tag: %w", err)
 	}

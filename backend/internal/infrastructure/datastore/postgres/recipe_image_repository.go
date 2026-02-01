@@ -6,14 +6,15 @@ import (
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/datastore"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/entity"
 )
 
 type RecipeImageRepository struct {
-	db *DB
+	db datastore.Database
 }
 
-func NewRecipeImageRepository(db *DB) repository.RecipeImageRepository {
+func NewRecipeImageRepository(db datastore.Database) repository.RecipeImageRepository {
 	return &RecipeImageRepository{db: db}
 }
 
@@ -24,7 +25,7 @@ func (r *RecipeImageRepository) Create(ctx context.Context, image *model.RecipeI
 		VALUES ($1, $2, NOW())
 		RETURNING id, created_at
 	`
-	err := r.db.Pool.QueryRow(ctx, query, e.RecipeID, e.ImagePath).Scan(&e.ID, &e.CreatedAt)
+	err := r.db.QueryRow(ctx, query, e.RecipeID, e.ImagePath).Scan(&e.ID, &e.CreatedAt)
 	if err != nil {
 		return fmt.Errorf("failed to create recipe image: %w", err)
 	}
@@ -39,7 +40,7 @@ func (r *RecipeImageRepository) GetByRecipeID(ctx context.Context, recipeID int6
 		WHERE recipe_id = $1
 		ORDER BY created_at
 	`
-	rows, err := r.db.Pool.Query(ctx, query, recipeID)
+	rows, err := r.db.Query(ctx, query, recipeID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get recipe images: %w", err)
 	}
@@ -59,7 +60,7 @@ func (r *RecipeImageRepository) GetByRecipeID(ctx context.Context, recipeID int6
 
 func (r *RecipeImageRepository) Delete(ctx context.Context, id int64) error {
 	query := `DELETE FROM recipe_images WHERE id = $1`
-	_, err := r.db.Pool.Exec(ctx, query, id)
+	_, err := r.db.Exec(ctx, query, id)
 	if err != nil {
 		return fmt.Errorf("failed to delete recipe image: %w", err)
 	}

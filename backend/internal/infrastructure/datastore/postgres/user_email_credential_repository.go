@@ -8,15 +8,16 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/datastore"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/entity"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserEmailCredentialRepository struct {
-	db *DB
+	db datastore.Database
 }
 
-func NewUserEmailCredentialRepository(db *DB) repository.UserEmailCredentialRepository {
+func NewUserEmailCredentialRepository(db datastore.Database) repository.UserEmailCredentialRepository {
 	return &UserEmailCredentialRepository{db: db}
 }
 
@@ -29,7 +30,7 @@ func (r *UserEmailCredentialRepository) Create(ctx context.Context, credential *
 		)
 		VALUES ($1, $2, $3, $4, $5, $6, NOW())
 	`
-	_, err := r.db.Pool.Exec(ctx, query,
+	_, err := r.db.Exec(ctx, query,
 		e.UserID, e.Email, e.PasswordHash, e.EmailVerifiedAt,
 		e.VerificationToken, e.VerificationTokenExpiresAt,
 	)
@@ -47,7 +48,7 @@ func (r *UserEmailCredentialRepository) GetByEmail(ctx context.Context, email st
 		WHERE email = $1
 	`
 	var e entity.UserEmailCredential
-	err := r.db.Pool.QueryRow(ctx, query, email).Scan(
+	err := r.db.QueryRow(ctx, query, email).Scan(
 		&e.UserID, &e.Email, &e.PasswordHash, &e.EmailVerifiedAt,
 		&e.VerificationToken, &e.VerificationTokenExpiresAt, &e.UpdatedAt,
 	)
@@ -68,7 +69,7 @@ func (r *UserEmailCredentialRepository) GetByUserID(ctx context.Context, userID 
 		WHERE user_id = $1
 	`
 	var e entity.UserEmailCredential
-	err := r.db.Pool.QueryRow(ctx, query, userID).Scan(
+	err := r.db.QueryRow(ctx, query, userID).Scan(
 		&e.UserID, &e.Email, &e.PasswordHash, &e.EmailVerifiedAt,
 		&e.VerificationToken, &e.VerificationTokenExpiresAt, &e.UpdatedAt,
 	)
@@ -89,7 +90,7 @@ func (r *UserEmailCredentialRepository) GetByToken(ctx context.Context, token st
 		WHERE verification_token = $1
 	`
 	var e entity.UserEmailCredential
-	err := r.db.Pool.QueryRow(ctx, query, token).Scan(
+	err := r.db.QueryRow(ctx, query, token).Scan(
 		&e.UserID, &e.Email, &e.PasswordHash, &e.EmailVerifiedAt,
 		&e.VerificationToken, &e.VerificationTokenExpiresAt, &e.UpdatedAt,
 	)
@@ -110,7 +111,7 @@ func (r *UserEmailCredentialRepository) Update(ctx context.Context, credential *
 		    verification_token = $5, verification_token_expires_at = $6, updated_at = NOW()
 		WHERE user_id = $1
 	`
-	_, err := r.db.Pool.Exec(ctx, query,
+	_, err := r.db.Exec(ctx, query,
 		e.UserID, e.Email, e.PasswordHash, e.EmailVerifiedAt,
 		e.VerificationToken, e.VerificationTokenExpiresAt,
 	)

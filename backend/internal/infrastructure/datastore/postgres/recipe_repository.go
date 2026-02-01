@@ -6,14 +6,15 @@ import (
 	"strings"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/datastore"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/entity"
 )
 
 type RecipeRepository struct {
-	db *DB
+	db datastore.Database
 }
 
-func NewRecipeRepository(db *DB) *RecipeRepository {
+func NewRecipeRepository(db datastore.Database) *RecipeRepository {
 	return &RecipeRepository{db: db}
 }
 
@@ -25,7 +26,7 @@ func (r *RecipeRepository) Create(ctx context.Context, recipe *model.Recipe) err
 		RETURNING id, created_at, updated_at
 	`
 	// Scan directly into entity fields
-	err := r.db.Pool.QueryRow(ctx, query,
+	err := r.db.QueryRow(ctx, query,
 		e.UserID, e.Name, e.URL, e.Memo,
 	).Scan(&e.ID, &e.CreatedAt, &e.UpdatedAt)
 
@@ -44,7 +45,7 @@ func (r *RecipeRepository) GetByID(ctx context.Context, id int64) (*model.Recipe
 	`
 	var e entity.Recipe
 	// Manual Scan
-	err := r.db.Pool.QueryRow(ctx, query, id).Scan(
+	err := r.db.QueryRow(ctx, query, id).Scan(
 		&e.ID, &e.UserID, &e.Name, &e.URL, &e.Memo, &e.CreatedAt, &e.UpdatedAt,
 	)
 	if err != nil {
@@ -60,7 +61,7 @@ func (r *RecipeRepository) GetByUserID(ctx context.Context, userID int64) ([]mod
 		WHERE user_id = $1
 		ORDER BY created_at DESC
 	`
-	rows, err := r.db.Pool.Query(ctx, query, userID)
+	rows, err := r.db.Query(ctx, query, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get recipes by user id: %w", err)
 	}
@@ -106,7 +107,7 @@ func (r *RecipeRepository) Search(ctx context.Context, userID int64, query strin
 	sqlQuery += " WHERE " + strings.Join(whereConditions, " AND ")
 	sqlQuery += " ORDER BY r.created_at DESC"
 
-	rows, err := r.db.Pool.Query(ctx, sqlQuery, args...)
+	rows, err := r.db.Query(ctx, sqlQuery, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search recipes: %w", err)
 	}
@@ -130,7 +131,7 @@ func (r *RecipeRepository) Update(ctx context.Context, recipe *model.Recipe) err
 		SET name = $1, url = $2, memo = $3, updated_at = NOW()
 		WHERE id = $4
 	`
-	_, err := r.db.Pool.Exec(ctx, query, e.Name, e.URL, e.Memo, e.ID)
+	_, err := r.db.Exec(ctx, query, e.Name, e.URL, e.Memo, e.ID)
 	if err != nil {
 		return fmt.Errorf("failed to update recipe: %w", err)
 	}
@@ -139,7 +140,7 @@ func (r *RecipeRepository) Update(ctx context.Context, recipe *model.Recipe) err
 
 func (r *RecipeRepository) Delete(ctx context.Context, id int64) error {
 	query := `DELETE FROM recipes WHERE id = $1`
-	_, err := r.db.Pool.Exec(ctx, query, id)
+	_, err := r.db.Exec(ctx, query, id)
 	if err != nil {
 		return fmt.Errorf("failed to delete recipe: %w", err)
 	}
@@ -154,7 +155,7 @@ func (r *RecipeRepository) GetTags(ctx context.Context, recipeID int64) ([]model
 		WHERE rt.recipe_id = $1
 		ORDER BY t.name
 	`
-	rows, err := r.db.Pool.Query(ctx, query, recipeID)
+	rows, err := r.db.Query(ctx, query, recipeID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get recipe tags: %w", err)
 	}
@@ -178,7 +179,7 @@ func (r *RecipeRepository) AddTags(ctx context.Context, recipeID int64, tagIDs [
 			VALUES ($1, $2)
 			ON CONFLICT (recipe_id, tag_id) DO NOTHING
 		`
-		_, err := r.db.Pool.Exec(ctx, query, recipeID, tagID)
+		_, err := r.db.Exec(ctx, query, recipeID, tagID)
 		if err != nil {
 			return fmt.Errorf("failed to add tag to recipe: %w", err)
 		}
@@ -189,7 +190,7 @@ func (r *RecipeRepository) AddTags(ctx context.Context, recipeID int64, tagIDs [
 func (r *RecipeRepository) RemoveTags(ctx context.Context, recipeID int64, tagIDs []int64) error {
 	for _, tagID := range tagIDs {
 		query := `DELETE FROM recipe_tags WHERE recipe_id = $1 AND tag_id = $2`
-		_, err := r.db.Pool.Exec(ctx, query, recipeID, tagID)
+		_, err := r.db.Exec(ctx, query, recipeID, tagID)
 		if err != nil {
 			return fmt.Errorf("failed to remove tag from recipe: %w", err)
 		}
