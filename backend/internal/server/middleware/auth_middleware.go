@@ -13,10 +13,10 @@ type contextKey string
 const UserIDKey contextKey = "user_id"
 
 type AuthMiddleware struct {
-	validateTokenUseCase *auth.ValidateTokenUseCase
+	validateTokenUseCase auth.ValidateTokenUseCase
 }
 
-func NewAuthMiddleware(validateTokenUseCase *auth.ValidateTokenUseCase) *AuthMiddleware {
+func NewAuthMiddleware(validateTokenUseCase auth.ValidateTokenUseCase) *AuthMiddleware {
 	return &AuthMiddleware{validateTokenUseCase: validateTokenUseCase}
 }
 

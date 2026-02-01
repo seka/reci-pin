@@ -9,19 +9,19 @@ import (
 )
 
 type AuthHandler struct {
-	signupUseCase        *auth.SignupUseCase
-	loginUseCase         *auth.LoginUseCase
-	generateTokenUseCase *auth.GenerateTokenUseCase
-	getUserUseCase       *auth.GetUserUseCase
-	verifyEmailUseCase   *auth.VerifyEmailUseCase
+	signupUseCase        auth.SignupUseCase
+	loginUseCase         auth.LoginUseCase
+	generateTokenUseCase auth.GenerateTokenUseCase
+	getUserUseCase       auth.GetUserUseCase
+	verifyEmailUseCase   auth.VerifyEmailUseCase
 }
 
 func NewAuthHandler(
-	signupUseCase *auth.SignupUseCase,
-	loginUseCase *auth.LoginUseCase,
-	generateTokenUseCase *auth.GenerateTokenUseCase,
-	getUserUseCase *auth.GetUserUseCase,
-	verifyEmailUseCase *auth.VerifyEmailUseCase,
+	signupUseCase auth.SignupUseCase,
+	loginUseCase auth.LoginUseCase,
+	generateTokenUseCase auth.GenerateTokenUseCase,
+	getUserUseCase auth.GetUserUseCase,
+	verifyEmailUseCase auth.VerifyEmailUseCase,
 ) *AuthHandler {
 	return &AuthHandler{
 		signupUseCase:        signupUseCase,
