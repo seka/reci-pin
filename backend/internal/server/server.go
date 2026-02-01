@@ -52,53 +52,13 @@ func New(ctx context.Context, cfg *config.Config) (*Server, error) {
 	return s, nil
 }
 
-func enableCORS(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		w.Header().Set("Access-Control-Max-Age", "86400")
-
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
-
 func (s *Server) setupMiddleware() {
 	s.router.Use(chimiddleware.Logger)
 	s.router.Use(chimiddleware.Recoverer)
-	s.router.Use(enableCORS)
+	s.router.Use(middleware.CORS)
 }
 
 func (s *Server) setupRoutes() {
-	// Create Handlers
-	authHandler := handler.NewAuthHandler(
-		s.useCaseRegistry.NewSignupUseCase(),
-		s.useCaseRegistry.NewLoginUseCase(),
-		s.useCaseRegistry.NewGenerateTokenUseCase(),
-		s.useCaseRegistry.NewGetUserUseCase(),
-		s.useCaseRegistry.NewVerifyEmailUseCase(),
-	)
-
-	recipeHandler := handler.NewRecipeHandler(
-		s.useCaseRegistry.NewCreateRecipeUseCase(),
-		s.useCaseRegistry.NewGetRecipeUseCase(),
-		s.useCaseRegistry.NewGetUserRecipesUseCase(),
-		s.useCaseRegistry.NewUpdateRecipeUseCase(),
-		s.useCaseRegistry.NewDeleteRecipeUseCase(),
-		s.useCaseRegistry.NewSearchRecipesUseCase(),
-		s.useCaseRegistry.NewAddTagsUseCase(),
-		s.useCaseRegistry.NewRemoveTagsUseCase(),
-		s.useCaseRegistry.NewAddImageUseCase(),
-		s.useCaseRegistry.NewCreateTagUseCase(),
-		s.useCaseRegistry.NewGetAllTagsUseCase(),
-		s.useCaseRegistry.NewDeleteTagUseCase(),
-	)
-
 	authMiddleware := middleware.NewAuthMiddleware(s.useCaseRegistry.NewValidateTokenUseCase())
 
 	// Public routes
@@ -108,15 +68,36 @@ func (s *Server) setupRoutes() {
 	})
 
 	// Auth public routes
+	authHandler := handler.NewAuthHandler(
+		s.useCaseRegistry.NewSignupUseCase(),
+		s.useCaseRegistry.NewLoginUseCase(),
+		s.useCaseRegistry.NewGenerateTokenUseCase(),
+		s.useCaseRegistry.NewGetUserUseCase(),
+		s.useCaseRegistry.NewVerifyEmailUseCase(),
+	)
+
 	s.router.Post("/api/auth/signup", authHandler.Signup)
 	s.router.Post("/api/auth/login", authHandler.Login)
 	s.router.Post("/api/auth/verify", authHandler.Verify)
 
-	// Protected routes
 	s.router.Group(func(r chi.Router) {
 		r.Use(authMiddleware.Authenticate)
 
 		// Recipes
+		recipeHandler := handler.NewRecipeHandler(
+			s.useCaseRegistry.NewCreateRecipeUseCase(),
+			s.useCaseRegistry.NewGetRecipeUseCase(),
+			s.useCaseRegistry.NewGetUserRecipesUseCase(),
+			s.useCaseRegistry.NewUpdateRecipeUseCase(),
+			s.useCaseRegistry.NewDeleteRecipeUseCase(),
+			s.useCaseRegistry.NewSearchRecipesUseCase(),
+			s.useCaseRegistry.NewAddTagsUseCase(),
+			s.useCaseRegistry.NewRemoveTagsUseCase(),
+			s.useCaseRegistry.NewAddImageUseCase(),
+			s.useCaseRegistry.NewCreateTagUseCase(),
+			s.useCaseRegistry.NewGetAllTagsUseCase(),
+			s.useCaseRegistry.NewDeleteTagUseCase(),
+		)
 		r.Post("/api/recipes", recipeHandler.CreateRecipe)
 		r.Get("/api/recipes/{id}", recipeHandler.GetRecipe)
 		r.Get("/api/users/{user_id}/recipes", recipeHandler.GetUserRecipes)
