@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -34,83 +36,89 @@ func init() {
 func main() {
 	flag.Parse()
 
-	if err := run(&cfg); err != nil {
-		log.Printf("Application error: %v", err)
-		os.Exit(1)
-	}
-}
-
-func run(cfg *config.Config) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	db, err := connectDB(ctx, cfg)
-	if err != nil {
+	var wg sync.WaitGroup
+	errCh := make(chan error, 2)
+
+	// Start Database
+	db := postgres.New(cfg.Database.DSN())
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		if err := runDatabase(ctx, db); err != nil {
+			errCh <- fmt.Errorf("database error: %w", err)
+			cancel() // Cancel context to stop other components
+		}
+	}()
+
+	// Start Server
+	srv := createServer(&cfg, db)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		if err := runServer(ctx, srv); err != nil {
+			errCh <- fmt.Errorf("server error: %w", err)
+			cancel()
+		}
+	}()
+
+	// Wait for signal
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	select {
+	case err := <-errCh:
+		// Error occurred in one of the components
+		log.Printf("Shutting down due to error: %v", err)
+		cancel() // Ensure everyone gets the signal
+	case sig := <-quit:
+		log.Printf("Received signal: %v", sig)
+		cancel()
+	case <-ctx.Done():
+		// Context cancelled elsewhere
+		log.Println("Context cancelled")
+	}
+
+	wg.Wait()
+	log.Println("Shutdown complete")
+}
+
+func runDatabase(ctx context.Context, db postgres.Database) error {
+	if err := db.Connect(ctx); err != nil {
 		return err
 	}
 	defer db.Close()
-
-	useCaseRegistry := createRegistry(db, cfg)
-	srv := createServer(cfg, useCaseRegistry)
-
-	return startServer(srv)
-}
-
-func connectDB(ctx context.Context, cfg *config.Config) (postgres.Database, error) {
-	db := postgres.New(cfg.Database.DSN())
-	if err := db.Connect(ctx); err != nil {
-		return nil, err
-	}
 	log.Println("Successfully connected to database")
-	return db, nil
+
+	<-ctx.Done()
+	return nil
 }
 
-func createRegistry(db postgres.Database, cfg *config.Config) registry.UseCase {
+func createServer(cfg *config.Config, db postgres.Database) *server.Server {
 	repoRegistry := registry.NewRepository(db)
-	return registry.NewUseCase(repoRegistry, cfg)
-}
-
-func createServer(cfg *config.Config, useCaseRegistry registry.UseCase) *server.Server {
+	useCaseRegistry := registry.NewUseCase(repoRegistry, cfg)
 	return server.New(cfg, useCaseRegistry)
 }
 
-func startServer(srv *server.Server) error {
-	// Start server in goroutine
+func runServer(ctx context.Context, srv *server.Server) error {
 	serverErrCh := make(chan error, 1)
 	go func() {
 		serverErrCh <- srv.Run()
 	}()
 
-	// Wait for signal or server error
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-
 	select {
 	case err := <-serverErrCh:
 		return err
-	case sig := <-quit:
-		log.Printf("Received signal: %v", sig)
+	case <-ctx.Done():
+		log.Println("Shutting down server...")
+		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer shutdownCancel()
+		if err := srv.Shutdown(shutdownCtx); err != nil {
+			return err
+		}
+		log.Println("Server exited")
+		return nil
 	}
-
-	if err := closeServer(srv); err != nil {
-		// Just log error for shutdown, don't necessarily fail Main Run if expected
-		log.Printf("Server forced to shutdown: %v", err)
-	}
-
-	log.Println("Server exited")
-	return nil
-}
-
-func closeServer(s *server.Server) error {
-	log.Println("Shutting down server...")
-
-	// Create a context with timeout for graceful shutdown
-	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer shutdownCancel()
-
-	if err := s.Shutdown(shutdownCtx); err != nil {
-		return err
-	}
-
-	return nil
 }
