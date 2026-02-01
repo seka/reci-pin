@@ -33,7 +33,7 @@ func init() {
 
 func main() {
 	flag.Parse()
-	if err := newMain(args).Run(); err != nil {
+	if err := run(args); err != nil {
 		log.Printf("Application error: %v", err)
 		os.Exit(1)
 	}
@@ -51,13 +51,7 @@ type Arguments struct {
 	JWTExpiration int
 }
 
-type Main struct {
-	cfg    *config.Config
-	db     postgres.Database
-	server *server.Server
-}
-
-func newMain(args Arguments) *Main {
+func run(args Arguments) error {
 	cfg := &config.Config{
 		Database: config.DatabaseConfig{
 			Host:     args.DBHost,
@@ -81,28 +75,20 @@ func newMain(args Arguments) *Main {
 	useCaseRegistry := registry.NewUseCase(repoRegistry, cfg)
 	srv := server.New(cfg, useCaseRegistry)
 
-	return &Main{
-		cfg:    cfg,
-		db:     db,
-		server: srv,
-	}
-}
-
-func (m *Main) Run() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	// Connect to database
-	if err := m.db.Connect(ctx); err != nil {
+	if err := db.Connect(ctx); err != nil {
 		return err
 	}
-	defer m.db.Close()
+	defer db.Close()
 	log.Println("Successfully connected to database")
 
 	// Start server in goroutine
 	serverErrCh := make(chan error, 1)
 	go func() {
-		serverErrCh <- m.server.Run()
+		serverErrCh <- srv.Run()
 	}()
 
 	// Wait for signal or server error
@@ -122,7 +108,7 @@ func (m *Main) Run() error {
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer shutdownCancel()
 
-	if err := m.server.Shutdown(shutdownCtx); err != nil {
+	if err := srv.Shutdown(shutdownCtx); err != nil {
 		// Just log error for shutdown, don't necessarily fail Main Run if expected
 		log.Printf("Server forced to shutdown: %v", err)
 	}
