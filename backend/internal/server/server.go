@@ -5,126 +5,35 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/seka/reci-pin/backend/config"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/datastore/postgres"
+	"github.com/seka/reci-pin/backend/internal/registry"
 	"github.com/seka/reci-pin/backend/internal/server/handler"
 	"github.com/seka/reci-pin/backend/internal/server/middleware"
-	authUC "github.com/seka/reci-pin/backend/internal/usecase/auth"
-	recipeUC "github.com/seka/reci-pin/backend/internal/usecase/recipe"
-	recipeImageUC "github.com/seka/reci-pin/backend/internal/usecase/recipe_image"
-	recipeTagUC "github.com/seka/reci-pin/backend/internal/usecase/recipe_tag"
-	tagUC "github.com/seka/reci-pin/backend/internal/usecase/tag"
 )
 
 type Server struct {
-	router         *chi.Mux
-	authHandler    *handler.AuthHandler
-	recipeHandler  *handler.RecipeHandler
-	authMiddleware *middleware.AuthMiddleware
+	router *chi.Mux
 }
 
-func Run(ctx context.Context, cfg *config.Config) error {
-	// Initialize database
-	db, err := postgres.New(ctx, cfg.Database.DSN())
-	if err != nil {
-		return fmt.Errorf("failed to connect to database: %w", err)
-	}
-	defer db.Close()
-
-	log.Println("Successfully connected to database")
-
-	// Repositories
-	userRepo := postgres.NewUserRepository(db)
-	recipeRepo := postgres.NewRecipeRepository(db)
-	tagRepo := postgres.NewTagRepository(db)
-	recipeImageRepo := postgres.NewRecipeImageRepository(db)
-	credentialRepo := postgres.NewUserEmailCredentialRepository(db)
-
-	// UseCases - Auth
-	signupUseCase := authUC.NewSignupUseCase(userRepo, credentialRepo)
-	loginUseCase := authUC.NewLoginUseCase(credentialRepo)
-	generateTokenUseCase := authUC.NewGenerateTokenUseCase(cfg.JWT.Secret, time.Duration(cfg.JWT.ExpirationHours)*time.Hour)
-	getUserUseCase := authUC.NewGetUserUseCase(userRepo)
-	validateTokenUseCase := authUC.NewValidateTokenUseCase(cfg.JWT.Secret)
-	verifyEmailUseCase := authUC.NewVerifyEmailUseCase(credentialRepo)
-
-	// UseCases - Recipe
-	createRecipeUseCase := recipeUC.NewCreateRecipeUseCase(recipeRepo)
-	getRecipeUseCase := recipeUC.NewGetRecipeUseCase(recipeRepo, recipeImageRepo)
-	getUserRecipesUseCase := recipeUC.NewGetUserRecipesUseCase(recipeRepo, recipeImageRepo)
-	updateRecipeUseCase := recipeUC.NewUpdateRecipeUseCase(recipeRepo)
-	deleteRecipeUseCase := recipeUC.NewDeleteRecipeUseCase(recipeRepo)
-	searchRecipesUseCase := recipeUC.NewSearchRecipesUseCase(recipeRepo, recipeImageRepo)
-	addImageUseCase := recipeImageUC.NewAddImageUseCase(recipeRepo, recipeImageRepo)
-
-	// Usecases - Tag
-	createTagUseCase := tagUC.NewCreateTagUseCase(tagRepo)
-	getAllTagsUseCase := tagUC.NewGetAllTagsUseCase(tagRepo)
-	deleteTagUseCase := tagUC.NewDeleteTagUseCase(tagRepo)
-	addTagsUseCase := recipeTagUC.NewAddTagsUseCase(recipeRepo)
-	removeTagsUseCase := recipeTagUC.NewRemoveTagsUseCase(recipeRepo)
-
+// New creates a new server with routing configured
+func New(
+	authHandler *handler.AuthHandler,
+	recipeHandler *handler.RecipeHandler,
+	authMiddleware *middleware.AuthMiddleware,
+) *Server {
 	s := &Server{
 		router: chi.NewRouter(),
-		authHandler: handler.NewAuthHandler(
-			signupUseCase,
-			loginUseCase,
-			generateTokenUseCase,
-			getUserUseCase,
-			verifyEmailUseCase,
-		),
-		recipeHandler: handler.NewRecipeHandler(
-			createRecipeUseCase,
-			getRecipeUseCase,
-			getUserRecipesUseCase,
-			updateRecipeUseCase,
-			deleteRecipeUseCase,
-			searchRecipesUseCase,
-			addTagsUseCase,
-			removeTagsUseCase,
-			addImageUseCase,
-			createTagUseCase,
-			getAllTagsUseCase,
-			deleteTagUseCase,
-		),
-		authMiddleware: middleware.NewAuthMiddleware(validateTokenUseCase),
 	}
-
 	s.setupMiddleware()
-	s.setupRoutes()
-
-	// Start server
-	addr := fmt.Sprintf(":%d", cfg.Server.Port)
-	srv := &http.Server{
-		Addr:    addr,
-		Handler: s,
-	}
-
-	go func() {
-		log.Printf("Server starting on %s", addr)
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Printf("Server listening error: %v", err)
-		}
-	}()
-
-	// Wait for shutdown signal
-	<-ctx.Done()
-	log.Println("Shutting down server...")
-
-	// Graceful shutdown with timeout
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	if err := srv.Shutdown(shutdownCtx); err != nil {
-		return fmt.Errorf("server shutdown failed: %w", err)
-	}
-
-	log.Println("Server shutdown successfully")
-	return nil
+	s.setupRoutes(authHandler, recipeHandler, authMiddleware)
+	return s
 }
 
 func (s *Server) setupMiddleware() {
@@ -151,46 +60,130 @@ func (s *Server) setupMiddleware() {
 	})
 }
 
-func (s *Server) setupRoutes() {
+func (s *Server) setupRoutes(
+	authHandler *handler.AuthHandler,
+	recipeHandler *handler.RecipeHandler,
+	authMiddleware *middleware.AuthMiddleware,
+) {
+	// Public routes
 	s.router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
 	})
 
-	// Public routes
-	s.router.Post("/auth/signup", s.authHandler.Signup)
-	s.router.Post("/auth/login", s.authHandler.Login)
-	s.router.Post("/auth/verify", s.authHandler.Verify)
+	// Auth public routes
+	s.router.Post("/api/auth/signup", authHandler.Signup)
+	s.router.Post("/api/auth/login", authHandler.Login)
+	s.router.Post("/api/auth/verify", authHandler.Verify)
 
 	// Protected routes
 	s.router.Group(func(r chi.Router) {
-		r.Use(s.authMiddleware.Authenticate)
-
-		// Auth
-		r.Post("/auth/logout", s.authHandler.Logout)
+		r.Use(authMiddleware.Authenticate)
 
 		// Recipes
-		r.Post("/recipes", s.recipeHandler.CreateRecipe)
-		r.Get("/recipes", s.recipeHandler.GetUserRecipes)
-		r.Post("/recipes/search", s.recipeHandler.SearchRecipes)
-		r.Get("/recipes/{id}", s.recipeHandler.GetRecipe)
-		r.Put("/recipes/{id}", s.recipeHandler.UpdateRecipe)
-		r.Delete("/recipes/{id}", s.recipeHandler.DeleteRecipe)
+		r.Post("/api/recipes", recipeHandler.CreateRecipe)
+		r.Get("/api/recipes/{id}", recipeHandler.GetRecipe)
+		r.Get("/api/users/{user_id}/recipes", recipeHandler.GetUserRecipes)
+		r.Put("/api/recipes/{id}", recipeHandler.UpdateRecipe)
+		r.Delete("/api/recipes/{id}", recipeHandler.DeleteRecipe)
+		r.Post("/api/recipes/search", recipeHandler.SearchRecipes)
 
 		// Recipe tags
-		r.Post("/recipes/{id}/tags", s.recipeHandler.AddTags)
-		r.Delete("/recipes/{id}/tags", s.recipeHandler.RemoveTags)
+		r.Post("/api/recipes/{id}/tags", recipeHandler.AddTags)
+		r.Delete("/api/recipes/{id}/tags", recipeHandler.RemoveTags)
 
 		// Recipe images
-		r.Post("/recipes/{id}/images", s.recipeHandler.AddImage)
+		r.Post("/api/recipes/{id}/images", recipeHandler.AddImage)
 
 		// Tags
-		r.Post("/tags", s.recipeHandler.CreateTag)
-		r.Get("/tags", s.recipeHandler.GetAllTags)
-		r.Delete("/tags/{id}", s.recipeHandler.DeleteTag)
+		r.Post("/api/tags", recipeHandler.CreateTag)
+		r.Get("/api/tags", recipeHandler.GetAllTags)
+		r.Delete("/api/tags/{id}", recipeHandler.DeleteTag)
 	})
 }
 
+// ServeHTTP allows Server to implement http.Handler for testing
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
+}
+
+// Run initializes all dependencies and starts the server
+func Run(ctx context.Context, cfg *config.Config) error {
+	// Initialize Repository Registry
+	repoRegistry, err := registry.NewRepository(ctx, cfg.Database.DSN())
+	if err != nil {
+		return fmt.Errorf("failed to initialize repository registry: %w", err)
+	}
+	defer repoRegistry.Close()
+
+	log.Println("Successfully connected to database")
+
+	// Initialize UseCase Registry
+	useCaseRegistry := registry.NewUseCase(repoRegistry, cfg)
+
+	// Create Handlers
+	authHandler := handler.NewAuthHandler(
+		useCaseRegistry.NewSignupUseCase(),
+		useCaseRegistry.NewLoginUseCase(),
+		useCaseRegistry.NewGenerateTokenUseCase(),
+		useCaseRegistry.NewGetUserUseCase(),
+		useCaseRegistry.NewVerifyEmailUseCase(),
+	)
+
+	recipeHandler := handler.NewRecipeHandler(
+		useCaseRegistry.NewCreateRecipeUseCase(),
+		useCaseRegistry.NewGetRecipeUseCase(),
+		useCaseRegistry.NewGetUserRecipesUseCase(),
+		useCaseRegistry.NewUpdateRecipeUseCase(),
+		useCaseRegistry.NewDeleteRecipeUseCase(),
+		useCaseRegistry.NewSearchRecipesUseCase(),
+		useCaseRegistry.NewAddTagsUseCase(),
+		useCaseRegistry.NewRemoveTagsUseCase(),
+		useCaseRegistry.NewAddImageUseCase(),
+		useCaseRegistry.NewCreateTagUseCase(),
+		useCaseRegistry.NewGetAllTagsUseCase(),
+		useCaseRegistry.NewDeleteTagUseCase(),
+	)
+
+	authMiddleware := middleware.NewAuthMiddleware(useCaseRegistry.NewValidateTokenUseCase())
+
+	// Create server
+	server := New(authHandler, recipeHandler, authMiddleware)
+
+	// Start HTTP server
+	httpServer := &http.Server{
+		Addr:    fmt.Sprintf(":%d", cfg.Server.Port),
+		Handler: server.router,
+	}
+
+	startServer(httpServer)
+	return gracefulShutdown(httpServer)
+}
+
+// startServer starts the HTTP server in a goroutine
+func startServer(httpServer *http.Server) {
+	go func() {
+		log.Printf("Server starting on %s\n", httpServer.Addr)
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("listen: %s\n", err)
+		}
+	}()
+}
+
+// gracefulShutdown waits for interrupt signal and performs graceful shutdown
+func gracefulShutdown(httpServer *http.Server) error {
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err := httpServer.Shutdown(ctx); err != nil {
+		return fmt.Errorf("server forced to shutdown: %w", err)
+	}
+
+	log.Println("Server exiting")
+	return nil
 }
