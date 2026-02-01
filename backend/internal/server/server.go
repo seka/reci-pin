@@ -5,9 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -26,30 +23,19 @@ type Server struct {
 	cfg             *config.Config
 }
 
-// New creates a new server with all dependencies initialized
-func New(cfg *config.Config) (*Server, error) {
-	// Initialize Repository Registry
-	repoRegistry, err := registry.NewRepository(context.Background(), cfg.Database.DSN())
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize repository registry: %w", err)
-	}
-
-	log.Println("Successfully connected to database")
-
-	// Initialize UseCase Registry
-	useCaseRegistry := registry.NewUseCase(repoRegistry, cfg)
-
+// New creates a new server instance with the given dependencies
+func New(cfg *config.Config, repo registry.Repository, useCase registry.UseCase) *Server {
 	s := &Server{
 		router:          chi.NewRouter(),
-		repoRegistry:    repoRegistry,
-		useCaseRegistry: useCaseRegistry,
+		repoRegistry:    repo,
+		useCaseRegistry: useCase,
 		cfg:             cfg,
 	}
 
 	s.setupMiddleware()
 	s.setupRoutes()
 
-	return s, nil
+	return s
 }
 
 func (s *Server) setupMiddleware() {
@@ -119,28 +105,21 @@ func (s *Server) setupRoutes() {
 	})
 }
 
-// Run starts the HTTP server and handles graceful shutdown
+// Run starts the HTTP server (blocking)
 func (s *Server) Run() error {
-	defer s.repoRegistry.Close()
-
 	addr := fmt.Sprintf(":%d", s.cfg.Server.Port)
 	s.httpServer = &http.Server{
 		Addr:    addr,
 		Handler: s.router,
 	}
 
-	go func() {
-		log.Printf("Server starting on %s\n", s.httpServer.Addr)
-		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s\n", err)
-		}
-	}()
+	log.Printf("Server starting on %s\n", s.httpServer.Addr)
+	return s.httpServer.ListenAndServe()
+}
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-
-	return s.Shutdown()
+// ServeHTTP implements http.Handler for testing
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.router.ServeHTTP(w, r)
 }
 
 // Shutdown performs graceful shutdown of the server

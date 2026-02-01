@@ -1,9 +1,14 @@
 package main
 
 import (
+	"context"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/seka/reci-pin/backend/config"
+	"github.com/seka/reci-pin/backend/internal/registry"
 	"github.com/seka/reci-pin/backend/internal/server"
 )
 
@@ -13,12 +18,39 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	srv, err := server.New(cfg)
+	// Initialize Repository Registry
+	repoRegistry, err := registry.NewRepository(context.Background(), cfg.Database.DSN())
 	if err != nil {
-		log.Fatalf("Failed to create server: %v", err)
+		log.Fatalf("Failed to initialize repository: %v", err)
+	}
+	defer repoRegistry.Close()
+
+	log.Println("Successfully connected to database")
+
+	// Initialize UseCase Registry
+	useCaseRegistry := registry.NewUseCase(repoRegistry, cfg)
+
+	// Create server
+	srv := server.New(cfg, repoRegistry, useCaseRegistry)
+
+	// Start server in goroutine
+	go func() {
+		if err := srv.Run(); err != nil {
+			log.Printf("Server error: %v", err)
+		}
+	}()
+
+	// Wait for interrupt signal
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	log.Println("Shutting down server...")
+
+	// Graceful shutdown
+	if err := srv.Shutdown(); err != nil {
+		log.Fatalf("Server forced to shutdown: %v", err)
 	}
 
-	if err := srv.Run(); err != nil {
-		log.Fatalf("Server failed: %v", err)
-	}
+	log.Println("Server exited")
 }
