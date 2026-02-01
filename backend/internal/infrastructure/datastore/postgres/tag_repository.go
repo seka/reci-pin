@@ -25,9 +25,19 @@ func (r *TagRepository) Create(ctx context.Context, tag *model.Tag) error {
 		VALUES ($1)
 		RETURNING id
 	`
-	err := r.db.QueryRow(ctx, query, e.Name).Scan(&e.ID)
+	rows, err := r.db.Query(ctx, query, e.Name)
 	if err != nil {
 		return fmt.Errorf("failed to create tag: %w", err)
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return fmt.Errorf("failed to create tag: no rows returned")
+	}
+
+	err = rows.Scan(&e.ID)
+	if err != nil {
+		return fmt.Errorf("failed to scan tag: %w", err)
 	}
 	tag.ID = e.ID
 	return nil
@@ -36,9 +46,19 @@ func (r *TagRepository) Create(ctx context.Context, tag *model.Tag) error {
 func (r *TagRepository) GetByID(ctx context.Context, id int64) (*model.Tag, error) {
 	query := `SELECT id, name FROM tags WHERE id = $1`
 	var e entity.Tag
-	err := r.db.QueryRow(ctx, query, id).Scan(&e.ID, &e.Name)
+	rows, err := r.db.Query(ctx, query, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tag by id: %w", err)
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return nil, fmt.Errorf("tag not found")
+	}
+
+	err = rows.Scan(&e.ID, &e.Name)
+	if err != nil {
+		return nil, fmt.Errorf("failed to scan tag: %w", err)
 	}
 	return e.ToModel(), nil
 }
@@ -46,9 +66,19 @@ func (r *TagRepository) GetByID(ctx context.Context, id int64) (*model.Tag, erro
 func (r *TagRepository) GetByName(ctx context.Context, name string) (*model.Tag, error) {
 	query := `SELECT id, name FROM tags WHERE name = $1`
 	var e entity.Tag
-	err := r.db.QueryRow(ctx, query, name).Scan(&e.ID, &e.Name)
+	rows, err := r.db.Query(ctx, query, name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tag by name: %w", err)
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return nil, fmt.Errorf("tag not found")
+	}
+
+	err = rows.Scan(&e.ID, &e.Name)
+	if err != nil {
+		return nil, fmt.Errorf("failed to scan tag: %w", err)
 	}
 	return e.ToModel(), nil
 }
