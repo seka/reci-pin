@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 
 	"github.com/seka/reci-pin/backend/config"
@@ -14,9 +13,7 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	ctx := context.Background()
-
-	srv, err := server.New(ctx, cfg)
+	srv, err := server.New(cfg)
 	if err != nil {
 		log.Fatalf("Failed to create server: %v", err)
 	}

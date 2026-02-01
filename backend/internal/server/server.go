@@ -27,9 +27,9 @@ type Server struct {
 }
 
 // New creates a new server with all dependencies initialized
-func New(ctx context.Context, cfg *config.Config) (*Server, error) {
+func New(cfg *config.Config) (*Server, error) {
 	// Initialize Repository Registry
-	repoRegistry, err := registry.NewRepository(ctx, cfg.Database.DSN())
+	repoRegistry, err := registry.NewRepository(context.Background(), cfg.Database.DSN())
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize repository registry: %w", err)
 	}
