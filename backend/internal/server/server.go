@@ -18,16 +18,14 @@ import (
 type Server struct {
 	router          *chi.Mux
 	httpServer      *http.Server
-	repoRegistry    registry.Repository
 	useCaseRegistry registry.UseCase
 	cfg             *config.Config
 }
 
 // New creates a new server instance with the given dependencies
-func New(cfg *config.Config, repo registry.Repository, useCase registry.UseCase) *Server {
+func New(cfg *config.Config, useCase registry.UseCase) *Server {
 	s := &Server{
 		router:          chi.NewRouter(),
-		repoRegistry:    repo,
 		useCaseRegistry: useCase,
 		cfg:             cfg,
 	}

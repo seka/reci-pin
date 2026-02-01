@@ -30,12 +30,10 @@ func main() {
 
 	// Initialize Repository Registry
 	repoRegistry := registry.NewRepository(db)
-
-	// Initialize UseCase Registry
 	useCaseRegistry := registry.NewUseCase(repoRegistry, cfg)
 
 	// Create server
-	srv := server.New(cfg, repoRegistry, useCaseRegistry)
+	srv := server.New(cfg, useCaseRegistry)
 
 	// Start server in goroutine
 	go func() {
