@@ -19,52 +19,86 @@ import (
 )
 
 type Server struct {
-	router *chi.Mux
+	router          *chi.Mux
+	httpServer      *http.Server
+	repoRegistry    registry.Repository
+	useCaseRegistry registry.UseCase
 }
 
-// New creates a new server with routing configured
-func New(
-	authHandler *handler.AuthHandler,
-	recipeHandler *handler.RecipeHandler,
-	authMiddleware *middleware.AuthMiddleware,
-) *Server {
-	s := &Server{
-		router: chi.NewRouter(),
+// New creates a new server with all dependencies initialized
+func New(ctx context.Context, cfg *config.Config) (*Server, error) {
+	// Initialize Repository Registry
+	repoRegistry, err := registry.NewRepository(ctx, cfg.Database.DSN())
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize repository registry: %w", err)
 	}
+
+	log.Println("Successfully connected to database")
+
+	// Initialize UseCase Registry
+	useCaseRegistry := registry.NewUseCase(repoRegistry, cfg)
+
+	s := &Server{
+		router:          chi.NewRouter(),
+		repoRegistry:    repoRegistry,
+		useCaseRegistry: useCaseRegistry,
+	}
+
 	s.setupMiddleware()
-	s.setupRoutes(authHandler, recipeHandler, authMiddleware)
-	return s
+	s.setupRoutes()
+
+	return s, nil
 }
 
-func (s *Server) setupMiddleware() {
-	s.router.Use(chimiddleware.RequestID)
-	s.router.Use(chimiddleware.RealIP)
-	s.router.Use(chimiddleware.Logger)
-	s.router.Use(chimiddleware.Recoverer)
-	s.router.Use(chimiddleware.Timeout(60 * time.Second))
+func enableCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Max-Age", "86400")
 
-	// CORS middleware
-	s.router.Use(func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Access-Control-Allow-Origin", "*")
-			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
 
-			if r.Method == "OPTIONS" {
-				w.WriteHeader(http.StatusOK)
-				return
-			}
-
-			next.ServeHTTP(w, r)
-		})
+		next.ServeHTTP(w, r)
 	})
 }
 
-func (s *Server) setupRoutes(
-	authHandler *handler.AuthHandler,
-	recipeHandler *handler.RecipeHandler,
-	authMiddleware *middleware.AuthMiddleware,
-) {
+func (s *Server) setupMiddleware() {
+	s.router.Use(chimiddleware.Logger)
+	s.router.Use(chimiddleware.Recoverer)
+	s.router.Use(enableCORS)
+}
+
+func (s *Server) setupRoutes() {
+	// Create Handlers
+	authHandler := handler.NewAuthHandler(
+		s.useCaseRegistry.NewSignupUseCase(),
+		s.useCaseRegistry.NewLoginUseCase(),
+		s.useCaseRegistry.NewGenerateTokenUseCase(),
+		s.useCaseRegistry.NewGetUserUseCase(),
+		s.useCaseRegistry.NewVerifyEmailUseCase(),
+	)
+
+	recipeHandler := handler.NewRecipeHandler(
+		s.useCaseRegistry.NewCreateRecipeUseCase(),
+		s.useCaseRegistry.NewGetRecipeUseCase(),
+		s.useCaseRegistry.NewGetUserRecipesUseCase(),
+		s.useCaseRegistry.NewUpdateRecipeUseCase(),
+		s.useCaseRegistry.NewDeleteRecipeUseCase(),
+		s.useCaseRegistry.NewSearchRecipesUseCase(),
+		s.useCaseRegistry.NewAddTagsUseCase(),
+		s.useCaseRegistry.NewRemoveTagsUseCase(),
+		s.useCaseRegistry.NewAddImageUseCase(),
+		s.useCaseRegistry.NewCreateTagUseCase(),
+		s.useCaseRegistry.NewGetAllTagsUseCase(),
+		s.useCaseRegistry.NewDeleteTagUseCase(),
+	)
+
+	authMiddleware := middleware.NewAuthMiddleware(s.useCaseRegistry.NewValidateTokenUseCase())
+
 	// Public routes
 	s.router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -102,88 +136,40 @@ func (s *Server) setupRoutes(
 	})
 }
 
-// ServeHTTP allows Server to implement http.Handler for testing
-func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	s.router.ServeHTTP(w, r)
-}
+// Run starts the HTTP server and handles graceful shutdown
+func (s *Server) Run(addr string) error {
+	defer s.repoRegistry.Close()
 
-// Run initializes all dependencies and starts the server
-func Run(ctx context.Context, cfg *config.Config) error {
-	// Initialize Repository Registry
-	repoRegistry, err := registry.NewRepository(ctx, cfg.Database.DSN())
-	if err != nil {
-		return fmt.Errorf("failed to initialize repository registry: %w", err)
-	}
-	defer repoRegistry.Close()
-
-	log.Println("Successfully connected to database")
-
-	// Initialize UseCase Registry
-	useCaseRegistry := registry.NewUseCase(repoRegistry, cfg)
-
-	// Create Handlers
-	authHandler := handler.NewAuthHandler(
-		useCaseRegistry.NewSignupUseCase(),
-		useCaseRegistry.NewLoginUseCase(),
-		useCaseRegistry.NewGenerateTokenUseCase(),
-		useCaseRegistry.NewGetUserUseCase(),
-		useCaseRegistry.NewVerifyEmailUseCase(),
-	)
-
-	recipeHandler := handler.NewRecipeHandler(
-		useCaseRegistry.NewCreateRecipeUseCase(),
-		useCaseRegistry.NewGetRecipeUseCase(),
-		useCaseRegistry.NewGetUserRecipesUseCase(),
-		useCaseRegistry.NewUpdateRecipeUseCase(),
-		useCaseRegistry.NewDeleteRecipeUseCase(),
-		useCaseRegistry.NewSearchRecipesUseCase(),
-		useCaseRegistry.NewAddTagsUseCase(),
-		useCaseRegistry.NewRemoveTagsUseCase(),
-		useCaseRegistry.NewAddImageUseCase(),
-		useCaseRegistry.NewCreateTagUseCase(),
-		useCaseRegistry.NewGetAllTagsUseCase(),
-		useCaseRegistry.NewDeleteTagUseCase(),
-	)
-
-	authMiddleware := middleware.NewAuthMiddleware(useCaseRegistry.NewValidateTokenUseCase())
-
-	// Create server
-	server := New(authHandler, recipeHandler, authMiddleware)
-
-	// Start HTTP server
-	httpServer := &http.Server{
-		Addr:    fmt.Sprintf(":%d", cfg.Server.Port),
-		Handler: server.router,
+	s.httpServer = &http.Server{
+		Addr:    addr,
+		Handler: s.router,
 	}
 
-	startServer(httpServer)
-	return gracefulShutdown(httpServer)
-}
-
-// startServer starts the HTTP server in a goroutine
-func startServer(httpServer *http.Server) {
 	go func() {
-		log.Printf("Server starting on %s\n", httpServer.Addr)
-		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Printf("Server starting on %s\n", s.httpServer.Addr)
+		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("listen: %s\n", err)
 		}
 	}()
-}
 
-// gracefulShutdown waits for interrupt signal and performs graceful shutdown
-func gracefulShutdown(httpServer *http.Server) error {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
+
+	return s.Shutdown()
+}
+
+// Shutdown performs graceful shutdown of the server
+func (s *Server) Shutdown() error {
 	log.Println("Shutting down server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	if err := httpServer.Shutdown(ctx); err != nil {
+	if err := s.httpServer.Shutdown(ctx); err != nil {
 		return fmt.Errorf("server forced to shutdown: %w", err)
 	}
 
-	log.Println("Server exiting")
+	log.Println("Server exited")
 	return nil
 }
