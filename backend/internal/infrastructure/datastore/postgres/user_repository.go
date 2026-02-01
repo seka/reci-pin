@@ -24,9 +24,20 @@ func (r *UserRepository) Create(ctx context.Context, user *model.User) error {
 		VALUES ($1, NOW(), NOW())
 		RETURNING id, created_at, updated_at
 	`
-	err := r.db.QueryRow(ctx, query, e.Name).Scan(&e.ID, &e.CreatedAt, &e.UpdatedAt)
+
+	rows, err := r.db.Query(ctx, query, e.Name)
 	if err != nil {
 		return fmt.Errorf("failed to create user: %w", err)
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return fmt.Errorf("failed to create user: no rows returned")
+	}
+
+	err = rows.Scan(&e.ID, &e.CreatedAt, &e.UpdatedAt)
+	if err != nil {
+		return fmt.Errorf("failed to scan user: %w", err)
 	}
 
 	user.ID = e.ID
@@ -39,16 +50,26 @@ func (r *UserRepository) GetByID(ctx context.Context, id int64) (*model.User, er
 		FROM users
 		WHERE id = $1
 	`
-	var e entity.User // Use shared entity struct
+	var e entity.User
 
-	err := r.db.QueryRow(ctx, query, id).Scan(
+	rows, err := r.db.Query(ctx, query, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user by id: %w", err)
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	err = rows.Scan(
 		&e.ID,
 		&e.Name,
 		&e.CreatedAt,
 		&e.UpdatedAt,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get user by id: %w", err)
+		return nil, fmt.Errorf("failed to scan user: %w", err)
 	}
 
 	return e.ToModel(), nil
