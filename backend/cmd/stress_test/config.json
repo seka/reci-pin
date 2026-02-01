@@ -1,0 +1,14 @@
+[
+  {
+    "name": "browse_recipes",
+    "concurrency": 10,
+    "duration": "10s",
+    "rate": 50
+  },
+  {
+    "name": "auth_flow",
+    "concurrency": 5,
+    "duration": "10s",
+    "rate": 10
+  }
+]
