@@ -15,16 +15,32 @@ import (
 	"github.com/seka/reci-pin/backend/internal/server"
 )
 
+var (
+	cfg config.Config
+)
+
+func init() {
+	flag.IntVar(&cfg.Server.Port, "port", 8080, "Server port")
+	flag.StringVar(&cfg.Database.Host, "db-host", "localhost", "Database host")
+	flag.IntVar(&cfg.Database.Port, "db-port", 5432, "Database port")
+	flag.StringVar(&cfg.Database.User, "db-user", "postgres", "Database user")
+	flag.StringVar(&cfg.Database.Password, "db-password", "postgres", "Database password")
+	flag.StringVar(&cfg.Database.DBName, "db-name", "recipin_dev", "Database name")
+	flag.StringVar(&cfg.Database.SSLMode, "db-sslmode", "disable", "Database SSL mode")
+	flag.StringVar(&cfg.JWT.Secret, "jwt-secret", "change-me", "JWT secret key")
+	flag.IntVar(&cfg.JWT.ExpirationHours, "jwt-expiration", 24, "JWT expiration hours")
+}
+
 func main() {
-	if err := run(); err != nil {
+	flag.Parse()
+
+	if err := run(&cfg); err != nil {
 		log.Printf("Application error: %v", err)
 		os.Exit(1)
 	}
 }
 
-func run() error {
-	cfg := parseConfig()
-
+func run(cfg *config.Config) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -38,24 +54,6 @@ func run() error {
 	srv := createServer(cfg, useCaseRegistry)
 
 	return startServer(srv)
-}
-
-func parseConfig() *config.Config {
-	cfg := &config.Config{}
-
-	flag.IntVar(&cfg.Server.Port, "port", 8080, "Server port")
-	flag.StringVar(&cfg.Database.Host, "db-host", "localhost", "Database host")
-	flag.IntVar(&cfg.Database.Port, "db-port", 5432, "Database port")
-	flag.StringVar(&cfg.Database.User, "db-user", "postgres", "Database user")
-	flag.StringVar(&cfg.Database.Password, "db-password", "postgres", "Database password")
-	flag.StringVar(&cfg.Database.DBName, "db-name", "recipin_dev", "Database name")
-	flag.StringVar(&cfg.Database.SSLMode, "db-sslmode", "disable", "Database SSL mode")
-	flag.StringVar(&cfg.JWT.Secret, "jwt-secret", "change-me", "JWT secret key")
-	flag.IntVar(&cfg.JWT.ExpirationHours, "jwt-expiration", 24, "JWT expiration hours")
-
-	flag.Parse()
-
-	return cfg
 }
 
 func connectDB(ctx context.Context, cfg *config.Config) (postgres.Database, error) {
@@ -94,19 +92,25 @@ func startServer(srv *server.Server) error {
 		log.Printf("Received signal: %v", sig)
 	}
 
+	if err := closeServer(srv); err != nil {
+		// Just log error for shutdown, don't necessarily fail Main Run if expected
+		log.Printf("Server forced to shutdown: %v", err)
+	}
+
+	log.Println("Server exited")
+	return nil
+}
+
+func closeServer(s *server.Server) error {
 	log.Println("Shutting down server...")
 
 	// Create a context with timeout for graceful shutdown
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer shutdownCancel()
 
-	if err := srv.Shutdown(shutdownCtx); err != nil {
-		// Just log error for shutdown, don't necessarily fail Main Run if expected
-		log.Printf("Server forced to shutdown: %v", err)
+	if err := s.Shutdown(shutdownCtx); err != nil {
+		return err
 	}
 
-	// Ensure DB is closed by defer above (in run function)
-
-	log.Println("Server exited")
 	return nil
 }
