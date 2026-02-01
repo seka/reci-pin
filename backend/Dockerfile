@@ -32,12 +32,12 @@ WORKDIR /app
 COPY --from=builder /app/main .
 EXPOSE 8080
 CMD ./main \
-    -port=${BACKEND_PORT:-8080} \
-    -db-host=${DB_HOST:-postgres} \
-    -db-port=${DB_PORT:-5432} \
-    -db-user=${DB_USER:-postgres} \
-    -db-password=${DB_PASSWORD:-postgres} \
-    -db-name=${DB_NAME:-recipin_dev} \
-    -db-sslmode=${DB_SSLMODE:-disable} \
-    -jwt-secret=${JWT_SECRET:-change-me} \
-    -jwt-expiration=${JWT_EXPIRATION_HOURS:-24}
+    -port=${BACKEND_PORT} \
+    -db-host=${DB_HOST} \
+    -db-port=${DB_PORT} \
+    -db-user=${DB_USER} \
+    -db-password=${DB_PASSWORD} \
+    -db-name=${DB_NAME} \
+    -db-sslmode=${DB_SSLMODE} \
+    -jwt-secret=${JWT_SECRET} \
+    -jwt-expiration=${JWT_EXPIRATION_HOURS}
