@@ -1,11 +1,15 @@
 package server
 
 import (
+	"context"
+	"fmt"
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
+	"github.com/seka/reci-pin/backend/config"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/datastore/postgres"
 	"github.com/seka/reci-pin/backend/internal/server/handler"
 	"github.com/seka/reci-pin/backend/internal/server/middleware"
@@ -23,7 +27,16 @@ type Server struct {
 	authMiddleware *middleware.AuthMiddleware
 }
 
-func NewServer(db *postgres.DB) *Server {
+func Run(ctx context.Context, cfg *config.Config) error {
+	// Initialize database
+	db, err := postgres.New(ctx, cfg.Database.DSN())
+	if err != nil {
+		return fmt.Errorf("failed to connect to database: %w", err)
+	}
+	defer db.Close()
+
+	log.Println("Successfully connected to database")
+
 	// Repositories
 	userRepo := postgres.NewUserRepository(db)
 	recipeRepo := postgres.NewRecipeRepository(db)
@@ -34,9 +47,9 @@ func NewServer(db *postgres.DB) *Server {
 	// UseCases - Auth
 	signupUseCase := authUC.NewSignupUseCase(userRepo, credentialRepo)
 	loginUseCase := authUC.NewLoginUseCase(credentialRepo)
-	generateTokenUseCase := authUC.NewGenerateTokenUseCase("secret-key", 24) // TODO: Config
+	generateTokenUseCase := authUC.NewGenerateTokenUseCase(cfg.JWT.Secret, time.Duration(cfg.JWT.ExpirationHours)*time.Hour)
 	getUserUseCase := authUC.NewGetUserUseCase(userRepo)
-	validateTokenUseCase := authUC.NewValidateTokenUseCase("secret-key") // TODO: Config
+	validateTokenUseCase := authUC.NewValidateTokenUseCase(cfg.JWT.Secret)
 	verifyEmailUseCase := authUC.NewVerifyEmailUseCase(credentialRepo)
 
 	// UseCases - Recipe
@@ -84,7 +97,34 @@ func NewServer(db *postgres.DB) *Server {
 	s.setupMiddleware()
 	s.setupRoutes()
 
-	return s
+	// Start server
+	addr := fmt.Sprintf(":%d", cfg.Server.Port)
+	srv := &http.Server{
+		Addr:    addr,
+		Handler: s,
+	}
+
+	go func() {
+		log.Printf("Server starting on %s", addr)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Printf("Server listening error: %v", err)
+		}
+	}()
+
+	// Wait for shutdown signal
+	<-ctx.Done()
+	log.Println("Shutting down server...")
+
+	// Graceful shutdown with timeout
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		return fmt.Errorf("server shutdown failed: %w", err)
+	}
+
+	log.Println("Server shutdown successfully")
+	return nil
 }
 
 func (s *Server) setupMiddleware() {

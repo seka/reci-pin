@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/seka/reci-pin/backend/config"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/datastore/postgres"
 	"github.com/seka/reci-pin/backend/internal/server"
 )
 
@@ -18,23 +18,11 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	// Initialize database
-	ctx := context.Background()
-	db, err := postgres.New(ctx, cfg.Database.DSN())
-	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
-	}
-	defer db.Close()
+	// Create context that listens for the interrupt signal from the OS.
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
-	fmt.Println("Successfully connected to database")
-
-	// Initialize server
-	srv := server.NewServer(db)
-
-	// Start server
-	addr := fmt.Sprintf(":%d", cfg.Server.Port)
-	log.Printf("Server starting on %s", addr)
-	if err := http.ListenAndServe(addr, srv); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+	if err := server.Run(ctx, cfg); err != nil {
+		log.Fatalf("Server failed: %v", err)
 	}
 }
