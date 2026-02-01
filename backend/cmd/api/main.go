@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/seka/reci-pin/backend/config"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/postgres"
@@ -14,73 +15,120 @@ import (
 	"github.com/seka/reci-pin/backend/internal/server"
 )
 
-func main() {
-	// Parse command line flags
-	var (
-		serverPort    = flag.Int("port", 8080, "Server port")
-		dbHost        = flag.String("db-host", "localhost", "Database host")
-		dbPort        = flag.Int("db-port", 5432, "Database port")
-		dbUser        = flag.String("db-user", "postgres", "Database user")
-		dbPassword    = flag.String("db-password", "postgres", "Database password")
-		dbName        = flag.String("db-name", "recipin_dev", "Database name")
-		dbSSLMode     = flag.String("db-sslmode", "disable", "Database SSL mode")
-		jwtSecret     = flag.String("jwt-secret", "change-me", "JWT secret key")
-		jwtExpiration = flag.Int("jwt-expiration", 24, "JWT expiration hours")
-	)
-	flag.Parse()
+var (
+	args Arguments
+)
 
+func init() {
+	flag.IntVar(&args.ServerPort, "port", 8080, "Server port")
+	flag.StringVar(&args.DBHost, "db-host", "localhost", "Database host")
+	flag.IntVar(&args.DBPort, "db-port", 5432, "Database port")
+	flag.StringVar(&args.DBUser, "db-user", "postgres", "Database user")
+	flag.StringVar(&args.DBPassword, "db-password", "postgres", "Database password")
+	flag.StringVar(&args.DBName, "db-name", "recipin_dev", "Database name")
+	flag.StringVar(&args.DBSSLMode, "db-sslmode", "disable", "Database SSL mode")
+	flag.StringVar(&args.JWTSecret, "jwt-secret", "change-me", "JWT secret key")
+	flag.IntVar(&args.JWTExpiration, "jwt-expiration", 24, "JWT expiration hours")
+}
+
+func main() {
+	flag.Parse()
+	if err := newMain(args).Run(); err != nil {
+		log.Printf("Application error: %v", err)
+		os.Exit(1)
+	}
+}
+
+type Arguments struct {
+	ServerPort    int
+	DBHost        string
+	DBPort        int
+	DBUser        string
+	DBPassword    string
+	DBName        string
+	DBSSLMode     string
+	JWTSecret     string
+	JWTExpiration int
+}
+
+type Main struct {
+	cfg    *config.Config
+	db     postgres.Database
+	server *server.Server
+}
+
+func newMain(args Arguments) *Main {
 	cfg := &config.Config{
 		Database: config.DatabaseConfig{
-			Host:     *dbHost,
-			Port:     *dbPort,
-			User:     *dbUser,
-			Password: *dbPassword,
-			DBName:   *dbName,
-			SSLMode:  *dbSSLMode,
+			Host:     args.DBHost,
+			Port:     args.DBPort,
+			User:     args.DBUser,
+			Password: args.DBPassword,
+			DBName:   args.DBName,
+			SSLMode:  args.DBSSLMode,
 		},
 		Server: config.ServerConfig{
-			Port: *serverPort,
+			Port: args.ServerPort,
 		},
 		JWT: config.JWTConfig{
-			Secret:          *jwtSecret,
-			ExpirationHours: *jwtExpiration,
+			Secret:          args.JWTSecret,
+			ExpirationHours: args.JWTExpiration,
 		},
 	}
 
-	// Create database instance and connect
 	db := postgres.New(cfg.Database.DSN())
-	if err := db.Connect(context.Background()); err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
-	}
-	defer db.Close()
-
-	log.Println("Successfully connected to database")
-
-	// Initialize Repository Registry
 	repoRegistry := registry.NewRepository(db)
 	useCaseRegistry := registry.NewUseCase(repoRegistry, cfg)
-
-	// Create server
 	srv := server.New(cfg, useCaseRegistry)
 
+	return &Main{
+		cfg:    cfg,
+		db:     db,
+		server: srv,
+	}
+}
+
+func (m *Main) Run() error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Connect to database
+	if err := m.db.Connect(ctx); err != nil {
+		return err
+	}
+	defer m.db.Close()
+	log.Println("Successfully connected to database")
+
 	// Start server in goroutine
+	serverErrCh := make(chan error, 1)
 	go func() {
-		if err := srv.Run(); err != nil {
-			log.Printf("Server error: %v", err)
-		}
+		serverErrCh <- m.server.Run()
 	}()
 
-	// Wait for interrupt signal
+	// Wait for signal or server error
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
+
+	select {
+	case err := <-serverErrCh:
+		return err
+	case sig := <-quit:
+		log.Printf("Received signal: %v", sig)
+	}
 
 	log.Println("Shutting down server...")
 
-	// Graceful shutdown
-	if err := srv.Shutdown(); err != nil {
-		log.Fatalf("Server forced to shutdown: %v", err)
+	// Create a context with timeout for graceful shutdown
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer shutdownCancel()
+
+	if err := m.server.Shutdown(shutdownCtx); err != nil {
+		// Just log error for shutdown, don't necessarily fail Main Run if expected
+		log.Printf("Server forced to shutdown: %v", err)
 	}
 
+	// Ensure DB is closed by defer above
+
 	log.Println("Server exited")
+	return nil
 }

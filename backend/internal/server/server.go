@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
@@ -121,11 +120,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // Shutdown performs graceful shutdown of the server
-func (s *Server) Shutdown() error {
+func (s *Server) Shutdown(ctx context.Context) error {
 	log.Println("Shutting down server...")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
 
 	if err := s.httpServer.Shutdown(ctx); err != nil {
 		return fmt.Errorf("server forced to shutdown: %w", err)
