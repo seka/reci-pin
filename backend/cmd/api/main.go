@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/seka/reci-pin/backend/config"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/datastore/postgres"
 	"github.com/seka/reci-pin/backend/internal/registry"
 	"github.com/seka/reci-pin/backend/internal/server"
 )
@@ -18,14 +19,17 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	// Initialize Repository Registry
-	repoRegistry, err := registry.NewRepository(context.Background(), cfg.Database.DSN())
-	if err != nil {
-		log.Fatalf("Failed to initialize repository: %v", err)
+	// Create database instance and connect
+	db := postgres.New(cfg.Database.DSN())
+	if err := db.Connect(context.Background()); err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
 	}
-	defer repoRegistry.Close()
+	defer db.Close()
 
 	log.Println("Successfully connected to database")
+
+	// Initialize Repository Registry
+	repoRegistry := registry.NewRepository(db)
 
 	// Initialize UseCase Registry
 	useCaseRegistry := registry.NewUseCase(repoRegistry, cfg)
