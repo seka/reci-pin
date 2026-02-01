@@ -19,6 +19,18 @@ var (
 	args Arguments
 )
 
+type Arguments struct {
+	ServerPort    int
+	DBHost        string
+	DBPort        int
+	DBUser        string
+	DBPassword    string
+	DBName        string
+	DBSSLMode     string
+	JWTSecret     string
+	JWTExpiration int
+}
+
 func init() {
 	flag.IntVar(&args.ServerPort, "port", 8080, "Server port")
 	flag.StringVar(&args.DBHost, "db-host", "localhost", "Database host")
@@ -39,20 +51,26 @@ func main() {
 	}
 }
 
-type Arguments struct {
-	ServerPort    int
-	DBHost        string
-	DBPort        int
-	DBUser        string
-	DBPassword    string
-	DBName        string
-	DBSSLMode     string
-	JWTSecret     string
-	JWTExpiration int
+func run(args Arguments) error {
+	cfg := buildConfig(args)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	db, err := connectDB(ctx, cfg)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	useCaseRegistry := createRegistry(db, cfg)
+	srv := createServer(cfg, useCaseRegistry)
+
+	return startServer(srv)
 }
 
-func run(args Arguments) error {
-	cfg := &config.Config{
+func buildConfig(args Arguments) *config.Config {
+	return &config.Config{
 		Database: config.DatabaseConfig{
 			Host:     args.DBHost,
 			Port:     args.DBPort,
@@ -69,22 +87,27 @@ func run(args Arguments) error {
 			ExpirationHours: args.JWTExpiration,
 		},
 	}
+}
 
+func connectDB(ctx context.Context, cfg *config.Config) (postgres.Database, error) {
 	db := postgres.New(cfg.Database.DSN())
-	repoRegistry := registry.NewRepository(db)
-	useCaseRegistry := registry.NewUseCase(repoRegistry, cfg)
-	srv := server.New(cfg, useCaseRegistry)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	// Connect to database
 	if err := db.Connect(ctx); err != nil {
-		return err
+		return nil, err
 	}
-	defer db.Close()
 	log.Println("Successfully connected to database")
+	return db, nil
+}
 
+func createRegistry(db postgres.Database, cfg *config.Config) registry.UseCase {
+	repoRegistry := registry.NewRepository(db)
+	return registry.NewUseCase(repoRegistry, cfg)
+}
+
+func createServer(cfg *config.Config, useCaseRegistry registry.UseCase) *server.Server {
+	return server.New(cfg, useCaseRegistry)
+}
+
+func startServer(srv *server.Server) error {
 	// Start server in goroutine
 	serverErrCh := make(chan error, 1)
 	go func() {
@@ -113,7 +136,7 @@ func run(args Arguments) error {
 		log.Printf("Server forced to shutdown: %v", err)
 	}
 
-	// Ensure DB is closed by defer above
+	// Ensure DB is closed by defer above (in run function)
 
 	log.Println("Server exited")
 	return nil
