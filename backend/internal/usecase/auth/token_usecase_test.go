@@ -34,7 +34,7 @@ func TestGenerateTokenUseCase_Execute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			uc := auth.NewGenerateTokenUseCase(tt.jwtSecret, tt.expirationHours)
+			uc := auth.NewGenerateTokenUseCase(tt.jwtSecret, time.Duration(tt.expirationHours)*time.Hour)
 			token, err := uc.Execute(tt.userID)
 
 			if tt.wantErr {
@@ -52,7 +52,7 @@ func TestValidateTokenUseCase_Execute(t *testing.T) {
 	expirationHours := 24
 
 	// 有効なトークンを生成
-	genUC := auth.NewGenerateTokenUseCase(jwtSecret, expirationHours)
+	genUC := auth.NewGenerateTokenUseCase(jwtSecret, time.Duration(expirationHours)*time.Hour)
 	validToken, err := genUC.Execute(1)
 	assert.NoError(t, err)
 
@@ -109,7 +109,7 @@ func TestTokenExpiration(t *testing.T) {
 	jwtSecret := "test-secret-key"
 
 	// 有効期限が極めて短いトークンを生成（テスト用）
-	genUC := auth.NewGenerateTokenUseCase(jwtSecret, -1) // -1時間 = 既に期限切れ
+	genUC := auth.NewGenerateTokenUseCase(jwtSecret, -1*time.Hour) // -1時間 = 既に期限切れ
 	expiredToken, err := genUC.Execute(1)
 	assert.NoError(t, err)
 
