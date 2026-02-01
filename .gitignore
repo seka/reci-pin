@@ -54,3 +54,6 @@ temp/
 
 # Worktrees
 .worktrees/
+
+# Certificates
+proxy/certs/*.pem
