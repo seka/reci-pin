@@ -6,107 +6,95 @@ import (
 	"testing"
 
 	"github.com/seka/reci-pin/backend/config"
-	"github.com/seka/reci-pin/backend/internal/usecase/auth"
-	"github.com/seka/reci-pin/backend/internal/usecase/recipe"
-	"github.com/seka/reci-pin/backend/internal/usecase/recipe_image"
-	"github.com/seka/reci-pin/backend/internal/usecase/recipe_tag"
-	"github.com/seka/reci-pin/backend/internal/usecase/tag"
+	registrymock "github.com/seka/reci-pin/backend/internal/registry/mock"
+	usecasemock "github.com/seka/reci-pin/backend/internal/usecase/mock"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
-// mockRepository implements registry.Repository for testing
-type mockRepository struct{}
+func setupMockRegistry(ctrl *gomock.Controller, m *registrymock.MockUseCase) {
+	// Auth
+	m.EXPECT().NewValidateTokenUseCase().Return(usecasemock.NewMockValidateTokenUseCase(ctrl))
+	m.EXPECT().NewSignupUseCase().Return(usecasemock.NewMockSignupUseCase(ctrl))
+	m.EXPECT().NewLoginUseCase().Return(usecasemock.NewMockLoginUseCase(ctrl))
+	m.EXPECT().NewGenerateTokenUseCase().Return(usecasemock.NewMockGenerateTokenUseCase(ctrl))
+	m.EXPECT().NewGetUserUseCase().Return(usecasemock.NewMockGetUserUseCase(ctrl))
+	m.EXPECT().NewVerifyEmailUseCase().Return(usecasemock.NewMockVerifyEmailUseCase(ctrl))
 
-func (m *mockRepository) NewUserRepository() interface{}      { return nil }
-func (m *mockRepository) NewRecipeRepository() interface{}    { return nil }
-func (m *mockRepository) NewTagRepository() interface{}       { return nil }
-func (m *mockRepository) NewRecipeTagRepository() interface{} { return nil }
-func (m *mockRepository) NewImageRepository() interface{}     { return nil }
-func (m *mockRepository) Close() error                        { return nil }
+	// Recipe
+	m.EXPECT().NewCreateRecipeUseCase().Return(usecasemock.NewMockCreateRecipeUseCase(ctrl))
+	m.EXPECT().NewGetRecipeUseCase().Return(usecasemock.NewMockGetRecipeUseCase(ctrl))
+	m.EXPECT().NewGetUserRecipesUseCase().Return(usecasemock.NewMockGetUserRecipesUseCase(ctrl))
+	m.EXPECT().NewUpdateRecipeUseCase().Return(usecasemock.NewMockUpdateRecipeUseCase(ctrl))
+	m.EXPECT().NewDeleteRecipeUseCase().Return(usecasemock.NewMockDeleteRecipeUseCase(ctrl))
+	m.EXPECT().NewSearchRecipesUseCase().Return(usecasemock.NewMockSearchRecipesUseCase(ctrl))
 
-// mockUseCase implements registry.UseCase for testing
-type mockUseCase struct{}
+	// Recipe Tag
+	m.EXPECT().NewAddTagsUseCase().Return(usecasemock.NewMockAddTagsUseCase(ctrl))
+	m.EXPECT().NewRemoveTagsUseCase().Return(usecasemock.NewMockRemoveTagsUseCase(ctrl))
 
-func (m *mockUseCase) NewSignupUseCase() auth.SignupUseCase               { return nil }
-func (m *mockUseCase) NewLoginUseCase() auth.LoginUseCase                 { return nil }
-func (m *mockUseCase) NewGenerateTokenUseCase() auth.GenerateTokenUseCase { return nil }
-func (m *mockUseCase) NewValidateTokenUseCase() auth.ValidateTokenUseCase { return nil }
-func (m *mockUseCase) NewGetUserUseCase() auth.GetUserUseCase             { return nil }
-func (m *mockUseCase) NewVerifyEmailUseCase() auth.VerifyEmailUseCase     { return nil }
-func (m *mockUseCase) NewCreateRecipeUseCase() recipe.CreateRecipeUseCase { return nil }
-func (m *mockUseCase) NewGetRecipeUseCase() recipe.GetRecipeUseCase       { return nil }
-func (m *mockUseCase) NewGetUserRecipesUseCase() recipe.GetUserRecipesUseCase {
-	return nil
+	// Recipe Image
+	m.EXPECT().NewAddImageUseCase().Return(usecasemock.NewMockAddImageUseCase(ctrl))
+
+	// Tag
+	m.EXPECT().NewCreateTagUseCase().Return(usecasemock.NewMockCreateTagUseCase(ctrl))
+	m.EXPECT().NewGetAllTagsUseCase().Return(usecasemock.NewMockGetAllTagsUseCase(ctrl))
+	m.EXPECT().NewDeleteTagUseCase().Return(usecasemock.NewMockDeleteTagUseCase(ctrl))
 }
-func (m *mockUseCase) NewUpdateRecipeUseCase() recipe.UpdateRecipeUseCase { return nil }
-func (m *mockUseCase) NewDeleteRecipeUseCase() recipe.DeleteRecipeUseCase { return nil }
-func (m *mockUseCase) NewSearchRecipesUseCase() recipe.SearchRecipesUseCase {
-	return nil
-}
-func (m *mockUseCase) NewAddTagsUseCase() recipe_tag.AddTagsUseCase       { return nil }
-func (m *mockUseCase) NewRemoveTagsUseCase() recipe_tag.RemoveTagsUseCase { return nil }
-func (m *mockUseCase) NewAddImageUseCase() recipe_image.AddImageUseCase   { return nil }
-func (m *mockUseCase) NewCreateTagUseCase() tag.CreateTagUseCase          { return nil }
-func (m *mockUseCase) NewGetAllTagsUseCase() tag.GetAllTagsUseCase        { return nil }
-func (m *mockUseCase) NewDeleteTagUseCase() tag.DeleteTagUseCase          { return nil }
 
 func TestNew(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	cfg := &config.Config{
 		Server: config.ServerConfig{Port: 8080},
 	}
-	// mockRepo := &mockRepository{}
-	mockUC := &mockUseCase{}
+	mockRegistry := registrymock.NewMockUseCase(ctrl)
+	setupMockRegistry(ctrl, mockRegistry)
 
-	srv := New(cfg, mockUC)
+	srv := New(cfg, mockRegistry)
 
-	if srv == nil {
-		t.Fatal("Server should not be nil")
-	}
-	if srv.router == nil {
-		t.Fatal("Router should be initialized")
-	}
-	if srv.cfg != cfg {
-		t.Error("Config should be set")
-	}
+	assert.NotNil(t, srv)
+	assert.NotNil(t, srv.router)
+	assert.Equal(t, cfg, srv.cfg)
 }
 
 func TestServer_HealthEndpoint(t *testing.T) {
-	cfg := &config.Config{}
-	// mockRepo := &mockRepository{}
-	mockUC := &mockUseCase{}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	srv := New(cfg, mockUC)
+	cfg := &config.Config{}
+	mockRegistry := registrymock.NewMockUseCase(ctrl)
+	setupMockRegistry(ctrl, mockRegistry)
+
+	srv := New(cfg, mockRegistry)
 
 	req := httptest.NewRequest("GET", "/health", nil)
 	w := httptest.NewRecorder()
 
 	srv.ServeHTTP(w, req)
 
-	if w.Code != http.StatusOK {
-		t.Errorf("Expected 200, got %d", w.Code)
-	}
-	if w.Body.String() != "OK" {
-		t.Errorf("Expected 'OK', got %s", w.Body.String())
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, "OK", w.Body.String())
 }
 
 func TestServer_CORSHeaders(t *testing.T) {
-	cfg := &config.Config{}
-	// mockRepo := &mockRepository{}
-	mockUC := &mockUseCase{}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	srv := New(cfg, mockUC)
+	cfg := &config.Config{}
+	mockRegistry := registrymock.NewMockUseCase(ctrl)
+	setupMockRegistry(ctrl, mockRegistry)
+
+	srv := New(cfg, mockRegistry)
 
 	req := httptest.NewRequest("OPTIONS", "/health", nil)
 	w := httptest.NewRecorder()
 
 	srv.ServeHTTP(w, req)
 
-	if w.Header().Get("Access-Control-Allow-Origin") != "*" {
-		t.Error("CORS origin header not set correctly")
-	}
-	if w.Code != http.StatusNoContent {
-		t.Errorf("Expected 204 for OPTIONS, got %d", w.Code)
-	}
+	assert.Equal(t, "*", w.Header().Get("Access-Control-Allow-Origin"))
+	assert.Equal(t, http.StatusNoContent, w.Code)
 }
 
 func TestServer_RoutingExists(t *testing.T) {
@@ -118,26 +106,28 @@ func TestServer_RoutingExists(t *testing.T) {
 		{"Health", "GET", "/health"},
 		{"Signup", "POST", "/api/auth/signup"},
 		{"Login", "POST", "/api/auth/login"},
+		// We can add more route checks here
+		{"GetRecipe", "GET", "/api/recipes/1"},
 	}
-
-	cfg := &config.Config{}
-	// mockRepo := &mockRepository{}
-	mockUC := &mockUseCase{}
-
-	srv := New(cfg, mockUC)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			cfg := &config.Config{}
+			mockRegistry := registrymock.NewMockUseCase(ctrl)
+			setupMockRegistry(ctrl, mockRegistry)
+
+			srv := New(cfg, mockRegistry)
+
 			req := httptest.NewRequest(tt.method, tt.path, nil)
 			w := httptest.NewRecorder()
 
 			srv.ServeHTTP(w, req)
 
-			// ルートが存在することを確認（404でないこと）
-			// ただし Handler が nil なので 500 などになる可能性あり
-			if w.Code == http.StatusNotFound {
-				t.Errorf("Route %s %s not found", tt.method, tt.path)
-			}
+			// Route exists if it's NOT 404
+			assert.NotEqual(t, http.StatusNotFound, w.Code, "Route %s %s should exist", tt.method, tt.path)
 		})
 	}
 }
