@@ -25,10 +25,21 @@ func (r *RecipeImageRepository) Create(ctx context.Context, image *model.RecipeI
 		VALUES ($1, $2, NOW())
 		RETURNING id, created_at
 	`
-	err := r.db.QueryRow(ctx, query, e.RecipeID, e.ImagePath).Scan(&e.ID, &e.CreatedAt)
+	rows, err := r.db.Query(ctx, query, e.RecipeID, e.ImagePath)
 	if err != nil {
 		return fmt.Errorf("failed to create recipe image: %w", err)
 	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return fmt.Errorf("failed to create recipe image: no rows returned")
+	}
+
+	err = rows.Scan(&e.ID, &e.CreatedAt)
+	if err != nil {
+		return fmt.Errorf("failed to scan recipe image: %w", err)
+	}
+
 	image.ID = e.ID
 	return nil
 }
