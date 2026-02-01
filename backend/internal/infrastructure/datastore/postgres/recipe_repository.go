@@ -45,7 +45,17 @@ func (r *RecipeRepository) GetByID(ctx context.Context, id int64) (*model.Recipe
 	`
 	var e entity.Recipe
 	// Manual Scan
-	err := r.db.QueryRow(ctx, query, id).Scan(
+	rows, err := r.db.Query(ctx, query, id)
+if err != nil {
+return nil, fmt.Errorf("query failed: %w", err)
+}
+defer rows.Close()
+
+if !rows.Next() {
+return nil, fmt.Errorf("no rows found")
+}
+
+err = rows.Scan(
 		&e.ID, &e.UserID, &e.Name, &e.URL, &e.Memo, &e.CreatedAt, &e.UpdatedAt,
 	)
 	if err != nil {
