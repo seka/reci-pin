@@ -1,5 +1,3 @@
-.PHONY: run test lint mock clean help
-
 # Default target
 .DEFAULT_GOAL := help
 
@@ -18,6 +16,7 @@ DB_SSLMODE ?= disable
 JWT_SECRET ?= change-me
 JWT_EXPIRATION ?= 24
 
+.PHONY: run
 run: ## Run the API server with default settings
 	go run ./cmd/api/main.go \
 		-port $(PORT) \
@@ -30,19 +29,24 @@ run: ## Run the API server with default settings
 		-jwt-secret $(JWT_SECRET) \
 		-jwt-expiration $(JWT_EXPIRATION)
 
+.PHONY: test 
 test: ## Run tests
 	go test -v ./...
 
+.PHONY: lint
 lint: ## Run linter
 	golangci-lint run ./...
 
+.PHONY: mock
 mock: ## Generate mocks
 	go generate ./...
 
+.PHONY: clean
 clean: ## Clean build artifacts
 	go clean
 	rm -f main
 
+.PHONY: help
 help: ## Show this help message
 	@echo "Usage: make [target]"
 	@echo ""
