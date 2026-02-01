@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
+	"github.com/seka/reci-pin/backend/internal/server/handler/request"
+	"github.com/seka/reci-pin/backend/internal/server/handler/response"
 	"github.com/seka/reci-pin/backend/internal/usecase/auth"
 )
 
@@ -32,45 +34,13 @@ func NewAuthHandler(
 	}
 }
 
-// Request/Response structures
-
-type SignupRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Name     string `json:"name"`
-}
-
-type LoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-type VerifyRequest struct {
-	Token string `json:"token"`
-}
-
-type UserResponse struct {
-	ID    int64  `json:"id"`
-	Email string `json:"email"`
-	Name  string `json:"name"`
-}
-
-type AuthResponse struct {
-	Token string        `json:"token"`
-	User  *UserResponse `json:"user"`
-}
-
-type MessageResponse struct {
-	Message string `json:"message"`
-}
-
 // Converters
 
-func toUserResponse(user *model.User) *UserResponse {
+func toUserResponse(user *model.User) *response.UserResponse {
 	if user == nil {
 		return nil
 	}
-	return &UserResponse{
+	return &response.UserResponse{
 		ID:   user.ID,
 		Name: user.Name,
 		// EmailはUser(Profile)モデルに含まれないため、呼び出し元で設定する必要がある
@@ -80,7 +50,7 @@ func toUserResponse(user *model.User) *UserResponse {
 // Handlers
 
 func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
-	var req SignupRequest
+	var req request.SignupRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
@@ -99,17 +69,17 @@ func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := MessageResponse{
+	res := response.MessageResponse{
 		Message: "Verification email sent. Please check your inbox.",
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(res)
 }
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
-	var req LoginRequest
+	var req request.LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
@@ -144,17 +114,17 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	// UserモデルにEmailがないため、リクエストの値を使用
 	userResp.Email = req.Email
 
-	response := AuthResponse{
+	res := response.AuthResponse{
 		Token: token,
 		User:  userResp,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(res)
 }
 
 func (h *AuthHandler) Verify(w http.ResponseWriter, r *http.Request) {
-	var req VerifyRequest
+	var req request.VerifyRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
@@ -165,12 +135,12 @@ func (h *AuthHandler) Verify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := MessageResponse{
+	res := response.MessageResponse{
 		Message: "Email verified successfully",
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(res)
 }
 
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {

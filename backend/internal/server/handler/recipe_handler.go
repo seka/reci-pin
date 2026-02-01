@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/seka/reci-pin/backend/internal/server/handler/request"
 	"github.com/seka/reci-pin/backend/internal/server/middleware"
 	"github.com/seka/reci-pin/backend/internal/usecase/recipe"
 	"github.com/seka/reci-pin/backend/internal/usecase/recipe_image"
@@ -58,36 +59,6 @@ func NewRecipeHandler(
 	}
 }
 
-type CreateRecipeRequest struct {
-	Name   string  `json:"name"`
-	URL    string  `json:"url"`
-	Memo   string  `json:"memo"`
-	TagIDs []int64 `json:"tag_ids"`
-}
-
-type UpdateRecipeRequest struct {
-	Name string `json:"name"`
-	URL  string `json:"url"`
-	Memo string `json:"memo"`
-}
-
-type SearchRecipeRequest struct {
-	Query  string  `json:"query"`
-	TagIDs []int64 `json:"tag_ids"`
-}
-
-type AddTagsRequest struct {
-	TagIDs []int64 `json:"tag_ids"`
-}
-
-type CreateTagRequest struct {
-	Name string `json:"name"`
-}
-
-type AddImageRequest struct {
-	ImagePath string `json:"image_path"`
-}
-
 func (h *RecipeHandler) CreateRecipe(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
@@ -95,7 +66,7 @@ func (h *RecipeHandler) CreateRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req CreateRecipeRequest
+	var req request.CreateRecipeRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
@@ -168,7 +139,7 @@ func (h *RecipeHandler) SearchRecipes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req SearchRecipeRequest
+	var req request.SearchRecipeRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
@@ -204,7 +175,7 @@ func (h *RecipeHandler) UpdateRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req UpdateRecipeRequest
+	var req request.UpdateRecipeRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
@@ -264,7 +235,7 @@ func (h *RecipeHandler) AddTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req AddTagsRequest
+	var req request.AddTagsRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
@@ -292,7 +263,7 @@ func (h *RecipeHandler) RemoveTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req AddTagsRequest
+	var req request.AddTagsRequest // Reusing AddTagsRequest for Remove as struct is same
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
@@ -320,7 +291,7 @@ func (h *RecipeHandler) AddImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req AddImageRequest
+	var req request.AddImageRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
@@ -340,7 +311,7 @@ func (h *RecipeHandler) AddImage(w http.ResponseWriter, r *http.Request) {
 // Tag endpoints
 
 func (h *RecipeHandler) CreateTag(w http.ResponseWriter, r *http.Request) {
-	var req CreateTagRequest
+	var req request.CreateTagRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
