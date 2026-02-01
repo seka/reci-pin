@@ -14,33 +14,33 @@ import (
 )
 
 type RecipeHandler struct {
-	createRecipeUseCase   *recipe.CreateRecipeUseCase
-	getRecipeUseCase      *recipe.GetRecipeUseCase
-	getUserRecipesUseCase *recipe.GetUserRecipesUseCase
-	updateRecipeUseCase   *recipe.UpdateRecipeUseCase
-	deleteRecipeUseCase   *recipe.DeleteRecipeUseCase
-	searchRecipesUseCase  *recipe.SearchRecipesUseCase
-	addTagsUseCase        *recipe_tag.AddTagsUseCase
-	removeTagsUseCase     *recipe_tag.RemoveTagsUseCase
-	addImageUseCase       *recipe_image.AddImageUseCase
-	createTagUseCase      *tag.CreateTagUseCase
-	getAllTagsUseCase     *tag.GetAllTagsUseCase
-	deleteTagUseCase      *tag.DeleteTagUseCase
+	createRecipeUseCase   recipe.CreateRecipeUseCase
+	getRecipeUseCase      recipe.GetRecipeUseCase
+	getUserRecipesUseCase recipe.GetUserRecipesUseCase
+	updateRecipeUseCase   recipe.UpdateRecipeUseCase
+	deleteRecipeUseCase   recipe.DeleteRecipeUseCase
+	searchRecipesUseCase  recipe.SearchRecipesUseCase
+	addTagsUseCase        recipe_tag.AddTagsUseCase
+	removeTagsUseCase     recipe_tag.RemoveTagsUseCase
+	addImageUseCase       recipe_image.AddImageUseCase
+	createTagUseCase      tag.CreateTagUseCase
+	getAllTagsUseCase     tag.GetAllTagsUseCase
+	deleteTagUseCase      tag.DeleteTagUseCase
 }
 
 func NewRecipeHandler(
-	createRecipeUseCase *recipe.CreateRecipeUseCase,
-	getRecipeUseCase *recipe.GetRecipeUseCase,
-	getUserRecipesUseCase *recipe.GetUserRecipesUseCase,
-	updateRecipeUseCase *recipe.UpdateRecipeUseCase,
-	deleteRecipeUseCase *recipe.DeleteRecipeUseCase,
-	searchRecipesUseCase *recipe.SearchRecipesUseCase,
-	addTagsUseCase *recipe_tag.AddTagsUseCase,
-	removeTagsUseCase *recipe_tag.RemoveTagsUseCase,
-	addImageUseCase *recipe_image.AddImageUseCase,
-	createTagUseCase *tag.CreateTagUseCase,
-	getAllTagsUseCase *tag.GetAllTagsUseCase,
-	deleteTagUseCase *tag.DeleteTagUseCase,
+	createRecipeUseCase recipe.CreateRecipeUseCase,
+	getRecipeUseCase recipe.GetRecipeUseCase,
+	getUserRecipesUseCase recipe.GetUserRecipesUseCase,
+	updateRecipeUseCase recipe.UpdateRecipeUseCase,
+	deleteRecipeUseCase recipe.DeleteRecipeUseCase,
+	searchRecipesUseCase recipe.SearchRecipesUseCase,
+	addTagsUseCase recipe_tag.AddTagsUseCase,
+	removeTagsUseCase recipe_tag.RemoveTagsUseCase,
+	addImageUseCase recipe_image.AddImageUseCase,
+	createTagUseCase tag.CreateTagUseCase,
+	getAllTagsUseCase tag.GetAllTagsUseCase,
+	deleteTagUseCase tag.DeleteTagUseCase,
 ) *RecipeHandler {
 	return &RecipeHandler{
 		createRecipeUseCase:   createRecipeUseCase,
