@@ -9,11 +9,17 @@ RUN go mod download
 FROM base AS dev
 RUN go install github.com/air-verse/air@latest
 COPY . .
-COPY entrypoint.sh .
-RUN chmod +x entrypoint.sh
 EXPOSE 8080
-ENTRYPOINT ["/app/entrypoint.sh"]
-CMD ["air", "-c", ".air.toml"]
+CMD air -c .air.toml -- \
+    -port=${BACKEND_PORT:-8080} \
+    -db-host=${DB_HOST:-postgres} \
+    -db-port=${DB_PORT:-5432} \
+    -db-user=${DB_USER:-postgres} \
+    -db-password=${DB_PASSWORD:-postgres} \
+    -db-name=${DB_NAME:-recipin_dev} \
+    -db-sslmode=${DB_SSLMODE:-disable} \
+    -jwt-secret=${JWT_SECRET:-change-me} \
+    -jwt-expiration=${JWT_EXPIRATION_HOURS:-24}
 
 # Builder stage
 FROM base AS builder
@@ -24,8 +30,14 @@ RUN go build -o main ./cmd/api
 FROM alpine:latest AS prod
 WORKDIR /app
 COPY --from=builder /app/main .
-COPY entrypoint.sh .
-RUN chmod +x entrypoint.sh
 EXPOSE 8080
-ENTRYPOINT ["/app/entrypoint.sh"]
-CMD ["./main"]
+CMD ./main \
+    -port=${BACKEND_PORT:-8080} \
+    -db-host=${DB_HOST:-postgres} \
+    -db-port=${DB_PORT:-5432} \
+    -db-user=${DB_USER:-postgres} \
+    -db-password=${DB_PASSWORD:-postgres} \
+    -db-name=${DB_NAME:-recipin_dev} \
+    -db-sslmode=${DB_SSLMODE:-disable} \
+    -jwt-secret=${JWT_SECRET:-change-me} \
+    -jwt-expiration=${JWT_EXPIRATION_HOURS:-24}
