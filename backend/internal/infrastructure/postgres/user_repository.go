@@ -73,3 +73,38 @@ func (r *UserRepository) GetByID(ctx context.Context, id int64) (*model.User, er
 
 	return e.ToModel(), nil
 }
+
+func (r *UserRepository) GetAll(ctx context.Context) ([]*model.User, error) {
+	query := `
+		SELECT id, name, created_at, updated_at
+		FROM users
+		ORDER BY id
+	`
+
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get all users: %w", err)
+	}
+	defer rows.Close()
+
+	var users []*model.User
+	for rows.Next() {
+		var e entity.User
+		err = rows.Scan(
+			&e.ID,
+			&e.Name,
+			&e.CreatedAt,
+			&e.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan user: %w", err)
+		}
+		users = append(users, e.ToModel())
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error: %w", err)
+	}
+
+	return users, nil
+}
