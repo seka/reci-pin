@@ -72,6 +72,7 @@ Components → Services → HttpClient → API
 
 - Docker Desktop
 - Git
+- `mkcert` (for local HTTPS)
 
 ### Setup
 
@@ -89,13 +90,27 @@ cp .env.example .env
 # 必要に応じて .env を編集
 ```
 
-3. Docker コンテナを起動
+3. 証明書の生成 (HTTPS)
+   ローカル開発環境は HTTPS で動作します。`mkcert` を使用して証明書を生成してください。
+
+```bash
+# mkcert のインストール (macOS)
+brew install mkcert
+brew install nss # Firefox support
+mkcert -install
+
+# 証明書の生成 (proxy/certs ディレクトリへ)
+mkdir -p proxy/certs
+mkcert -key-file proxy/certs/key.pem -cert-file proxy/certs/cert.pem localhost
+```
+
+4. Docker コンテナを起動
 
 ```bash
 docker-compose up -d
 ```
 
-4. データベースマイグレーションを実行
+5. データベースマイグレーションを実行
 
 ```bash
 docker-compose exec backend ./cmd/migrate
@@ -103,8 +118,8 @@ docker-compose exec backend ./cmd/migrate
 
 ### Access
 
-- **Frontend**: http://localhost
-- **Backend API**: http://localhost/api
+- **Frontend**: https://localhost
+- **Backend API**: https://localhost/api
 - **PostgreSQL**: localhost:5432
 
 ## Directory Structure
