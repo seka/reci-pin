@@ -15,44 +15,15 @@ import (
 	"github.com/seka/reci-pin/backend/internal/server"
 )
 
-var (
-	args Arguments
-)
-
-type Arguments struct {
-	ServerPort    int
-	DBHost        string
-	DBPort        int
-	DBUser        string
-	DBPassword    string
-	DBName        string
-	DBSSLMode     string
-	JWTSecret     string
-	JWTExpiration int
-}
-
-func init() {
-	flag.IntVar(&args.ServerPort, "port", 8080, "Server port")
-	flag.StringVar(&args.DBHost, "db-host", "localhost", "Database host")
-	flag.IntVar(&args.DBPort, "db-port", 5432, "Database port")
-	flag.StringVar(&args.DBUser, "db-user", "postgres", "Database user")
-	flag.StringVar(&args.DBPassword, "db-password", "postgres", "Database password")
-	flag.StringVar(&args.DBName, "db-name", "recipin_dev", "Database name")
-	flag.StringVar(&args.DBSSLMode, "db-sslmode", "disable", "Database SSL mode")
-	flag.StringVar(&args.JWTSecret, "jwt-secret", "change-me", "JWT secret key")
-	flag.IntVar(&args.JWTExpiration, "jwt-expiration", 24, "JWT expiration hours")
-}
-
 func main() {
-	flag.Parse()
-	if err := run(args); err != nil {
+	if err := run(); err != nil {
 		log.Printf("Application error: %v", err)
 		os.Exit(1)
 	}
 }
 
-func run(args Arguments) error {
-	cfg := buildConfig(args)
+func run() error {
+	cfg := parseConfig()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -69,24 +40,22 @@ func run(args Arguments) error {
 	return startServer(srv)
 }
 
-func buildConfig(args Arguments) *config.Config {
-	return &config.Config{
-		Database: config.DatabaseConfig{
-			Host:     args.DBHost,
-			Port:     args.DBPort,
-			User:     args.DBUser,
-			Password: args.DBPassword,
-			DBName:   args.DBName,
-			SSLMode:  args.DBSSLMode,
-		},
-		Server: config.ServerConfig{
-			Port: args.ServerPort,
-		},
-		JWT: config.JWTConfig{
-			Secret:          args.JWTSecret,
-			ExpirationHours: args.JWTExpiration,
-		},
-	}
+func parseConfig() *config.Config {
+	cfg := &config.Config{}
+
+	flag.IntVar(&cfg.Server.Port, "port", 8080, "Server port")
+	flag.StringVar(&cfg.Database.Host, "db-host", "localhost", "Database host")
+	flag.IntVar(&cfg.Database.Port, "db-port", 5432, "Database port")
+	flag.StringVar(&cfg.Database.User, "db-user", "postgres", "Database user")
+	flag.StringVar(&cfg.Database.Password, "db-password", "postgres", "Database password")
+	flag.StringVar(&cfg.Database.DBName, "db-name", "recipin_dev", "Database name")
+	flag.StringVar(&cfg.Database.SSLMode, "db-sslmode", "disable", "Database SSL mode")
+	flag.StringVar(&cfg.JWT.Secret, "jwt-secret", "change-me", "JWT secret key")
+	flag.IntVar(&cfg.JWT.ExpirationHours, "jwt-expiration", 24, "JWT expiration hours")
+
+	flag.Parse()
+
+	return cfg
 }
 
 func connectDB(ctx context.Context, cfg *config.Config) (postgres.Database, error) {
