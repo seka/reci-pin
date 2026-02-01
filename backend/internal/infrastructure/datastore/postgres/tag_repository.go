@@ -75,7 +75,7 @@ func (r *TagRepository) GetAll(ctx context.Context) ([]model.Tag, error) {
 
 func (r *TagRepository) Delete(ctx context.Context, id int64) error {
 	query := `DELETE FROM tags WHERE id = $1`
-	_, err := r.db.Exec(ctx, query, id)
+	_, err := r.db.Execute(ctx, query, id)
 	if err != nil {
 		return fmt.Errorf("failed to delete tag: %w", err)
 	}

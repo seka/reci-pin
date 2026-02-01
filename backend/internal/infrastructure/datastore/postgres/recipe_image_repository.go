@@ -60,7 +60,7 @@ func (r *RecipeImageRepository) GetByRecipeID(ctx context.Context, recipeID int6
 
 func (r *RecipeImageRepository) Delete(ctx context.Context, id int64) error {
 	query := `DELETE FROM recipe_images WHERE id = $1`
-	_, err := r.db.Exec(ctx, query, id)
+	_, err := r.db.Execute(ctx, query, id)
 	if err != nil {
 		return fmt.Errorf("failed to delete recipe image: %w", err)
 	}

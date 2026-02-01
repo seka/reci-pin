@@ -30,7 +30,7 @@ func (r *UserEmailCredentialRepository) Create(ctx context.Context, credential *
 		)
 		VALUES ($1, $2, $3, $4, $5, $6, NOW())
 	`
-	_, err := r.db.Exec(ctx, query,
+	_, err := r.db.Execute(ctx, query,
 		e.UserID, e.Email, e.PasswordHash, e.EmailVerifiedAt,
 		e.VerificationToken, e.VerificationTokenExpiresAt,
 	)
@@ -111,7 +111,7 @@ func (r *UserEmailCredentialRepository) Update(ctx context.Context, credential *
 		    verification_token = $5, verification_token_expires_at = $6, updated_at = NOW()
 		WHERE user_id = $1
 	`
-	_, err := r.db.Exec(ctx, query,
+	_, err := r.db.Execute(ctx, query,
 		e.UserID, e.Email, e.PasswordHash, e.EmailVerifiedAt,
 		e.VerificationToken, e.VerificationTokenExpiresAt,
 	)

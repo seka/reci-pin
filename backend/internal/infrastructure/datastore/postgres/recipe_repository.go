@@ -131,7 +131,7 @@ func (r *RecipeRepository) Update(ctx context.Context, recipe *model.Recipe) err
 		SET name = $1, url = $2, memo = $3, updated_at = NOW()
 		WHERE id = $4
 	`
-	_, err := r.db.Exec(ctx, query, e.Name, e.URL, e.Memo, e.ID)
+	_, err := r.db.Execute(ctx, query, e.Name, e.URL, e.Memo, e.ID)
 	if err != nil {
 		return fmt.Errorf("failed to update recipe: %w", err)
 	}
@@ -140,7 +140,7 @@ func (r *RecipeRepository) Update(ctx context.Context, recipe *model.Recipe) err
 
 func (r *RecipeRepository) Delete(ctx context.Context, id int64) error {
 	query := `DELETE FROM recipes WHERE id = $1`
-	_, err := r.db.Exec(ctx, query, id)
+	_, err := r.db.Execute(ctx, query, id)
 	if err != nil {
 		return fmt.Errorf("failed to delete recipe: %w", err)
 	}
@@ -179,7 +179,7 @@ func (r *RecipeRepository) AddTags(ctx context.Context, recipeID int64, tagIDs [
 			VALUES ($1, $2)
 			ON CONFLICT (recipe_id, tag_id) DO NOTHING
 		`
-		_, err := r.db.Exec(ctx, query, recipeID, tagID)
+		_, err := r.db.Execute(ctx, query, recipeID, tagID)
 		if err != nil {
 			return fmt.Errorf("failed to add tag to recipe: %w", err)
 		}
@@ -190,7 +190,7 @@ func (r *RecipeRepository) AddTags(ctx context.Context, recipeID int64, tagIDs [
 func (r *RecipeRepository) RemoveTags(ctx context.Context, recipeID int64, tagIDs []int64) error {
 	for _, tagID := range tagIDs {
 		query := `DELETE FROM recipe_tags WHERE recipe_id = $1 AND tag_id = $2`
-		_, err := r.db.Exec(ctx, query, recipeID, tagID)
+		_, err := r.db.Execute(ctx, query, recipeID, tagID)
 		if err != nil {
 			return fmt.Errorf("failed to remove tag from recipe: %w", err)
 		}
