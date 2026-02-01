@@ -97,6 +97,34 @@ func (r *RecipeRepository) GetByUserID(ctx context.Context, userID int64) ([]mod
 	return r.toRecipeModels(recipeEntities), nil
 }
 
+func (r *RecipeRepository) GetAll(ctx context.Context) ([]model.Recipe, error) {
+	query := `
+		SELECT id, user_id, name, url, memo, created_at, updated_at
+		FROM recipes
+		ORDER BY id
+	`
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get all recipes: %w", err)
+	}
+	defer rows.Close()
+
+	var recipeEntities []entity.Recipe
+	for rows.Next() {
+		var r entity.Recipe
+		if err := rows.Scan(&r.ID, &r.UserID, &r.Name, &r.URL, &r.Memo, &r.CreatedAt, &r.UpdatedAt); err != nil {
+			return nil, fmt.Errorf("failed to scan recipe: %w", err)
+		}
+		recipeEntities = append(recipeEntities, r)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error: %w", err)
+	}
+
+	return r.toRecipeModels(recipeEntities), nil
+}
+
 func (r *RecipeRepository) Search(ctx context.Context, userID int64, query string, tagIDs []int64) ([]model.Recipe, error) {
 	sqlQuery := `
 		SELECT DISTINCT r.id, r.user_id, r.name, r.url, r.memo, r.created_at, r.updated_at

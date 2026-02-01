@@ -10,6 +10,7 @@ type RecipeRepository interface {
 	Create(ctx context.Context, recipe *model.Recipe) error
 	GetByID(ctx context.Context, id int64) (*model.Recipe, error)
 	GetByUserID(ctx context.Context, userID int64) ([]model.Recipe, error)
+	GetAll(ctx context.Context) ([]model.Recipe, error)
 	Update(ctx context.Context, recipe *model.Recipe) error
 	Delete(ctx context.Context, id int64) error
 	Search(ctx context.Context, userID int64, query string, tagIDs []int64) ([]model.Recipe, error)
