@@ -25,14 +25,24 @@ func (r *RecipeRepository) Create(ctx context.Context, recipe *model.Recipe) err
 		VALUES ($1, $2, $3, $4, NOW(), NOW())
 		RETURNING id, created_at, updated_at
 	`
-	// Scan directly into entity fields
-	err := r.db.QueryRow(ctx, query,
-		e.UserID, e.Name, e.URL, e.Memo,
-	).Scan(&e.ID, &e.CreatedAt, &e.UpdatedAt)
 
+	rows, err := r.db.Query(ctx, query,
+		e.UserID, e.Name, e.URL, e.Memo,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to create recipe: %w", err)
 	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return fmt.Errorf("failed to create recipe: no rows returned")
+	}
+
+	err = rows.Scan(&e.ID, &e.CreatedAt, &e.UpdatedAt)
+	if err != nil {
+		return fmt.Errorf("failed to scan recipe: %w", err)
+	}
+
 	recipe.ID = e.ID
 	return nil
 }
@@ -46,16 +56,16 @@ func (r *RecipeRepository) GetByID(ctx context.Context, id int64) (*model.Recipe
 	var e entity.Recipe
 	// Manual Scan
 	rows, err := r.db.Query(ctx, query, id)
-if err != nil {
-return nil, fmt.Errorf("query failed: %w", err)
-}
-defer rows.Close()
+	if err != nil {
+		return nil, fmt.Errorf("query failed: %w", err)
+	}
+	defer rows.Close()
 
-if !rows.Next() {
-return nil, fmt.Errorf("no rows found")
-}
+	if !rows.Next() {
+		return nil, fmt.Errorf("no rows found")
+	}
 
-err = rows.Scan(
+	err = rows.Scan(
 		&e.ID, &e.UserID, &e.Name, &e.URL, &e.Memo, &e.CreatedAt, &e.UpdatedAt,
 	)
 	if err != nil {
