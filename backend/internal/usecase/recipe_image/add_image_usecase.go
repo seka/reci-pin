@@ -9,7 +9,11 @@ import (
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
 )
 
-type AddImageUseCase struct {
+type AddImageUseCase interface {
+	Execute(ctx context.Context, recipeID, userID int64, imagePath string) (*model.RecipeImage, error)
+}
+
+type addImageInteractor struct {
 	recipeRepo      repository.RecipeRepository
 	recipeImageRepo repository.RecipeImageRepository
 }
@@ -17,14 +21,14 @@ type AddImageUseCase struct {
 func NewAddImageUseCase(
 	recipeRepo repository.RecipeRepository,
 	recipeImageRepo repository.RecipeImageRepository,
-) *AddImageUseCase {
-	return &AddImageUseCase{
+) AddImageUseCase {
+	return &addImageInteractor{
 		recipeRepo:      recipeRepo,
 		recipeImageRepo: recipeImageRepo,
 	}
 }
 
-func (uc *AddImageUseCase) Execute(ctx context.Context, recipeID, userID int64, imagePath string) (*model.RecipeImage, error) {
+func (uc *addImageInteractor) Execute(ctx context.Context, recipeID, userID int64, imagePath string) (*model.RecipeImage, error) {
 	// Verify ownership
 	recipe, err := uc.recipeRepo.GetByID(ctx, recipeID)
 	if err != nil {

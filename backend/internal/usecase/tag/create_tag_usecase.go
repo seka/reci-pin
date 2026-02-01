@@ -8,15 +8,19 @@ import (
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
 )
 
-type CreateTagUseCase struct {
+type CreateTagUseCase interface {
+	Execute(ctx context.Context, name string) (*model.Tag, error)
+}
+
+type createTagInteractor struct {
 	tagRepo repository.TagRepository
 }
 
-func NewCreateTagUseCase(tagRepo repository.TagRepository) *CreateTagUseCase {
-	return &CreateTagUseCase{tagRepo: tagRepo}
+func NewCreateTagUseCase(tagRepo repository.TagRepository) CreateTagUseCase {
+	return &createTagInteractor{tagRepo: tagRepo}
 }
 
-func (uc *CreateTagUseCase) Execute(ctx context.Context, name string) (*model.Tag, error) {
+func (uc *createTagInteractor) Execute(ctx context.Context, name string) (*model.Tag, error) {
 	// Check if tag already exists
 	existingTag, err := uc.tagRepo.GetByName(ctx, name)
 	if err == nil && existingTag != nil {

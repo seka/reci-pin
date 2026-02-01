@@ -8,15 +8,19 @@ import (
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
 )
 
-type RemoveTagsUseCase struct {
+type RemoveTagsUseCase interface {
+	Execute(ctx context.Context, recipeID, userID int64, tagIDs []int64) error
+}
+
+type removeTagsInteractor struct {
 	recipeRepo repository.RecipeRepository
 }
 
-func NewRemoveTagsUseCase(recipeRepo repository.RecipeRepository) *RemoveTagsUseCase {
-	return &RemoveTagsUseCase{recipeRepo: recipeRepo}
+func NewRemoveTagsUseCase(recipeRepo repository.RecipeRepository) RemoveTagsUseCase {
+	return &removeTagsInteractor{recipeRepo: recipeRepo}
 }
 
-func (uc *RemoveTagsUseCase) Execute(ctx context.Context, recipeID, userID int64, tagIDs []int64) error {
+func (uc *removeTagsInteractor) Execute(ctx context.Context, recipeID, userID int64, tagIDs []int64) error {
 	// Verify ownership
 	recipe, err := uc.recipeRepo.GetByID(ctx, recipeID)
 	if err != nil {

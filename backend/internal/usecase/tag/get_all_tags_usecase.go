@@ -7,14 +7,18 @@ import (
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
 )
 
-type GetAllTagsUseCase struct {
+type GetAllTagsUseCase interface {
+	Execute(ctx context.Context) ([]model.Tag, error)
+}
+
+type getAllTagsInteractor struct {
 	tagRepo repository.TagRepository
 }
 
-func NewGetAllTagsUseCase(tagRepo repository.TagRepository) *GetAllTagsUseCase {
-	return &GetAllTagsUseCase{tagRepo: tagRepo}
+func NewGetAllTagsUseCase(tagRepo repository.TagRepository) GetAllTagsUseCase {
+	return &getAllTagsInteractor{tagRepo: tagRepo}
 }
 
-func (uc *GetAllTagsUseCase) Execute(ctx context.Context) ([]model.Tag, error) {
+func (uc *getAllTagsInteractor) Execute(ctx context.Context) ([]model.Tag, error) {
 	return uc.tagRepo.GetAll(ctx)
 }
