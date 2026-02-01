@@ -1,10 +1,8 @@
 package registry
 
 import (
-	"context"
-	"fmt"
-
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/datastore"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/datastore/postgres"
 )
 
@@ -15,22 +13,16 @@ type Repository interface {
 	NewTagRepository() repository.TagRepository
 	NewRecipeImageRepository() repository.RecipeImageRepository
 	NewUserEmailCredentialRepository() repository.UserEmailCredentialRepository
-	Close() error
 }
 
 // repositoryRegistry implements the Repository interface
 type repositoryRegistry struct {
-	db *postgres.DB
+	db datastore.Database
 }
 
 // NewRepository creates a new Repository registry
-func NewRepository(ctx context.Context, dsn string) (Repository, error) {
-	db, err := postgres.New(ctx, dsn)
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to database: %w", err)
-	}
-
-	return &repositoryRegistry{db: db}, nil
+func NewRepository(db datastore.Database) Repository {
+	return &repositoryRegistry{db: db}
 }
 
 func (r *repositoryRegistry) NewUserRepository() repository.UserRepository {
@@ -51,11 +43,4 @@ func (r *repositoryRegistry) NewRecipeImageRepository() repository.RecipeImageRe
 
 func (r *repositoryRegistry) NewUserEmailCredentialRepository() repository.UserEmailCredentialRepository {
 	return postgres.NewUserEmailCredentialRepository(r.db)
-}
-
-func (r *repositoryRegistry) Close() error {
-	if r.db != nil {
-		r.db.Close()
-	}
-	return nil
 }
