@@ -14,7 +14,11 @@ import (
 	"github.com/seka/reci-pin/backend/internal/infrastructure/datastore/postgres"
 )
 
-type SignupUseCase struct {
+type SignupUseCase interface {
+	Execute(ctx context.Context, input SignupInput) (int64, error)
+}
+
+type signupInteractor struct {
 	userRepo       repository.UserRepository
 	credentialRepo repository.UserEmailCredentialRepository
 }
@@ -22,8 +26,8 @@ type SignupUseCase struct {
 func NewSignupUseCase(
 	userRepo repository.UserRepository,
 	credentialRepo repository.UserEmailCredentialRepository,
-) *SignupUseCase {
-	return &SignupUseCase{
+) SignupUseCase {
+	return &signupInteractor{
 		userRepo:       userRepo,
 		credentialRepo: credentialRepo,
 	}
@@ -35,7 +39,7 @@ type SignupInput struct {
 	Name     string
 }
 
-func (uc *SignupUseCase) Execute(ctx context.Context, input SignupInput) (int64, error) {
+func (uc *signupInteractor) Execute(ctx context.Context, input SignupInput) (int64, error) {
 	// Check if email already exists
 	existingCred, err := uc.credentialRepo.GetByEmail(ctx, input.Email)
 	if err == nil && existingCred != nil {

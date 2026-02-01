@@ -8,12 +8,16 @@ import (
 	"github.com/seka/reci-pin/backend/internal/infrastructure/datastore/postgres"
 )
 
-type LoginUseCase struct {
+type LoginUseCase interface {
+	Execute(ctx context.Context, input LoginInput) (int64, error)
+}
+
+type loginInteractor struct {
 	credentialRepo repository.UserEmailCredentialRepository
 }
 
-func NewLoginUseCase(credentialRepo repository.UserEmailCredentialRepository) *LoginUseCase {
-	return &LoginUseCase{credentialRepo: credentialRepo}
+func NewLoginUseCase(credentialRepo repository.UserEmailCredentialRepository) LoginUseCase {
+	return &loginInteractor{credentialRepo: credentialRepo}
 }
 
 type LoginInput struct {
@@ -21,7 +25,7 @@ type LoginInput struct {
 	Password string
 }
 
-func (uc *LoginUseCase) Execute(ctx context.Context, input LoginInput) (int64, error) {
+func (uc *loginInteractor) Execute(ctx context.Context, input LoginInput) (int64, error) {
 	// メールアドレスから認証情報を取得
 	credential, err := uc.credentialRepo.GetByEmail(ctx, input.Email)
 	if err != nil {

@@ -7,14 +7,18 @@ import (
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
 )
 
-type GetUserUseCase struct {
+type GetUserUseCase interface {
+	Execute(ctx context.Context, userID int64) (*model.User, error)
+}
+
+type getUserInteractor struct {
 	userRepo repository.UserRepository
 }
 
-func NewGetUserUseCase(userRepo repository.UserRepository) *GetUserUseCase {
-	return &GetUserUseCase{userRepo: userRepo}
+func NewGetUserUseCase(userRepo repository.UserRepository) GetUserUseCase {
+	return &getUserInteractor{userRepo: userRepo}
 }
 
-func (uc *GetUserUseCase) Execute(ctx context.Context, userID int64) (*model.User, error) {
+func (uc *getUserInteractor) Execute(ctx context.Context, userID int64) (*model.User, error) {
 	return uc.userRepo.GetByID(ctx, userID)
 }

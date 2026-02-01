@@ -8,15 +8,19 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type ValidateTokenUseCase struct {
+type ValidateTokenUseCase interface {
+	Execute(tokenString string) (int64, error)
+}
+
+type validateTokenInteractor struct {
 	jwtSecret string
 }
 
-func NewValidateTokenUseCase(jwtSecret string) *ValidateTokenUseCase {
-	return &ValidateTokenUseCase{jwtSecret: jwtSecret}
+func NewValidateTokenUseCase(jwtSecret string) ValidateTokenUseCase {
+	return &validateTokenInteractor{jwtSecret: jwtSecret}
 }
 
-func (uc *ValidateTokenUseCase) Execute(tokenString string) (int64, error) {
+func (uc *validateTokenInteractor) Execute(tokenString string) (int64, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -36,19 +40,23 @@ func (uc *ValidateTokenUseCase) Execute(tokenString string) (int64, error) {
 	return 0, errors.New("invalid token")
 }
 
-type GenerateTokenUseCase struct {
+type GenerateTokenUseCase interface {
+	Execute(userID int64) (string, error)
+}
+
+type generateTokenInteractor struct {
 	jwtSecret     string
 	jwtExpiration time.Duration
 }
 
-func NewGenerateTokenUseCase(jwtSecret string, expirationHours int) *GenerateTokenUseCase {
-	return &GenerateTokenUseCase{
+func NewGenerateTokenUseCase(jwtSecret string, expiration time.Duration) GenerateTokenUseCase {
+	return &generateTokenInteractor{
 		jwtSecret:     jwtSecret,
-		jwtExpiration: time.Duration(expirationHours) * time.Hour,
+		jwtExpiration: expiration,
 	}
 }
 
-func (uc *GenerateTokenUseCase) Execute(userID int64) (string, error) {
+func (uc *generateTokenInteractor) Execute(userID int64) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
 		"exp":     time.Now().Add(uc.jwtExpiration).Unix(),

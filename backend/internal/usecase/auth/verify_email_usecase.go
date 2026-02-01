@@ -9,15 +9,19 @@ import (
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
 )
 
-type VerifyEmailUseCase struct {
+type VerifyEmailUseCase interface {
+	Execute(ctx context.Context, token string) error
+}
+
+type verifyEmailInteractor struct {
 	credentialRepo repository.UserEmailCredentialRepository
 }
 
-func NewVerifyEmailUseCase(credentialRepo repository.UserEmailCredentialRepository) *VerifyEmailUseCase {
-	return &VerifyEmailUseCase{credentialRepo: credentialRepo}
+func NewVerifyEmailUseCase(credentialRepo repository.UserEmailCredentialRepository) VerifyEmailUseCase {
+	return &verifyEmailInteractor{credentialRepo: credentialRepo}
 }
 
-func (uc *VerifyEmailUseCase) Execute(ctx context.Context, token string) error {
+func (uc *verifyEmailInteractor) Execute(ctx context.Context, token string) error {
 	credential, err := uc.credentialRepo.GetByToken(ctx, token)
 	if err != nil {
 		return errors.New("invalid token")
