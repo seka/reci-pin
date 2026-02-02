@@ -73,9 +73,7 @@ func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		Message: "Verification email sent. Please check your inbox.",
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(res)
+	respondJSON(w, http.StatusCreated, res)
 }
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -119,8 +117,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		User:  userResp,
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(res)
+	respondJSON(w, http.StatusOK, res)
 }
 
 func (h *AuthHandler) Verify(w http.ResponseWriter, r *http.Request) {
@@ -139,8 +136,7 @@ func (h *AuthHandler) Verify(w http.ResponseWriter, r *http.Request) {
 		Message: "Email verified successfully",
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(res)
+	respondJSON(w, http.StatusOK, res)
 }
 
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {

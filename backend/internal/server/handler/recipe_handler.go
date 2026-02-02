@@ -86,9 +86,7 @@ func (h *RecipeHandler) CreateRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(result)
+	respondJSON(w, http.StatusCreated, result)
 }
 
 func (h *RecipeHandler) GetRecipe(w http.ResponseWriter, r *http.Request) {
@@ -111,8 +109,7 @@ func (h *RecipeHandler) GetRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(result)
+	respondJSON(w, http.StatusOK, result)
 }
 
 func (h *RecipeHandler) GetUserRecipes(w http.ResponseWriter, r *http.Request) {
@@ -128,8 +125,7 @@ func (h *RecipeHandler) GetUserRecipes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(recipes)
+	respondJSON(w, http.StatusOK, recipes)
 }
 
 func (h *RecipeHandler) SearchRecipes(w http.ResponseWriter, r *http.Request) {
@@ -157,8 +153,7 @@ func (h *RecipeHandler) SearchRecipes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(recipes)
+	respondJSON(w, http.StatusOK, recipes)
 }
 
 func (h *RecipeHandler) UpdateRecipe(w http.ResponseWriter, r *http.Request) {
@@ -195,8 +190,7 @@ func (h *RecipeHandler) UpdateRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(result)
+	respondJSON(w, http.StatusOK, result)
 }
 
 func (h *RecipeHandler) DeleteRecipe(w http.ResponseWriter, r *http.Request) {
@@ -303,9 +297,7 @@ func (h *RecipeHandler) AddImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(image)
+	respondJSON(w, http.StatusCreated, image)
 }
 
 // Tag endpoints
@@ -323,9 +315,7 @@ func (h *RecipeHandler) CreateTag(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(tag)
+	respondJSON(w, http.StatusCreated, tag)
 }
 
 func (h *RecipeHandler) GetAllTags(w http.ResponseWriter, r *http.Request) {
@@ -335,8 +325,7 @@ func (h *RecipeHandler) GetAllTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(tags)
+	respondJSON(w, http.StatusOK, tags)
 }
 
 func (h *RecipeHandler) DeleteTag(w http.ResponseWriter, r *http.Request) {
