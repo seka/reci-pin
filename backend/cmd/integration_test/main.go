@@ -111,7 +111,9 @@ func run() error {
 	// Graceful shutdown not strictly needed for test runner exit, but nice
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
-	srv.Shutdown(shutdownCtx)
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		log.Printf("Server shutdown error: %v", err)
+	}
 
 	return nil
 }
@@ -153,11 +155,8 @@ func dropDatabase(ctx context.Context, dbName string) error {
 	}
 	defer adminDB.Close()
 
-	// Force drop keys
-	query := fmt.Sprintf("DROP DATABASE %s", dbName)
-	// Usually requires disconnecting other users.
-	// "DROP DATABASE IF EXISTS %s WITH (FORCE)" covers modern PG.
-	query = fmt.Sprintf("DROP DATABASE IF EXISTS %s WITH (FORCE)", dbName)
+	// Force drop - using DROP DATABASE IF EXISTS WITH (FORCE) for modern PG
+	query := fmt.Sprintf("DROP DATABASE IF EXISTS %s WITH (FORCE)", dbName)
 
 	if _, err := adminDB.Execute(ctx, query); err != nil {
 		return err
@@ -177,7 +176,7 @@ func runMigrations(ctx context.Context, dbName string) error {
 	defer db.Close()
 
 	// Read migration file
-	// Assuming migrations are at backend/migrations/001_init.sql or similiar?
+	// Assuming migrations are at backend/migrations/001_init.sql or similar?
 	// Need to find where the migrations are.
 	// I recall user consolidating them into '001_init.sql'.
 	// Path relative to execution? 'migrations/001_init.sql'.
@@ -201,11 +200,11 @@ func waitForServer(url string) error {
 	for time.Now().Before(deadline) {
 		resp, err := http.Get(url)
 		if err == nil && resp.StatusCode == http.StatusOK {
-			resp.Body.Close()
+			_ = resp.Body.Close()
 			return nil
 		}
 		if resp != nil {
-			resp.Body.Close()
+			_ = resp.Body.Close()
 		}
 		time.Sleep(500 * time.Millisecond)
 	}

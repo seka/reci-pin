@@ -17,7 +17,7 @@ func BrowseRecipes(ctx context.Context, client *http.Client, baseURL string) err
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != 200 {
 		return fmt.Errorf("list recipes status: %d", resp.StatusCode)
 	}
@@ -30,7 +30,7 @@ func BrowseRecipes(ctx context.Context, client *http.Client, baseURL string) err
 	if err != nil {
 		return err
 	}
-	defer resp2.Body.Close()
+	defer func() { _ = resp2.Body.Close() }()
 	// Ignore status 404 for random IDs
 
 	return nil
