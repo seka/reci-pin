@@ -1,0 +1,28 @@
+version: 2
+
+run:
+  timeout: 5m
+  tests: false
+  allow-parallel-runners: true
+
+linters:
+  enable:
+    # リクエストされたツール
+    - govet         # go vet: 標準静的解析
+    - ineffassign   # 不要な代入検出
+    - misspell      # スペルミス検出
+    
+    # 推奨 linter (デフォルトで有効なもの)
+    - staticcheck   # 高度な静的解析 (gosimple を含む)
+    - unused        # 未使用コード検出
+    - errcheck      # エラーチェック漏れ検出
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
