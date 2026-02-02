@@ -148,7 +148,6 @@ func (r *RecipeRepository) Search(ctx context.Context, userID int64, query strin
 	if query != "" {
 		whereConditions = append(whereConditions, fmt.Sprintf("(r.name ILIKE $%d OR r.memo ILIKE $%d)", paramIndex, paramIndex))
 		args = append(args, "%"+query+"%")
-		paramIndex++
 	}
 
 	sqlQuery += " WHERE " + strings.Join(whereConditions, " AND ")
