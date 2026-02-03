@@ -110,10 +110,11 @@ mkcert -key-file proxy/certs/key.pem -cert-file proxy/certs/cert.pem localhost
 docker-compose up -d
 ```
 
-5. データベースマイグレーションを実行
+5. 初期データの投入 (Seed)
+   ※ テーブル作成はコンテナ起動時に自動で行われます。
 
 ```bash
-docker-compose exec backend ./cmd/migrate
+docker-compose exec backend go run ./cmd/seed/main.go -db-host=postgres
 ```
 
 ### Access
