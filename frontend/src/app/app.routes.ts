@@ -12,6 +12,11 @@ export const routes: Routes = [
         loadComponent: () => import('./auth/signup/signup.component').then(m => m.SignupComponent)
     },
     {
+        path: 'recipes/new',
+        canActivate: [authGuard],
+        loadComponent: () => import('./recipes/recipe-form/recipe-form.component').then(m => m.RecipeFormComponent)
+    },
+    {
         path: 'recipes',
         canActivate: [authGuard],
         loadComponent: () => import('./recipes/recipes.component').then(m => m.RecipesComponent)
