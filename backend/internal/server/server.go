@@ -82,6 +82,7 @@ func (s *Server) setupRoutes() {
 			s.useCaseRegistry.NewDeleteTagUseCase(),
 		)
 		r.Post("/api/recipes", recipeHandler.CreateRecipe)
+		r.Get("/api/recipes", recipeHandler.GetUserRecipes)
 		r.Get("/api/recipes/{id}", recipeHandler.GetRecipe)
 		r.Get("/api/users/{user_id}/recipes", recipeHandler.GetUserRecipes)
 		r.Put("/api/recipes/{id}", recipeHandler.UpdateRecipe)
