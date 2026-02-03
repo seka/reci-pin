@@ -22,7 +22,7 @@ import { RecipeService, Tag } from '../../core/services/recipe.service';
 
         <div class="form-group">
           <label for="url">URL</label>
-          <input id="url" type="text" formControlName="url" placeholder="https://example.com/recipe">
+          <input id="url" type="text" formControlName="url" placeholder="https://example.com/recipe" (blur)="onUrlBlur()">
           <div *ngIf="recipeForm.get('url')?.invalid && recipeForm.get('url')?.touched" class="error">
             有効なURLを入力してください
           </div>
@@ -139,6 +139,17 @@ export class RecipeFormComponent implements OnInit {
       url: ['', [Validators.required]],
       memo: ['']
     });
+  }
+
+  onUrlBlur() {
+    const urlControl = this.recipeForm.get('url');
+    if (urlControl?.value) {
+      let url = urlControl.value.trim();
+      if (url && !/^https?:\/\//i.test(url)) {
+        url = 'https://' + url;
+        urlControl.setValue(url);
+      }
+    }
   }
 
   ngOnInit() {
