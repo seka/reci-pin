@@ -15,6 +15,9 @@ import { RecipeService, Recipe } from '../core/services/recipe.service';
         <div *ngFor="let recipe of recipes" class="recipe-card">
           <h3>{{ recipe.name }}</h3>
           <p>{{ recipe.memo }}</p>
+          <div class="tags" *ngIf="recipe.tags && recipe.tags.length > 0">
+            <span *ngFor="let tag of recipe.tags" class="tag-chip">{{ tag.name }}</span>
+          </div>
           <a *ngIf="recipe.url" [href]="getExternalUrl(recipe.url)" target="_blank" rel="noopener noreferrer">レシピを見る</a>
         </div>
       </div>
@@ -24,6 +27,8 @@ import { RecipeService, Recipe } from '../core/services/recipe.service';
     .recipes-container { padding: 20px; }
     button { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; margin-bottom: 20px; }
     .recipe-card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 5px; margin: 10px 0; }
+    .tag-chip { background-color: #e0efff; color: #007bff; padding: 4px 8px; border-radius: 12px; font-size: 0.8em; }
   `]
 })
 export class RecipesComponent implements OnInit {
