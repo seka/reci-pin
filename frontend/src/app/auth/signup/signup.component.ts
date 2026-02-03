@@ -1,14 +1,14 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService, SignupRequest } from '../../core/services/auth.service';
 
 @Component({
-    selector: 'app-signup',
-    standalone: true,
-    imports: [CommonModule, FormsModule],
-    template: `
+  selector: 'app-signup',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterModule],
+  template: `
     <div class="signup-container">
       <h2>アカウント作成</h2>
       <form (ngSubmit)="onSubmit()">
@@ -30,7 +30,7 @@ import { AuthService, SignupRequest } from '../../core/services/auth.service';
       <a routerLink="/login">ログインページへ</a>
     </div>
   `,
-    styles: [`
+  styles: [`
     .signup-container { max-width: 400px; margin: 50px auto; padding: 20px; }
     input { width: 100%; padding: 8px; margin: 5px 0 15px; }
     button { width: 100%; padding: 10px; background: #28a745; color: white; border: none; cursor: pointer; }
@@ -38,23 +38,23 @@ import { AuthService, SignupRequest } from '../../core/services/auth.service';
   `]
 })
 export class SignupComponent {
-    user: SignupRequest = { name: '', email: '', password: '' };
-    errorMessage = '';
+  user: SignupRequest = { name: '', email: '', password: '' };
+  errorMessage = '';
 
-    constructor(
-        private authService: AuthService,
-        private router: Router
-    ) { }
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) { }
 
-    onSubmit() {
-        this.authService.signup(this.user).subscribe({
-            next: (response) => {
-                this.authService.saveToken(response.token);
-                this.router.navigate(['/recipes']);
-            },
-            error: (err) => {
-                this.errorMessage = '登録に失敗しました';
-            }
-        });
-    }
+  onSubmit() {
+    this.authService.signup(this.user).subscribe({
+      next: (response) => {
+        this.authService.saveToken(response.token);
+        this.router.navigate(['/recipes']);
+      },
+      error: (err) => {
+        this.errorMessage = '登録に失敗しました';
+      }
+    });
+  }
 }

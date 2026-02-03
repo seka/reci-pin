@@ -1,14 +1,14 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService, LoginRequest } from '../../core/services/auth.service';
 
 @Component({
-    selector: 'app-login',
-    standalone: true,
-    imports: [CommonModule, FormsModule],
-    template: `
+  selector: 'app-login',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterModule],
+  template: `
     <div class="login-container">
       <h2>ログイン</h2>
       <form (ngSubmit)="onSubmit()">
@@ -26,7 +26,7 @@ import { AuthService, LoginRequest } from '../../core/services/auth.service';
       <a routerLink="/signup">アカウント作成</a>
     </div>
   `,
-    styles: [`
+  styles: [`
     .login-container { max-width: 400px; margin: 50px auto; padding: 20px; }
     input { width: 100%; padding: 8px; margin: 5px 0 15px; }
     button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
@@ -34,23 +34,23 @@ import { AuthService, LoginRequest } from '../../core/services/auth.service';
   `]
 })
 export class LoginComponent {
-    credentials: LoginRequest = { email: '', password: '' };
-    errorMessage = '';
+  credentials: LoginRequest = { email: '', password: '' };
+  errorMessage = '';
 
-    constructor(
-        private authService: AuthService,
-        private router: Router
-    ) { }
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) { }
 
-    onSubmit() {
-        this.authService.login(this.credentials).subscribe({
-            next: (response) => {
-                this.authService.saveToken(response.token);
-                this.router.navigate(['/recipes']);
-            },
-            error: (err) => {
-                this.errorMessage = 'ログインに失敗しました';
-            }
-        });
-    }
+  onSubmit() {
+    this.authService.login(this.credentials).subscribe({
+      next: (response) => {
+        this.authService.saveToken(response.token);
+        this.router.navigate(['/recipes']);
+      },
+      error: (err) => {
+        this.errorMessage = 'ログインに失敗しました';
+      }
+    });
+  }
 }

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { RecipeService, Recipe } from '../../core/services/recipe.service';
+import { RecipeService, Recipe } from '../core/services/recipe.service';
 
 @Component({
     selector: 'app-recipes',
@@ -34,7 +34,7 @@ export class RecipesComponent implements OnInit {
     ngOnInit() {
         this.recipeService.getUserRecipes().subscribe({
             next: (recipes) => this.recipes = recipes,
-            error: (err) => console.error('Failed to load recipes', err)
+            error: (err: any) => console.error('Failed to load recipes', err)
         });
     }
 }
