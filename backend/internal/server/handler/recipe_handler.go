@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/seka/reci-pin/backend/internal/server/handler/request"
+	"github.com/seka/reci-pin/backend/internal/server/handler/response"
 	"github.com/seka/reci-pin/backend/internal/server/middleware"
 	"github.com/seka/reci-pin/backend/internal/usecase/recipe"
 	"github.com/seka/reci-pin/backend/internal/usecase/recipe_image"
@@ -86,7 +87,7 @@ func (h *RecipeHandler) CreateRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondJSON(w, http.StatusCreated, result)
+	respondJSON(w, http.StatusCreated, response.NewRecipe(result))
 }
 
 func (h *RecipeHandler) GetRecipe(w http.ResponseWriter, r *http.Request) {
@@ -109,7 +110,7 @@ func (h *RecipeHandler) GetRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondJSON(w, http.StatusOK, result)
+	respondJSON(w, http.StatusOK, response.NewRecipe(result))
 }
 
 func (h *RecipeHandler) GetUserRecipes(w http.ResponseWriter, r *http.Request) {
@@ -125,7 +126,7 @@ func (h *RecipeHandler) GetUserRecipes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondJSON(w, http.StatusOK, recipes)
+	respondJSON(w, http.StatusOK, response.NewRecipes(recipes))
 }
 
 func (h *RecipeHandler) SearchRecipes(w http.ResponseWriter, r *http.Request) {
@@ -153,7 +154,7 @@ func (h *RecipeHandler) SearchRecipes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondJSON(w, http.StatusOK, recipes)
+	respondJSON(w, http.StatusOK, response.NewRecipes(recipes))
 }
 
 func (h *RecipeHandler) UpdateRecipe(w http.ResponseWriter, r *http.Request) {
@@ -190,7 +191,7 @@ func (h *RecipeHandler) UpdateRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondJSON(w, http.StatusOK, result)
+	respondJSON(w, http.StatusOK, response.NewRecipe(result))
 }
 
 func (h *RecipeHandler) DeleteRecipe(w http.ResponseWriter, r *http.Request) {
