@@ -1,0 +1,50 @@
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatChipsModule } from '@angular/material/chips';
+import { Recipe } from '../../../../core/services/recipe.service';
+
+@Component({
+    selector: 'app-recipe-card',
+    standalone: true,
+    imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatChipsModule],
+    template: `
+    <mat-card class="recipe-card">
+      <mat-card-header>
+        <mat-card-title>{{ recipe.name }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p>{{ recipe.memo }}</p>
+        <mat-chip-set *ngIf="recipe.tags && recipe.tags.length > 0">
+          <mat-chip *ngFor="let tag of recipe.tags">{{ tag.name }}</mat-chip>
+        </mat-chip-set>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <a mat-button color="accent" *ngIf="recipe.url" [href]="getExternalUrl(recipe.url)" target="_blank" rel="noopener noreferrer">
+          レシピを見る
+          <mat-icon iconPositionEnd>open_in_new</mat-icon>
+        </a>
+      </mat-card-actions>
+    </mat-card>
+  `,
+    styles: [`
+    .recipe-card { height: 100%; display: flex; flex-direction: column; }
+    mat-card-title { color: #e91e63; font-weight: 700; }
+    mat-card-content { flex-grow: 1; margin-top: 16px; margin-bottom: 16px; }
+    p { color: #666; line-height: 1.6; }
+    mat-chip-set { margin-top: 12px; }
+  `]
+})
+export class RecipeCardComponent {
+    @Input() recipe!: Recipe;
+
+    getExternalUrl(url: string): string {
+        if (!url) return '';
+        if (/^https?:\/\//i.test(url)) {
+            return url;
+        }
+        return 'https://' + url;
+    }
+}
