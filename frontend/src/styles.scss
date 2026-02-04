@@ -1,1 +1,142 @@
-/* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+
+@include mat.core();
+
+// Define a custom typography config that applies the global font
+$pop-typography: mat.m2-define-typography-config($font-family: "'M PLUS Rounded 1c', sans-serif",
+    $headline-1: mat.m2-define-typography-level(112px, 112px, 300, $font-family: "'M PLUS Rounded 1c', sans-serif"),
+    $headline-2: mat.m2-define-typography-level(56px, 56px, 400, $font-family: "'M PLUS Rounded 1c', sans-serif"),
+    $headline-3: mat.m2-define-typography-level(45px, 48px, 400, $font-family: "'M PLUS Rounded 1c', sans-serif"),
+    $headline-4: mat.m2-define-typography-level(34px, 40px, 400, $font-family: "'M PLUS Rounded 1c', sans-serif"),
+    $headline-5: mat.m2-define-typography-level(24px, 32px, 400, $font-family: "'M PLUS Rounded 1c', sans-serif"),
+    $headline-6: mat.m2-define-typography-level(20px, 32px, 400, $font-family: "'M PLUS Rounded 1c', sans-serif"),
+    $subtitle-1: mat.m2-define-typography-level(16px, 28px, 400, $font-family: "'M PLUS Rounded 1c', sans-serif"),
+    $body-1: mat.m2-define-typography-level(14px, 20px, 400, $font-family: "'M PLUS Rounded 1c', sans-serif"),
+    $button: mat.m2-define-typography-level(14px, 36px, 500, $font-family: "'M PLUS Rounded 1c', sans-serif"),
+  );
+
+// Define your application's custom theme.
+// Define your application's custom theme.
+// Creating M2 palettes requires using the m2- prefixed palette variables
+// Custom Terracotta Palette (Approximate match for #e37e58)
+$terracotta-palette: (
+  50: #fcece7,
+  100: #f8cfc3,
+  200: #f3af9c,
+  300: #ee8f74,
+  400: #ea7656,
+  500: #e65e38,
+  // Main
+  600: #e35632,
+  700: #df4c2b,
+  800: #db4224,
+  900: #d53217,
+  A100: #ffffff,
+  A200: #ffeae6,
+  A400: #ffb8b3,
+  A700: #ff9e99,
+  contrast: (50: #000000,
+    100: #000000,
+    200: #000000,
+    300: #000000,
+    400: #000000,
+    500: #ffffff,
+    600: #ffffff,
+    700: #ffffff,
+    800: #ffffff,
+    900: #ffffff,
+    A100: #000000,
+    A200: #000000,
+    A400: #000000,
+    A700: #000000,
+  )
+);
+
+// Custom Teal Palette (Approximate match for #58e3bd)
+$teal-pop-palette: (
+  50: #ebfcf7,
+  100: #cdf6eb,
+  200: #aef0dd,
+  300: #8fe9ce,
+  400: #77e5c3,
+  500: #5fe1b8,
+  // Main
+  600: #57ddb1,
+  700: #4dd9a8,
+  800: #43d59f,
+  900: #33ce8f,
+  A100: #ffffff,
+  A200: #eafff8,
+  A400: #b7ffdf,
+  A700: #9dffd3,
+  contrast: (50: #000000,
+    100: #000000,
+    200: #000000,
+    300: #000000,
+    400: #000000,
+    500: #000000,
+    600: #000000,
+    700: #000000,
+    800: #000000,
+    900: #000000,
+    A100: #000000,
+    A200: #000000,
+    A400: #000000,
+    A700: #000000,
+  )
+);
+
+$pop-primary: mat.m2-define-palette($terracotta-palette, 500);
+$pop-accent: mat.m2-define-palette($teal-pop-palette, 500, A200, A400);
+$pop-warn: mat.m2-define-palette(mat.$m2-red-palette);
+
+$pop-theme: mat.m2-define-light-theme((color: (primary: $pop-primary,
+        accent: $pop-accent,
+        warn: $pop-warn,
+      ),
+      typography: $pop-typography,
+      density: 0,
+    ));
+
+// Apply the theme to the Angular Material components
+@include mat.all-component-themes($pop-theme);
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+  background-color: #fffafb; // Very light pinkish white for warmth
+}
+
+// --- Pop Design Overrides ---
+
+// Rounded Buttons (Pill shape)
+.mdc-button,
+.mdc-button--raised,
+.mdc-button--unelevated,
+.mdc-button--outlined,
+.mat-mdc-button,
+.mat-mdc-raised-button {
+  border-radius: 999px !important;
+  letter-spacing: 0.05em;
+  font-weight: 700 !important;
+}
+
+// Rounded Cards
+.mat-mdc-card {
+  border-radius: 24px !important;
+  box-shadow: 0 8px 24px rgba(255, 64, 129, 0.15) !important; // Tinted shadow
+  border: 1px solid rgba(255, 64, 129, 0.1); // Subtle colored border
+  overflow: hidden; // Ensure content respects border radius
+}
+
+// Inputs
+.mat-mdc-form-field-outline {
+  border-radius: 16px !important;
+}
+
+// Dialogs
+.mat-mdc-dialog-container {
+  border-radius: 32px !important;
+}
