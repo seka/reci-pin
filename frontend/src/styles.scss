@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use './app/core/assets/styles' as ds;
 @use '@angular/material' as mat;
 
@@ -29,10 +30,10 @@ $terracotta-palette: (
   500: ds.$color-primary,
   // Use token
   // Main
-  600: darken(ds.$color-primary, 5%),
-  700: darken(ds.$color-primary, 10%),
-  800: darken(ds.$color-primary, 15%),
-  900: darken(ds.$color-primary, 20%),
+  600: color.scale(ds.$color-primary, $lightness: -5%),
+  700: color.scale(ds.$color-primary, $lightness: -10%),
+  800: color.scale(ds.$color-primary, $lightness: -15%),
+  900: color.scale(ds.$color-primary, $lightness: -20%),
   A100: #ffffff,
   A200: #ffeae6,
   A400: #ffb8b3,
@@ -64,10 +65,10 @@ $teal-pop-palette: (
   500: ds.$color-secondary,
   // Use token
   // Main
-  600: darken(ds.$color-secondary, 5%),
-  700: darken(ds.$color-secondary, 10%),
-  800: darken(ds.$color-secondary, 15%),
-  900: darken(ds.$color-secondary, 20%),
+  600: color.scale(ds.$color-secondary, $lightness: -5%),
+  700: color.scale(ds.$color-secondary, $lightness: -10%),
+  800: color.scale(ds.$color-secondary, $lightness: -15%),
+  900: color.scale(ds.$color-secondary, $lightness: -20%),
   A100: #ffffff,
   A200: #eafff8,
   A400: #b7ffdf,

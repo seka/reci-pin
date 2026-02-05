@@ -1,11 +1,13 @@
+@use "sass:color";
+
 // Key Colors
 $color-primary: #e91e63;
-$color-primary-light: lighten($color-primary, 10%);
-$color-primary-dark: darken($color-primary, 10%);
+$color-primary-light: color.scale($color-primary, $lightness: 10%);
+$color-primary-dark: color.scale($color-primary, $lightness: -10%);
 
 $color-secondary: #009688;
-$color-secondary-light: lighten($color-secondary, 10%);
-$color-secondary-dark: darken($color-secondary, 10%);
+$color-secondary-light: color.scale($color-secondary, $lightness: 10%);
+$color-secondary-dark: color.scale($color-secondary, $lightness: -10%);
 
 // Functional Colors
 $color-success: #2e7d32;
