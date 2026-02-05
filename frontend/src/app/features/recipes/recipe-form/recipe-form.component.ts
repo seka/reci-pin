@@ -5,9 +5,11 @@ import { Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
 import { RecipeService, Tag } from '../../../core/services/recipe.service';
 import { TagSelectComponent } from '../../../shared/components/molecules/tag-select/tag-select.component';
+import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
+import { HeadlineComponent } from '../../../shared/components/atoms/headline/headline.component';
+import { TextComponent } from '../../../shared/components/atoms/text/text.component';
 
 @Component({
   selector: 'app-recipe-form',
@@ -19,14 +21,18 @@ import { TagSelectComponent } from '../../../shared/components/molecules/tag-sel
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonModule,
-    TagSelectComponent
+    TagSelectComponent,
+    ButtonComponent,
+    HeadlineComponent,
+    TextComponent
   ],
   template: `
-    <div class="recipe-form-container">
+    <div class="form-container">
       <mat-card>
         <mat-card-header>
-          <mat-card-title>新規レシピ作成</mat-card-title>
+          <mat-card-title>
+            <app-headline variant="h2">新規レシピ作成</app-headline>
+          </mat-card-title>
         </mat-card-header>
         <mat-card-content>
           <form [formGroup]="recipeForm" (ngSubmit)="onSubmit()">
@@ -55,10 +61,10 @@ import { TagSelectComponent } from '../../../shared/components/molecules/tag-sel
             </app-tag-select>
 
             <div class="actions">
-              <button mat-button color="warn" type="button" routerLink="/recipes" class="cancel-btn">キャンセル</button>
-              <button mat-flat-button color="primary" type="submit" [disabled]="recipeForm.invalid || isSubmitting" class="submit-btn">
-                {{ isSubmitting ? '保存中...' : '保存' }}
-              </button>
+              <app-button type="button" routerLink="/recipes" variant="warn" class="action-btn">キャンセル</app-button>
+              <app-button type="submit" variant="primary" [disabled]="recipeForm.invalid || isSubmitting" class="action-btn">
+                 {{ isSubmitting ? '保存中...' : '保存' }}
+              </app-button>
             </div>
           </form>
         </mat-card-content>
@@ -68,9 +74,10 @@ import { TagSelectComponent } from '../../../shared/components/molecules/tag-sel
   styles: [`
     .recipe-form-container { padding: 24px; max-width: 600px; margin: 0 auto; }
     mat-card { padding: 24px; }
-    mat-card-title { margin-bottom: 24px; font-weight: 700; color: #e91e63; font-size: 1.5rem; }
+    mat-card-title { margin-bottom: 24px; }
     .full-width { width: 100%; margin-bottom: 8px; }
     .actions { display: flex; justify-content: flex-end; gap: 16px; margin-top: 24px; }
+    .action-btn { width: auto; min-width: 100px; }
   `]
 })
 export class RecipeFormComponent implements OnInit {
