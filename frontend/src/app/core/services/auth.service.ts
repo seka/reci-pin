@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 export interface User {
   id: number;
@@ -32,34 +34,83 @@ export interface LoginRequest {
 export class AuthService {
   private readonly API_URL = '/api';
   private readonly TOKEN_KEY = 'auth_token';
+  private readonly USER_KEY = 'auth_user';
 
-  constructor(private http: HttpClient) {}
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  public currentUser$ = this.currentUserSubject.asObservable();
+
+  constructor(private http: HttpClient, private router: Router) {
+    this.restoreSession();
+  }
+
+  private restoreSession() {
+    try {
+      const storedUser = localStorage.getItem(this.USER_KEY);
+      const token = localStorage.getItem(this.TOKEN_KEY);
+      if (storedUser && storedUser !== 'undefined' && token && token !== 'undefined') {
+        this.currentUserSubject.next(JSON.parse(storedUser));
+      } else {
+        this.clearAuth();
+      }
+    } catch (e) {
+      console.error('Error restoring session', e);
+      this.clearAuth();
+    }
+  }
 
   signup(data: SignupRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/auth/signup`, data);
+    return this.http.post<AuthResponse>(`${this.API_URL}/auth/signup`, data).pipe(
+      tap(response => this.handleAuthResponse(response))
+    );
   }
 
   login(data: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/auth/login`, data);
+    return this.http.post<AuthResponse>(`${this.API_URL}/auth/login`, data).pipe(
+      tap(response => this.handleAuthResponse(response))
+    );
   }
 
-  logout(): Observable<void> {
-    return this.http.post<void>(`${this.API_URL}/auth/logout`, {});
+  logout(): void {
+    // Optimistic logout
+    this.clearAuth();
+    this.router.navigate(['/login']);
+    // Optional: Call backend to invalidate token if needed
+    // this.http.post(`${this.API_URL}/auth/logout`, {}).subscribe();
   }
 
-  saveToken(token: string): void {
-    localStorage.setItem(this.TOKEN_KEY, token);
+  private handleAuthResponse(response: AuthResponse) {
+    this.saveToken(response.token);
+    this.saveUser(response.user);
+    this.currentUserSubject.next(response.user);
+  }
+
+  private saveToken(token: string): void {
+    if (token) {
+      localStorage.setItem(this.TOKEN_KEY, token);
+    }
+  }
+
+  private saveUser(user: User): void {
+    if (user) {
+      localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    }
   }
 
   getToken(): string | null {
     return localStorage.getItem(this.TOKEN_KEY);
   }
 
-  removeToken(): void {
+  clearAuth(): void {
     localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.USER_KEY);
+    this.currentUserSubject.next(null);
   }
 
   isLoggedIn(): boolean {
     return !!this.getToken();
+  }
+
+  get currentUserValue(): User | null {
+    return this.currentUserSubject.value;
   }
 }

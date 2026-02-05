@@ -80,7 +80,6 @@ export class SignupComponent {
   onSubmit() {
     this.authService.signup(this.user).subscribe({
       next: (response) => {
-        this.authService.saveToken(response.token);
         this.router.navigate(['/recipes']);
       },
       error: (err) => {

@@ -75,7 +75,6 @@ export class LoginComponent {
   onSubmit() {
     this.authService.login(this.credentials).subscribe({
       next: (response) => {
-        this.authService.saveToken(response.token);
         this.router.navigate(['/recipes']);
       },
       error: (err) => {
