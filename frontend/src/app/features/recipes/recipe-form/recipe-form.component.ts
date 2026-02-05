@@ -9,7 +9,6 @@ import { RecipeService, Tag } from '../../../core/services/recipe.service';
 import { TagSelectComponent } from '../../../shared/components/molecules/tag-select/tag-select.component';
 import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
 import { HeadlineComponent } from '../../../shared/components/atoms/headline/headline.component';
-import { TextComponent } from '../../../shared/components/atoms/text/text.component';
 
 @Component({
   selector: 'app-recipe-form',
@@ -23,8 +22,7 @@ import { TextComponent } from '../../../shared/components/atoms/text/text.compon
     MatInputModule,
     TagSelectComponent,
     ButtonComponent,
-    HeadlineComponent,
-    TextComponent
+    HeadlineComponent
   ],
   template: `
     <div class="form-container">
