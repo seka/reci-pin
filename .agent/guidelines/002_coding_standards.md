@@ -28,6 +28,10 @@ description: Code Style & Refactoring Guidelines
 
 ## Frontend (Angular)
 
+### パッケージマネージャ (Package Manager)
+-   原則として **Yarn** を使用してください (`npm` の使用禁止)。
+-   `yarn.lock` は必ずコミットしてください。
+
 ### TypeScript & Strict Mode
 -   `strict: true` を前提とし、`any` 型の使用は原則禁止とします。
 -   Null安全性 (`strictNullChecks`) を確保し、Optional Chaining (`?.`) や Nullish Coalescing (`??`) を活用してください。
