@@ -80,3 +80,6 @@ temp/
 
 # Certificates
 proxy/certs/*.pem
+
+*storybook.log
+storybook-static

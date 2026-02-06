@@ -6,7 +6,9 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "storybook": "ng run frontend:storybook",
+    "build-storybook": "ng run frontend:build-storybook"
   },
   "prettier": {
     "printWidth": 100,
@@ -23,6 +25,7 @@
   "private": true,
   "packageManager": "yarn@1.22.22",
   "dependencies": {
+    "@angular/animations": "^21.1.0",
     "@angular/cdk": "^21.1.2",
     "@angular/common": "^21.1.0",
     "@angular/compiler": "^21.1.0",
@@ -37,10 +40,20 @@
     "zone.js": "^0.16.0"
   },
   "devDependencies": {
+    "@angular-devkit/architect": "^0.2101.0",
+    "@angular-devkit/build-angular": "^21.1.0",
+    "@angular-devkit/core": "^21.1.0",
     "@angular/build": "^21.1.2",
     "@angular/cli": "^21.1.2",
     "@angular/compiler-cli": "^21.1.0",
+    "@angular/platform-browser-dynamic": "^21.1.0",
+    "@babel/runtime": "^7.26.0",
+    "@compodoc/compodoc": "^1.2.1",
+    "@storybook/addon-a11y": "^10.2.7",
+    "@storybook/addon-docs": "^10.2.7",
+    "@storybook/angular": "^10.2.7",
     "jsdom": "^27.1.0",
+    "storybook": "^10.2.7",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"
   }
