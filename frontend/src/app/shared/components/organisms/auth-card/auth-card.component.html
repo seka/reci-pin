@@ -1,0 +1,17 @@
+<div class="auth-card-container">
+    <mat-card>
+        <mat-card-header>
+            <mat-card-title>
+                <app-headline variant="h2" align="center">{{ title }}</app-headline>
+            </mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content>
+            <ng-content></ng-content>
+        </mat-card-content>
+
+        <mat-card-footer>
+            <ng-content select="[footer]"></ng-content>
+        </mat-card-footer>
+    </mat-card>
+</div>

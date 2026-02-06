@@ -1,0 +1,9 @@
+<mat-form-field appearance="outline" class="full-width">
+    <mat-label *ngIf="label">{{ label }}</mat-label>
+    <textarea matInput [rows]="rows" [placeholder]="placeholder" [value]="value" [disabled]="disabled"
+        [required]="required" (input)="onInput($event)" (blur)="onBlur()"></textarea>
+    <mat-error *ngIf="errorMessage">{{ errorMessage }}</mat-error>
+    <mat-error *ngIf="!errorMessage && control?.invalid && (control?.dirty || control?.touched)">
+        <span *ngIf="control?.errors?.['required']">必須項目です</span>
+    </mat-error>
+</mat-form-field>

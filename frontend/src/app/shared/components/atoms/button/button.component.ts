@@ -33,6 +33,11 @@ import { MatButtonModule } from '@angular/material/button';
     <button mat-button color="warn" *ngIf="variant === 'warn'" [type]="type" [disabled]="disabled" (click)="handleClick($event)">
       <ng-container *ngTemplateOutlet="content"></ng-container>
     </button>
+
+    <!-- Accent (Text Link) -->
+    <button mat-button color="accent" *ngIf="variant === 'accent'" [type]="type" [disabled]="disabled" (click)="handleClick($event)">
+      <ng-container *ngTemplateOutlet="content"></ng-container>
+    </button>
   `,
   styles: [`
     :host { display: inline-block; }
@@ -40,7 +45,7 @@ import { MatButtonModule } from '@angular/material/button';
   `]
 })
 export class ButtonComponent {
-  @Input() variant: 'primary' | 'secondary' | 'outline' | 'text' | 'warn' = 'primary';
+  @Input() variant: 'primary' | 'secondary' | 'outline' | 'text' | 'warn' | 'accent' = 'primary';
   @Input() type: 'button' | 'submit' = 'button';
   @Input() disabled = false;
 
