@@ -7,10 +7,10 @@ import { MatChipsModule } from '@angular/material/chips';
 import { Recipe } from '../../../../core/services/recipe.service';
 
 @Component({
-    selector: 'app-recipe-card',
-    standalone: true,
-    imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatChipsModule],
-    template: `
+  selector: 'app-recipe-card',
+  standalone: true,
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatChipsModule],
+  template: `
     <mat-card class="recipe-card">
       <mat-card-header>
         <mat-card-title>{{ recipe.name }}</mat-card-title>
@@ -24,12 +24,11 @@ import { Recipe } from '../../../../core/services/recipe.service';
       <mat-card-actions align="end">
         <a mat-button color="accent" *ngIf="recipe.url" [href]="getExternalUrl(recipe.url)" target="_blank" rel="noopener noreferrer">
           レシピを見る
-          <mat-icon iconPositionEnd>open_in_new</mat-icon>
         </a>
       </mat-card-actions>
     </mat-card>
   `,
-    styles: [`
+  styles: [`
     .recipe-card { height: 100%; display: flex; flex-direction: column; }
     mat-card-title { color: #e91e63; font-weight: 700; }
     mat-card-content { flex-grow: 1; margin-top: 16px; margin-bottom: 16px; }
@@ -38,13 +37,13 @@ import { Recipe } from '../../../../core/services/recipe.service';
   `]
 })
 export class RecipeCardComponent {
-    @Input() recipe!: Recipe;
+  @Input() recipe!: Recipe;
 
-    getExternalUrl(url: string): string {
-        if (!url) return '';
-        if (/^https?:\/\//i.test(url)) {
-            return url;
-        }
-        return 'https://' + url;
+  getExternalUrl(url: string): string {
+    if (!url) return '';
+    if (/^https?:\/\//i.test(url)) {
+      return url;
     }
+    return 'https://' + url;
+  }
 }
