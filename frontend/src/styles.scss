@@ -1,4 +1,4 @@
-@use './app/core/assets/styles' as ds;
+@use "app/core/styles" as ds;
 @use '@angular/material' as mat;
 
 @include mat.core();
