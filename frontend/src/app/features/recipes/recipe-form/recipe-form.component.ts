@@ -3,12 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { RecipeService, Tag } from '../../../core/services/recipe.service';
 import { TagSelectComponent } from '../../../shared/components/molecules/tag-select/tag-select.component';
 import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
 import { HeadlineComponent } from '../../../shared/components/atoms/headline/headline.component';
+import { InputComponent } from '../../../shared/components/atoms/input/input.component';
+import { TextareaComponent } from '../../../shared/components/atoms/textarea/textarea.component';
 
 @Component({
   selector: 'app-recipe-form',
@@ -18,11 +18,11 @@ import { HeadlineComponent } from '../../../shared/components/atoms/headline/hea
     ReactiveFormsModule,
     RouterModule,
     MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
     TagSelectComponent,
     ButtonComponent,
-    HeadlineComponent
+    HeadlineComponent,
+    InputComponent,
+    TextareaComponent
   ],
   template: `
     <div class="form-container">
@@ -35,22 +35,33 @@ import { HeadlineComponent } from '../../../shared/components/atoms/headline/hea
         <mat-card-content>
           <form [formGroup]="recipeForm" (ngSubmit)="onSubmit()">
             
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>レシピ名</mat-label>
-              <input matInput type="text" formControlName="name" placeholder="例: オムライス">
-              <mat-error *ngIf="recipeForm.get('name')?.invalid">レシピ名は必須です</mat-error>
-            </mat-form-field>
+            <div style="margin-bottom: 16px;">
+              <app-input
+                label="レシピ名"
+                formControlName="name"
+                placeholder="例: オムライス"
+                [required]="true"
+              ></app-input>
+            </div>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>URL</mat-label>
-              <input matInput type="text" formControlName="url" placeholder="https://example.com/recipe" (blur)="onUrlBlur()">
-              <mat-error *ngIf="recipeForm.get('url')?.invalid">有効なURLを入力してください</mat-error>
-            </mat-form-field>
+            <div style="margin-bottom: 16px;">
+              <app-input
+                label="URL"
+                formControlName="url"
+                placeholder="https://example.com/recipe"
+                [required]="true"
+                (blur)="onUrlBlur()"
+              ></app-input>
+            </div>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>メモ</mat-label>
-              <textarea matInput formControlName="memo" rows="4" placeholder="メモを入力"></textarea>
-            </mat-form-field>
+            <div style="margin-bottom: 16px;">
+              <app-textarea
+                label="メモ"
+                formControlName="memo"
+                placeholder="メモを入力"
+                [rows]="4"
+              ></app-textarea>
+            </div>
 
             <app-tag-select 
               [tags]="tags" 
