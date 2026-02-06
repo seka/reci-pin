@@ -1,12 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
 import { AuthService, SignupRequest } from '../../../core/services/auth.service';
+import { AuthCardComponent } from '../../../shared/components/organisms/auth-card/auth-card.component';
+import { InputComponent } from '../../../shared/components/atoms/input/input.component';
+import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
 
 @Component({
   selector: 'app-signup',
@@ -15,57 +14,61 @@ import { AuthService, SignupRequest } from '../../../core/services/auth.service'
     CommonModule,
     FormsModule,
     RouterModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule
+    ReactiveFormsModule,
+    AuthCardComponent,
+    InputComponent,
+    ButtonComponent
   ],
   template: `
-    <div class="signup-container">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>アカウント作成</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <form (ngSubmit)="onSubmit()">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>名前</mat-label>
-              <input matInput type="text" [(ngModel)]="user.name" name="name" required />
-            </mat-form-field>
+    <app-auth-card title="アカウント作成">
+      <form (ngSubmit)="onSubmit()">
+        <app-input 
+          label="名前" 
+          type="text" 
+          [(ngModel)]="user.name" 
+          name="name" 
+          [required]="true"
+        ></app-input>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>メールアドレス</mat-label>
-              <input matInput type="email" [(ngModel)]="user.email" name="email" required />
-            </mat-form-field>
+        <div style="margin-top: 16px;">
+          <app-input 
+            label="メールアドレス" 
+            type="email" 
+            [(ngModel)]="user.email" 
+            name="email" 
+            [required]="true"
+          ></app-input>
+        </div>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>パスワード</mat-label>
-              <input matInput type="password" [(ngModel)]="user.password" name="password" required />
-            </mat-form-field>
+        <div style="margin-top: 16px;">
+          <app-input 
+            label="パスワード" 
+            type="password" 
+            [(ngModel)]="user.password" 
+            name="password" 
+            [required]="true"
+          ></app-input>
+        </div>
 
-            <div class="actions">
-              <button mat-flat-button color="primary" type="submit" class="submit-btn">登録</button>
-            </div>
+        <div class="actions">
+          <app-button variant="primary" type="submit" class="submit-btn">登録</app-button>
+        </div>
 
-            <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
-          </form>
-        </mat-card-content>
-        <mat-card-footer>
-           <a mat-button color="accent" routerLink="/login">ログインページへ</a>
-        </mat-card-footer>
-      </mat-card>
-    </div>
+        <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+      </form>
+
+      <div footer>
+        <a routerLink="/login" style="text-decoration: none;">
+          <app-button variant="accent" type="button" class="full-width-btn">ログインページへ</app-button>
+        </a>
+      </div>
+    </app-auth-card>
   `,
   styles: [`
-    .signup-container { max-width: 400px; margin: 80px auto; padding: 0 20px; }
-    mat-card { padding: 24px; text-align: center; }
-    mat-card-title { margin-bottom: 24px; font-weight: 700; color: #e91e63; font-size: 1.5rem; justify-content: center; }
-    .full-width { width: 100%; margin-bottom: 8px; }
-    .actions { margin-top: 16px; margin-bottom: 16px; }
-    .submit-btn { width: 100%; font-size: 1.1em; padding: 24px 0; }
-    mat-card-footer { padding: 16px; margin-top: 0; }
-    .error { color: #f44336; margin-top: 16px; }
-    a { width: 100%; }
+    .actions { margin-top: 24px; margin-bottom: 16px; }
+    .submit-btn { width: 100%; }
+    .full-width-btn { width: 100%; }
+    .error { color: #f44336; margin-top: 16px; text-align: center; }
   `]
 })
 export class SignupComponent {

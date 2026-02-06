@@ -1,12 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
 import { AuthService, LoginRequest } from '../../../core/services/auth.service';
+import { AuthCardComponent } from '../../../shared/components/organisms/auth-card/auth-card.component';
+import { InputComponent } from '../../../shared/components/atoms/input/input.component';
+import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
 
 @Component({
   selector: 'app-login',
@@ -15,52 +14,51 @@ import { AuthService, LoginRequest } from '../../../core/services/auth.service';
     CommonModule,
     FormsModule,
     RouterModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule
+    ReactiveFormsModule, // Added for potential future use or if InputComponent needs it
+    AuthCardComponent,
+    InputComponent,
+    ButtonComponent
   ],
   template: `
-    <div class="login-container">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>ログイン</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <form (ngSubmit)="onSubmit()">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>メールアドレス</mat-label>
-              <input matInput type="email" [(ngModel)]="credentials.email" name="email" required />
-            </mat-form-field>
+    <app-auth-card title="ログイン">
+      <form (ngSubmit)="onSubmit()">
+        <app-input 
+          label="メールアドレス" 
+          type="email" 
+          [(ngModel)]="credentials.email" 
+          name="email" 
+          [required]="true"
+        ></app-input>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>パスワード</mat-label>
-              <input matInput type="password" [(ngModel)]="credentials.password" name="password" required />
-            </mat-form-field>
+        <div style="margin-top: 16px;">
+          <app-input 
+            label="パスワード" 
+            type="password" 
+            [(ngModel)]="credentials.password" 
+            name="password" 
+            [required]="true"
+          ></app-input>
+        </div>
 
-            <div class="actions">
-              <button mat-flat-button color="primary" type="submit" class="submit-btn">ログイン</button>
-            </div>
-            
-            <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
-          </form>
-        </mat-card-content>
-        <mat-card-footer>
-           <a mat-button color="accent" routerLink="/signup">アカウント作成はこちら</a>
-        </mat-card-footer>
-      </mat-card>
-    </div>
+        <div class="actions">
+          <app-button variant="primary" type="submit" class="submit-btn">ログイン</app-button>
+        </div>
+        
+        <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+      </form>
+
+      <div footer>
+        <a routerLink="/signup" style="text-decoration: none;">
+          <app-button variant="accent" type="button" class="full-width-btn">アカウント作成はこちら</app-button>
+        </a>
+      </div>
+    </app-auth-card>
   `,
   styles: [`
-    .login-container { max-width: 400px; margin: 80px auto; padding: 0 20px; }
-    mat-card { padding: 24px; text-align: center; }
-    mat-card-title { margin-bottom: 24px; font-weight: 700; color: #e91e63; font-size: 1.5rem; justify-content: center; }
-    .full-width { width: 100%; margin-bottom: 8px; }
-    .actions { margin-top: 16px; margin-bottom: 16px; }
-    .submit-btn { width: 100%; font-size: 1.1em; padding: 24px 0; }
-    mat-card-footer { padding: 16px; margin-top: 0; }
-    .error { color: #f44336; margin-top: 16px; }
-    a { width: 100%; }
+    .actions { margin-top: 24px; margin-bottom: 16px; }
+    .submit-btn { width: 100%; }
+    .full-width-btn { width: 100%; }
+    .error { color: #f44336; margin-top: 16px; text-align: center; }
   `]
 })
 export class LoginComponent {
