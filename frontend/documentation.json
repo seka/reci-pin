@@ -1505,7 +1505,7 @@
         },
         {
             "name": "ButtonComponent",
-            "id": "component-ButtonComponent-ef0fa8d17dba85273e791421d2ac621015c99edf4f3bb658a15aac51cb242c9a1fb454f325680e85ff327cc16f63ad525f33e1439ea59ca4f2454740a75e809e",
+            "id": "component-ButtonComponent-063946d0cfd9549b7ab0bdb631741f4a1fdf9965790c6fa93fc6d987658eeb2233aa086ac2a5f0215d91ec06ecafbc1bca9fc773c5cd7f3dbdadf07d2358f200",
             "file": "src/app/shared/components/atoms/button/button.component.ts",
             "encapsulation": [],
             "entryComponents": [],
@@ -1515,7 +1515,7 @@
             "selector": "app-button",
             "styleUrls": [],
             "styles": [
-                "\n    :host { display: inline-block; }\n    button { width: 100%; min-width: 120px; font-weight: bold; }\n  "
+                "\n    :host { display: inline-block; }\n    button { width: 100%; min-width: 120px; font-weight: bold; }\n    \n    /* Ensure white text for accent (secondary) filled buttons in MDC */\n    :host ::ng-deep .mat-mdc-flat-button.mat-accent {\n      --mdc-filled-button-label-text-color: #fff;\n      color: #fff !important;\n    }\n    :host ::ng-deep .mat-mdc-flat-button.mat-accent .mdc-button__label {\n      color: #fff !important;\n    }\n  "
             ],
             "template": "<ng-template #content><ng-content></ng-content></ng-template>\n\n<!-- Primary (Filled) -->\n<button mat-flat-button color=\"primary\" *ngIf=\"variant === 'primary'\" [type]=\"type\" [disabled]=\"disabled\" (click)=\"handleClick($event)\">\n  <ng-container *ngTemplateOutlet=\"content\"></ng-container>\n</button>\n\n<!-- Secondary (Accent/Teal Filled) -->\n<button mat-flat-button color=\"accent\" *ngIf=\"variant === 'secondary'\" [type]=\"type\" [disabled]=\"disabled\" (click)=\"handleClick($event)\">\n  <ng-container *ngTemplateOutlet=\"content\"></ng-container>\n</button>\n\n<!-- Outline (Stroked) -->\n<button mat-stroked-button color=\"primary\" *ngIf=\"variant === 'outline'\" [type]=\"type\" [disabled]=\"disabled\" (click)=\"handleClick($event)\">\n  <ng-container *ngTemplateOutlet=\"content\"></ng-container>\n</button>\n\n<!-- Text (Basic) -->\n<button mat-button *ngIf=\"variant === 'text'\" [type]=\"type\" [disabled]=\"disabled\" (click)=\"handleClick($event)\">\n  <ng-container *ngTemplateOutlet=\"content\"></ng-container>\n</button>\n\n<!-- Warn (Error) -->\n<button mat-button color=\"warn\" *ngIf=\"variant === 'warn'\" [type]=\"type\" [disabled]=\"disabled\" (click)=\"handleClick($event)\">\n  <ng-container *ngTemplateOutlet=\"content\"></ng-container>\n</button>\n\n<!-- Accent (Text Link) -->\n<button mat-button color=\"accent\" *ngIf=\"variant === 'accent'\" [type]=\"type\" [disabled]=\"disabled\" (click)=\"handleClick($event)\">\n  <ng-container *ngTemplateOutlet=\"content\"></ng-container>\n</button>\n",
             "templateUrl": [],
@@ -1527,7 +1527,7 @@
                     "defaultValue": "false",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "line": 50,
+                    "line": 59,
                     "type": "boolean",
                     "decorators": []
                 },
@@ -1536,7 +1536,7 @@
                     "defaultValue": "'button'",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "line": 49,
+                    "line": 58,
                     "type": "\"button\" | \"submit\"",
                     "decorators": []
                 },
@@ -1545,7 +1545,7 @@
                     "defaultValue": "'primary'",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "line": 48,
+                    "line": 57,
                     "type": "\"primary\" | \"secondary\" | \"outline\" | \"text\" | \"warn\" | \"accent\"",
                     "decorators": []
                 }
@@ -1568,7 +1568,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 52,
+                    "line": 61,
                     "deprecated": false,
                     "deprecationMessage": "",
                     "jsdoctags": [
@@ -1604,10 +1604,10 @@
             "description": "",
             "rawdescription": "\n",
             "type": "component",
-            "sourceCode": "import { Component, Input } from '@angular/core';\nimport { CommonModule } from '@angular/common';\nimport { MatButtonModule } from '@angular/material/button';\n\n@Component({\n  selector: 'app-button',\n  standalone: true,\n  imports: [CommonModule, MatButtonModule],\n  template: `\n    <ng-template #content><ng-content></ng-content></ng-template>\n\n    <!-- Primary (Filled) -->\n    <button mat-flat-button color=\"primary\" *ngIf=\"variant === 'primary'\" [type]=\"type\" [disabled]=\"disabled\" (click)=\"handleClick($event)\">\n      <ng-container *ngTemplateOutlet=\"content\"></ng-container>\n    </button>\n\n    <!-- Secondary (Accent/Teal Filled) -->\n    <button mat-flat-button color=\"accent\" *ngIf=\"variant === 'secondary'\" [type]=\"type\" [disabled]=\"disabled\" (click)=\"handleClick($event)\">\n      <ng-container *ngTemplateOutlet=\"content\"></ng-container>\n    </button>\n\n    <!-- Outline (Stroked) -->\n    <button mat-stroked-button color=\"primary\" *ngIf=\"variant === 'outline'\" [type]=\"type\" [disabled]=\"disabled\" (click)=\"handleClick($event)\">\n      <ng-container *ngTemplateOutlet=\"content\"></ng-container>\n    </button>\n\n    <!-- Text (Basic) -->\n    <button mat-button *ngIf=\"variant === 'text'\" [type]=\"type\" [disabled]=\"disabled\" (click)=\"handleClick($event)\">\n      <ng-container *ngTemplateOutlet=\"content\"></ng-container>\n    </button>\n\n    <!-- Warn (Error) -->\n    <button mat-button color=\"warn\" *ngIf=\"variant === 'warn'\" [type]=\"type\" [disabled]=\"disabled\" (click)=\"handleClick($event)\">\n      <ng-container *ngTemplateOutlet=\"content\"></ng-container>\n    </button>\n\n    <!-- Accent (Text Link) -->\n    <button mat-button color=\"accent\" *ngIf=\"variant === 'accent'\" [type]=\"type\" [disabled]=\"disabled\" (click)=\"handleClick($event)\">\n      <ng-container *ngTemplateOutlet=\"content\"></ng-container>\n    </button>\n  `,\n  styles: [`\n    :host { display: inline-block; }\n    button { width: 100%; min-width: 120px; font-weight: bold; }\n  `]\n})\nexport class ButtonComponent {\n  @Input() variant: 'primary' | 'secondary' | 'outline' | 'text' | 'warn' | 'accent' = 'primary';\n  @Input() type: 'button' | 'submit' = 'button';\n  @Input() disabled = false;\n\n  handleClick(event: Event) {\n    if (this.disabled) {\n      event.preventDefault();\n      event.stopPropagation();\n    }\n  }\n}\n",
+            "sourceCode": "import { Component, Input } from '@angular/core';\nimport { CommonModule } from '@angular/common';\nimport { MatButtonModule } from '@angular/material/button';\n\n@Component({\n  selector: 'app-button',\n  standalone: true,\n  imports: [CommonModule, MatButtonModule],\n  template: `\n    <ng-template #content><ng-content></ng-content></ng-template>\n\n    <!-- Primary (Filled) -->\n    <button mat-flat-button color=\"primary\" *ngIf=\"variant === 'primary'\" [type]=\"type\" [disabled]=\"disabled\" (click)=\"handleClick($event)\">\n      <ng-container *ngTemplateOutlet=\"content\"></ng-container>\n    </button>\n\n    <!-- Secondary (Accent/Teal Filled) -->\n    <button mat-flat-button color=\"accent\" *ngIf=\"variant === 'secondary'\" [type]=\"type\" [disabled]=\"disabled\" (click)=\"handleClick($event)\">\n      <ng-container *ngTemplateOutlet=\"content\"></ng-container>\n    </button>\n\n    <!-- Outline (Stroked) -->\n    <button mat-stroked-button color=\"primary\" *ngIf=\"variant === 'outline'\" [type]=\"type\" [disabled]=\"disabled\" (click)=\"handleClick($event)\">\n      <ng-container *ngTemplateOutlet=\"content\"></ng-container>\n    </button>\n\n    <!-- Text (Basic) -->\n    <button mat-button *ngIf=\"variant === 'text'\" [type]=\"type\" [disabled]=\"disabled\" (click)=\"handleClick($event)\">\n      <ng-container *ngTemplateOutlet=\"content\"></ng-container>\n    </button>\n\n    <!-- Warn (Error) -->\n    <button mat-button color=\"warn\" *ngIf=\"variant === 'warn'\" [type]=\"type\" [disabled]=\"disabled\" (click)=\"handleClick($event)\">\n      <ng-container *ngTemplateOutlet=\"content\"></ng-container>\n    </button>\n\n    <!-- Accent (Text Link) -->\n    <button mat-button color=\"accent\" *ngIf=\"variant === 'accent'\" [type]=\"type\" [disabled]=\"disabled\" (click)=\"handleClick($event)\">\n      <ng-container *ngTemplateOutlet=\"content\"></ng-container>\n    </button>\n  `,\n  styles: [`\n    :host { display: inline-block; }\n    button { width: 100%; min-width: 120px; font-weight: bold; }\n    \n    /* Ensure white text for accent (secondary) filled buttons in MDC */\n    :host ::ng-deep .mat-mdc-flat-button.mat-accent {\n      --mdc-filled-button-label-text-color: #fff;\n      color: #fff !important;\n    }\n    :host ::ng-deep .mat-mdc-flat-button.mat-accent .mdc-button__label {\n      color: #fff !important;\n    }\n  `]\n})\nexport class ButtonComponent {\n  @Input() variant: 'primary' | 'secondary' | 'outline' | 'text' | 'warn' | 'accent' = 'primary';\n  @Input() type: 'button' | 'submit' = 'button';\n  @Input() disabled = false;\n\n  handleClick(event: Event) {\n    if (this.disabled) {\n      event.preventDefault();\n      event.stopPropagation();\n    }\n  }\n}\n",
             "assetsDirs": [],
             "styleUrlsData": "",
-            "stylesData": "\n    :host { display: inline-block; }\n    button { width: 100%; min-width: 120px; font-weight: bold; }\n  \n",
+            "stylesData": "\n    :host { display: inline-block; }\n    button { width: 100%; min-width: 120px; font-weight: bold; }\n    \n    /* Ensure white text for accent (secondary) filled buttons in MDC */\n    :host ::ng-deep .mat-mdc-flat-button.mat-accent {\n      --mdc-filled-button-label-text-color: #fff;\n      color: #fff !important;\n    }\n    :host ::ng-deep .mat-mdc-flat-button.mat-accent .mdc-button__label {\n      color: #fff !important;\n    }\n  \n",
             "extends": []
         },
         {
@@ -2420,7 +2420,7 @@
         },
         {
             "name": "RecipeCardComponent",
-            "id": "component-RecipeCardComponent-5e1f64693b46ef1a0c24fc2a9cf13219b69705062c47d858b5cbbc51ff758704876437d09d0698de1824d7e189f2c9fe74e55e5b99d04d6ae65dc53899a883fb",
+            "id": "component-RecipeCardComponent-86f319bbf0efbcbd0204fbd93a45cede2c409170ca13caf2bdc77328176f8d97e92255bf742af5e472d5ce7d25980d56bf75647dee2efc7660ce0705abef515f",
             "file": "src/app/shared/components/organisms/recipe-card/recipe-card.component.ts",
             "encapsulation": [],
             "entryComponents": [],
@@ -2432,7 +2432,7 @@
             "styles": [
                 "\n    .recipe-card { height: 100%; display: flex; flex-direction: column; }\n    mat-card-title { color: #e91e63; font-weight: 700; }\n    mat-card-content { flex-grow: 1; margin-top: 16px; margin-bottom: 16px; }\n    p { color: #666; line-height: 1.6; }\n    mat-chip-set { margin-top: 12px; }\n  "
             ],
-            "template": "<mat-card class=\"recipe-card\">\n  <mat-card-header>\n    <mat-card-title>{{ recipe.name }}</mat-card-title>\n  </mat-card-header>\n  <mat-card-content>\n    <p>{{ recipe.memo }}</p>\n    <mat-chip-set *ngIf=\"recipe.tags && recipe.tags.length > 0\">\n      <mat-chip *ngFor=\"let tag of recipe.tags\">{{ tag.name }}</mat-chip>\n    </mat-chip-set>\n  </mat-card-content>\n  <mat-card-actions align=\"end\">\n    <a mat-button color=\"accent\" *ngIf=\"recipe.url\" [href]=\"getExternalUrl(recipe.url)\" target=\"_blank\" rel=\"noopener noreferrer\">\n      レシピを見る\n      <mat-icon iconPositionEnd>open_in_new</mat-icon>\n    </a>\n  </mat-card-actions>\n</mat-card>\n",
+            "template": "<mat-card class=\"recipe-card\">\n  <mat-card-header>\n    <mat-card-title>{{ recipe.name }}</mat-card-title>\n  </mat-card-header>\n  <mat-card-content>\n    <p>{{ recipe.memo }}</p>\n    <mat-chip-set *ngIf=\"recipe.tags && recipe.tags.length > 0\">\n      <mat-chip *ngFor=\"let tag of recipe.tags\">{{ tag.name }}</mat-chip>\n    </mat-chip-set>\n  </mat-card-content>\n  <mat-card-actions align=\"end\">\n    <a mat-button color=\"accent\" *ngIf=\"recipe.url\" [href]=\"getExternalUrl(recipe.url)\" target=\"_blank\" rel=\"noopener noreferrer\">\n      レシピを見る\n    </a>\n  </mat-card-actions>\n</mat-card>\n",
             "templateUrl": [],
             "viewProviders": [],
             "hostDirectives": [],
@@ -2441,7 +2441,7 @@
                     "name": "recipe",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "line": 41,
+                    "line": 40,
                     "type": "Recipe",
                     "decorators": []
                 }
@@ -2464,7 +2464,7 @@
                     "optional": false,
                     "returnType": "string",
                     "typeParameters": [],
-                    "line": 43,
+                    "line": 42,
                     "deprecated": false,
                     "deprecationMessage": "",
                     "jsdoctags": [
@@ -2512,7 +2512,7 @@
             "description": "",
             "rawdescription": "\n",
             "type": "component",
-            "sourceCode": "import { Component, Input } from '@angular/core';\nimport { CommonModule } from '@angular/common';\nimport { MatCardModule } from '@angular/material/card';\nimport { MatButtonModule } from '@angular/material/button';\nimport { MatIconModule } from '@angular/material/icon';\nimport { MatChipsModule } from '@angular/material/chips';\nimport { Recipe } from '../../../../core/services/recipe.service';\n\n@Component({\n    selector: 'app-recipe-card',\n    standalone: true,\n    imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatChipsModule],\n    template: `\n    <mat-card class=\"recipe-card\">\n      <mat-card-header>\n        <mat-card-title>{{ recipe.name }}</mat-card-title>\n      </mat-card-header>\n      <mat-card-content>\n        <p>{{ recipe.memo }}</p>\n        <mat-chip-set *ngIf=\"recipe.tags && recipe.tags.length > 0\">\n          <mat-chip *ngFor=\"let tag of recipe.tags\">{{ tag.name }}</mat-chip>\n        </mat-chip-set>\n      </mat-card-content>\n      <mat-card-actions align=\"end\">\n        <a mat-button color=\"accent\" *ngIf=\"recipe.url\" [href]=\"getExternalUrl(recipe.url)\" target=\"_blank\" rel=\"noopener noreferrer\">\n          レシピを見る\n          <mat-icon iconPositionEnd>open_in_new</mat-icon>\n        </a>\n      </mat-card-actions>\n    </mat-card>\n  `,\n    styles: [`\n    .recipe-card { height: 100%; display: flex; flex-direction: column; }\n    mat-card-title { color: #e91e63; font-weight: 700; }\n    mat-card-content { flex-grow: 1; margin-top: 16px; margin-bottom: 16px; }\n    p { color: #666; line-height: 1.6; }\n    mat-chip-set { margin-top: 12px; }\n  `]\n})\nexport class RecipeCardComponent {\n    @Input() recipe!: Recipe;\n\n    getExternalUrl(url: string): string {\n        if (!url) return '';\n        if (/^https?:\\/\\//i.test(url)) {\n            return url;\n        }\n        return 'https://' + url;\n    }\n}\n",
+            "sourceCode": "import { Component, Input } from '@angular/core';\nimport { CommonModule } from '@angular/common';\nimport { MatCardModule } from '@angular/material/card';\nimport { MatButtonModule } from '@angular/material/button';\nimport { MatIconModule } from '@angular/material/icon';\nimport { MatChipsModule } from '@angular/material/chips';\nimport { Recipe } from '../../../../core/services/recipe.service';\n\n@Component({\n  selector: 'app-recipe-card',\n  standalone: true,\n  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatChipsModule],\n  template: `\n    <mat-card class=\"recipe-card\">\n      <mat-card-header>\n        <mat-card-title>{{ recipe.name }}</mat-card-title>\n      </mat-card-header>\n      <mat-card-content>\n        <p>{{ recipe.memo }}</p>\n        <mat-chip-set *ngIf=\"recipe.tags && recipe.tags.length > 0\">\n          <mat-chip *ngFor=\"let tag of recipe.tags\">{{ tag.name }}</mat-chip>\n        </mat-chip-set>\n      </mat-card-content>\n      <mat-card-actions align=\"end\">\n        <a mat-button color=\"accent\" *ngIf=\"recipe.url\" [href]=\"getExternalUrl(recipe.url)\" target=\"_blank\" rel=\"noopener noreferrer\">\n          レシピを見る\n        </a>\n      </mat-card-actions>\n    </mat-card>\n  `,\n  styles: [`\n    .recipe-card { height: 100%; display: flex; flex-direction: column; }\n    mat-card-title { color: #e91e63; font-weight: 700; }\n    mat-card-content { flex-grow: 1; margin-top: 16px; margin-bottom: 16px; }\n    p { color: #666; line-height: 1.6; }\n    mat-chip-set { margin-top: 12px; }\n  `]\n})\nexport class RecipeCardComponent {\n  @Input() recipe!: Recipe;\n\n  getExternalUrl(url: string): string {\n    if (!url) return '';\n    if (/^https?:\\/\\//i.test(url)) {\n      return url;\n    }\n    return 'https://' + url;\n  }\n}\n",
             "assetsDirs": [],
             "styleUrlsData": "",
             "stylesData": "\n    .recipe-card { height: 100%; display: flex; flex-direction: column; }\n    mat-card-title { color: #e91e63; font-weight: 700; }\n    mat-card-content { flex-grow: 1; margin-top: 16px; margin-bottom: 16px; }\n    p { color: #666; line-height: 1.6; }\n    mat-chip-set { margin-top: 12px; }\n  \n",

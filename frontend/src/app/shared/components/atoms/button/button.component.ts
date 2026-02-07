@@ -42,6 +42,15 @@ import { MatButtonModule } from '@angular/material/button';
   styles: [`
     :host { display: inline-block; }
     button { width: 100%; min-width: 120px; font-weight: bold; }
+    
+    /* Ensure white text for accent (secondary) filled buttons in MDC */
+    :host ::ng-deep .mat-mdc-unelevated-button.mat-accent {
+      --mdc-filled-button-label-text-color: #fff;
+      color: #fff !important;
+    }
+    :host ::ng-deep .mat-mdc-unelevated-button.mat-accent .mdc-button__label {
+      color: #fff !important;
+    }
   `]
 })
 export class ButtonComponent {
