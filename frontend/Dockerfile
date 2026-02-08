@@ -3,8 +3,12 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json yarn.lock ./
+# Enable corepack for Yarn 4 support
+RUN corepack enable
+
+# Copy package files and yarn config
+COPY package.json yarn.lock .yarnrc.yml ./
+COPY .yarn ./.yarn
 
 # Install dependencies
 RUN yarn install
@@ -16,4 +20,4 @@ COPY . .
 EXPOSE 4200
 
 # Start development server
-CMD ["yarn", "start", "--", "--host", "0.0.0.0", "--port", "4200"]
+CMD ["yarn", "ng", "serve", "--host", "0.0.0.0", "--port", "4200"]
