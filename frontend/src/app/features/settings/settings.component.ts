@@ -1,0 +1,120 @@
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
+import { ButtonComponent } from '../../shared/components/atoms/button/button.component';
+import { HeadlineComponent } from '../../shared/components/atoms/headline/headline.component';
+
+@Component({
+    selector: 'app-settings',
+    standalone: true,
+    imports: [
+        CommonModule,
+        RouterModule,
+        ButtonComponent,
+        HeadlineComponent
+    ],
+    template: `
+    <div class="settings-container">
+      <app-headline level="1">設定</app-headline>
+
+      <section class="settings-section">
+        <app-headline level="2">アカウント</app-headline>
+        
+        <div class="user-info" *ngIf="currentUser$ | async as user">
+          <p><strong>名前:</strong> {{ user.name }}</p>
+          <p><strong>メールアドレス:</strong> {{ user.email }}</p>
+        </div>
+      </section>
+
+      <section class="settings-section danger-zone">
+        <app-headline level="2">退会</app-headline>
+        <p class="warning-text">
+          アカウントを削除すると、すべてのレシピやデータが完全に削除されます。
+          この操作は取り消せません。
+        </p>
+        <app-button 
+          variant="danger" 
+          (click)="onWithdraw()"
+          [disabled]="isProcessing"
+        >
+          {{ isProcessing ? '処理中...' : 'アカウントを削除する' }}
+        </app-button>
+      </section>
+
+      <div class="back-link">
+        <a routerLink="/recipes">← レシピ一覧に戻る</a>
+      </div>
+    </div>
+  `,
+    styles: [`
+    .settings-container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .settings-section {
+      margin-top: 32px;
+      padding: 24px;
+      background: var(--surface-color, #fff);
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .user-info p {
+      margin: 8px 0;
+      color: var(--text-secondary, #666);
+    }
+
+    .danger-zone {
+      border: 1px solid #f44336;
+    }
+
+    .warning-text {
+      color: var(--text-secondary, #666);
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    .back-link {
+      margin-top: 32px;
+      text-align: center;
+    }
+
+    .back-link a {
+      color: var(--primary-color, #1976d2);
+      text-decoration: none;
+    }
+
+    .back-link a:hover {
+      text-decoration: underline;
+    }
+  `]
+})
+export class SettingsComponent {
+    currentUser$;
+    isProcessing = false;
+
+    constructor(private authService: AuthService) {
+        this.currentUser$ = this.authService.currentUser$;
+    }
+
+    onWithdraw(): void {
+        if (!confirm('本当に退会しますか？\n\nすべてのデータが削除され、この操作は取り消せません。')) {
+            return;
+        }
+
+        this.isProcessing = true;
+        this.authService.withdraw().subscribe({
+            next: () => {
+                alert('退会が完了しました。ご利用ありがとうございました。');
+            },
+            error: (err: Error) => {
+                this.isProcessing = false;
+                alert('退会処理に失敗しました。しばらくしてから再度お試しください。');
+                console.error('Withdraw error:', err);
+            }
+        });
+    }
+}
