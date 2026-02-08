@@ -295,3 +295,17 @@ func (mr *MockUseCaseMockRecorder) NewVerifyEmailUseCase() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewVerifyEmailUseCase", reflect.TypeOf((*MockUseCase)(nil).NewVerifyEmailUseCase))
 }
+
+// NewWithdrawUseCase mocks base method.
+func (m *MockUseCase) NewWithdrawUseCase() auth.WithdrawUseCase {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewWithdrawUseCase")
+	ret0, _ := ret[0].(auth.WithdrawUseCase)
+	return ret0
+}
+
+// NewWithdrawUseCase indicates an expected call of NewWithdrawUseCase.
+func (mr *MockUseCaseMockRecorder) NewWithdrawUseCase() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewWithdrawUseCase", reflect.TypeOf((*MockUseCase)(nil).NewWithdrawUseCase))
+}

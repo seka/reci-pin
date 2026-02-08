@@ -57,6 +57,7 @@ func (s *Server) setupRoutes() {
 		s.useCaseRegistry.NewGenerateTokenUseCase(),
 		s.useCaseRegistry.NewGetUserUseCase(),
 		s.useCaseRegistry.NewVerifyEmailUseCase(),
+		s.useCaseRegistry.NewWithdrawUseCase(),
 	)
 
 	s.router.Post("/api/auth/signup", authHandler.Signup)
@@ -65,6 +66,9 @@ func (s *Server) setupRoutes() {
 
 	s.router.Group(func(r chi.Router) {
 		r.Use(authMiddleware.Authenticate)
+
+		// Auth (authenticated routes)
+		r.Delete("/api/auth/withdraw", authHandler.Withdraw)
 
 		// Recipes
 		recipeHandler := handler.NewRecipeHandler(

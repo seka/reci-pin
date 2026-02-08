@@ -84,6 +84,7 @@ func TestAuthHandler_Signup(t *testing.T) {
 				usecasemock.NewMockGenerateTokenUseCase(ctrl),
 				usecasemock.NewMockGetUserUseCase(ctrl),
 				usecasemock.NewMockVerifyEmailUseCase(ctrl),
+				usecasemock.NewMockWithdrawUseCase(ctrl),
 			)
 
 			var req *http.Request
@@ -194,6 +195,7 @@ func TestAuthHandler_Login(t *testing.T) {
 				mockGenToken,
 				mockGetUser,
 				usecasemock.NewMockVerifyEmailUseCase(ctrl),
+				usecasemock.NewMockWithdrawUseCase(ctrl),
 			)
 
 			body, _ := json.Marshal(tt.body)
@@ -246,6 +248,7 @@ func TestAuthHandler_Verify(t *testing.T) {
 				usecasemock.NewMockGenerateTokenUseCase(ctrl),
 				usecasemock.NewMockGetUserUseCase(ctrl),
 				mockVerify,
+				usecasemock.NewMockWithdrawUseCase(ctrl),
 			)
 
 			body, _ := json.Marshal(tt.body)
@@ -281,6 +284,7 @@ func TestAuthHandler_Logout(t *testing.T) {
 				usecasemock.NewMockGenerateTokenUseCase(ctrl),
 				usecasemock.NewMockGetUserUseCase(ctrl),
 				usecasemock.NewMockVerifyEmailUseCase(ctrl),
+				usecasemock.NewMockWithdrawUseCase(ctrl),
 			)
 
 			req := httptest.NewRequest(http.MethodPost, "/auth/logout", nil)

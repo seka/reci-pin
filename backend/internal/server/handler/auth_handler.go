@@ -7,6 +7,7 @@ import (
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/server/handler/request"
 	"github.com/seka/reci-pin/backend/internal/server/handler/response"
+	"github.com/seka/reci-pin/backend/internal/server/middleware"
 	"github.com/seka/reci-pin/backend/internal/usecase/auth"
 )
 
@@ -16,6 +17,7 @@ type AuthHandler struct {
 	generateTokenUseCase auth.GenerateTokenUseCase
 	getUserUseCase       auth.GetUserUseCase
 	verifyEmailUseCase   auth.VerifyEmailUseCase
+	withdrawUseCase      auth.WithdrawUseCase
 }
 
 func NewAuthHandler(
@@ -24,6 +26,7 @@ func NewAuthHandler(
 	generateTokenUseCase auth.GenerateTokenUseCase,
 	getUserUseCase auth.GetUserUseCase,
 	verifyEmailUseCase auth.VerifyEmailUseCase,
+	withdrawUseCase auth.WithdrawUseCase,
 ) *AuthHandler {
 	return &AuthHandler{
 		signupUseCase:        signupUseCase,
@@ -31,6 +34,7 @@ func NewAuthHandler(
 		generateTokenUseCase: generateTokenUseCase,
 		getUserUseCase:       getUserUseCase,
 		verifyEmailUseCase:   verifyEmailUseCase,
+		withdrawUseCase:      withdrawUseCase,
 	}
 }
 
@@ -140,5 +144,20 @@ func (h *AuthHandler) Verify(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *AuthHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middleware.GetUserIDFromContext(r.Context())
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	if err := h.withdrawUseCase.Execute(r.Context(), userID); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusNoContent)
 }
