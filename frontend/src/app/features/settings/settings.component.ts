@@ -6,16 +6,20 @@ import { ButtonComponent } from '../../shared/components/atoms/button/button.com
 import { HeadlineComponent } from '../../shared/components/atoms/headline/headline.component';
 
 @Component({
-    selector: 'app-settings',
-    standalone: true,
-    imports: [
-        CommonModule,
-        RouterModule,
-        ButtonComponent,
-        HeadlineComponent
-    ],
-    template: `
+  selector: 'app-settings',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    ButtonComponent,
+    HeadlineComponent
+  ],
+  template: `
     <div class="settings-container">
+      <div class="back-link">
+        <a routerLink="/recipes">← レシピ一覧に戻る</a>
+      </div>
+
       <app-headline level="1">設定</app-headline>
 
       <section class="settings-section">
@@ -34,20 +38,16 @@ import { HeadlineComponent } from '../../shared/components/atoms/headline/headli
           この操作は取り消せません。
         </p>
         <app-button 
-          variant="danger" 
+          variant="warn" 
           (click)="onWithdraw()"
           [disabled]="isProcessing"
         >
           {{ isProcessing ? '処理中...' : 'アカウントを削除する' }}
         </app-button>
       </section>
-
-      <div class="back-link">
-        <a routerLink="/recipes">← レシピ一覧に戻る</a>
-      </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     .settings-container {
       max-width: 600px;
       margin: 0 auto;
@@ -78,8 +78,7 @@ import { HeadlineComponent } from '../../shared/components/atoms/headline/headli
     }
 
     .back-link {
-      margin-top: 32px;
-      text-align: center;
+      margin-bottom: 16px;
     }
 
     .back-link a {
@@ -93,28 +92,28 @@ import { HeadlineComponent } from '../../shared/components/atoms/headline/headli
   `]
 })
 export class SettingsComponent {
-    currentUser$;
-    isProcessing = false;
+  currentUser$;
+  isProcessing = false;
 
-    constructor(private authService: AuthService) {
-        this.currentUser$ = this.authService.currentUser$;
+  constructor(private authService: AuthService) {
+    this.currentUser$ = this.authService.currentUser$;
+  }
+
+  onWithdraw(): void {
+    if (!confirm('本当に退会しますか？\n\nすべてのデータが削除され、この操作は取り消せません。')) {
+      return;
     }
 
-    onWithdraw(): void {
-        if (!confirm('本当に退会しますか？\n\nすべてのデータが削除され、この操作は取り消せません。')) {
-            return;
-        }
-
-        this.isProcessing = true;
-        this.authService.withdraw().subscribe({
-            next: () => {
-                alert('退会が完了しました。ご利用ありがとうございました。');
-            },
-            error: (err: Error) => {
-                this.isProcessing = false;
-                alert('退会処理に失敗しました。しばらくしてから再度お試しください。');
-                console.error('Withdraw error:', err);
-            }
-        });
-    }
+    this.isProcessing = true;
+    this.authService.withdraw().subscribe({
+      next: () => {
+        alert('退会が完了しました。ご利用ありがとうございました。');
+      },
+      error: (err: Error) => {
+        this.isProcessing = false;
+        alert('退会処理に失敗しました。しばらくしてから再度お試しください。');
+        console.error('Withdraw error:', err);
+      }
+    });
+  }
 }
