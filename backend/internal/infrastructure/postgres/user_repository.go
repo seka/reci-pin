@@ -108,3 +108,15 @@ func (r *UserRepository) GetAll(ctx context.Context) ([]*model.User, error) {
 
 	return users, nil
 }
+
+func (r *UserRepository) Delete(ctx context.Context, id int64) error {
+	query := `DELETE FROM users WHERE id = $1`
+	rowsAffected, err := r.db.Execute(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("failed to delete user: %w", err)
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("user not found")
+	}
+	return nil
+}

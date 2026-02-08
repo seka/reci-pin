@@ -113,4 +113,13 @@ export class AuthService {
   get currentUserValue(): User | null {
     return this.currentUserSubject.value;
   }
+
+  withdraw(): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/auth/withdraw`).pipe(
+      tap(() => {
+        this.clearAuth();
+        this.router.navigate(['/login']);
+      })
+    );
+  }
 }

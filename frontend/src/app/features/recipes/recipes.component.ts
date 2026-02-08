@@ -22,10 +22,15 @@ import { ButtonComponent } from '../../shared/components/atoms/button/button.com
     <div class="recipes-container">
       <div class="header">
         <app-headline variant="h2">マイレシピ</app-headline>
-        <app-button routerLink="/recipes/new" variant="primary" class="add-btn">
-          <mat-icon style="vertical-align: middle; margin-right: 4px;">add</mat-icon>
-          新規レシピ追加
-        </app-button>
+        <div class="header-actions">
+          <app-button routerLink="/recipes/new" variant="primary" class="add-btn">
+            <mat-icon style="vertical-align: middle; margin-right: 4px;">add</mat-icon>
+            新規レシピ追加
+          </app-button>
+          <a routerLink="/settings" class="settings-link" title="設定">
+            <mat-icon>settings</mat-icon>
+          </a>
+        </div>
       </div>
       
       <div class="recipes-grid">
@@ -36,8 +41,15 @@ import { ButtonComponent } from '../../shared/components/atoms/button/button.com
   styles: [`
     .recipes-container { padding: 24px; max-width: 1200px; margin: 0 auto; }
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    /* app-headline handles the styling now */
-    .add-btn { width: auto; } /* Override default full width */
+    .header-actions { display: flex; align-items: center; gap: 16px; }
+    .add-btn { width: auto; }
+    .settings-link { 
+      color: var(--text-secondary, #666); 
+      display: flex; 
+      align-items: center;
+      transition: color 0.2s;
+    }
+    .settings-link:hover { color: var(--primary-color, #1976d2); }
     .recipes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
     .recipe-card-item { height: 100%; display: block; }
   `]

@@ -20,6 +20,7 @@ type UseCase interface {
 	NewValidateTokenUseCase() auth.ValidateTokenUseCase
 	NewGetUserUseCase() auth.GetUserUseCase
 	NewVerifyEmailUseCase() auth.VerifyEmailUseCase
+	NewWithdrawUseCase() auth.WithdrawUseCase
 
 	// Recipe
 	NewCreateRecipeUseCase() recipe.CreateRecipeUseCase
@@ -82,6 +83,10 @@ func (u *useCaseRegistry) NewGetUserUseCase() auth.GetUserUseCase {
 
 func (u *useCaseRegistry) NewVerifyEmailUseCase() auth.VerifyEmailUseCase {
 	return auth.NewVerifyEmailUseCase(u.repo.NewUserEmailCredentialRepository())
+}
+
+func (u *useCaseRegistry) NewWithdrawUseCase() auth.WithdrawUseCase {
+	return auth.NewWithdrawUseCase(u.repo.NewUserRepository())
 }
 
 // Recipe UseCases
