@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/seka/reci-pin/backend/config"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/email"
 	"github.com/seka/reci-pin/backend/internal/usecase/auth"
 	"github.com/seka/reci-pin/backend/internal/usecase/recipe"
 	"github.com/seka/reci-pin/backend/internal/usecase/recipe_image"
@@ -21,6 +22,7 @@ type UseCase interface {
 	NewGetUserUseCase() auth.GetUserUseCase
 	NewVerifyEmailUseCase() auth.VerifyEmailUseCase
 	NewWithdrawUseCase() auth.WithdrawUseCase
+	NewChangePasswordUseCase() auth.ChangePasswordUseCase
 
 	// Recipe
 	NewCreateRecipeUseCase() recipe.CreateRecipeUseCase
@@ -87,6 +89,12 @@ func (u *useCaseRegistry) NewVerifyEmailUseCase() auth.VerifyEmailUseCase {
 
 func (u *useCaseRegistry) NewWithdrawUseCase() auth.WithdrawUseCase {
 	return auth.NewWithdrawUseCase(u.repo.NewUserRepository())
+}
+
+func (u *useCaseRegistry) NewChangePasswordUseCase() auth.ChangePasswordUseCase {
+	// TODO: EmailSenderの設定をConfigから読み込むようにする
+	emailSender := email.NewMailHogSender("mailhog", 1025, "no-reply@reci-pin.com")
+	return auth.NewChangePasswordUseCase(u.repo.NewUserEmailCredentialRepository(), emailSender)
 }
 
 // Recipe UseCases
