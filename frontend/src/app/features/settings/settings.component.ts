@@ -26,6 +26,11 @@ import { HeadlineComponent } from '../../shared/components/atoms/headline/headli
             <p><strong>メールアドレス:</strong> {{ user.email }}</p>
           </div>
         }
+        <div class="account-actions">
+          <a routerLink="/settings/password" style="text-decoration: none;">
+            <app-button variant="outline">パスワードを変更する</app-button>
+          </a>
+        </div>
       </section>
 
       <section class="settings-section danger-zone">
@@ -59,6 +64,10 @@ import { HeadlineComponent } from '../../shared/components/atoms/headline/headli
       .user-info p {
         margin: 8px 0;
         color: var(--text-secondary, #666);
+      }
+
+      .account-actions {
+        margin-top: 16px;
       }
 
       .danger-zone {

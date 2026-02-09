@@ -33,4 +33,12 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/settings/settings.component').then((m) => m.SettingsComponent),
   },
+  {
+    path: 'settings/password',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/settings/change-password/change-password.component').then(
+        (m) => m.ChangePasswordComponent,
+      ),
+  },
 ];
