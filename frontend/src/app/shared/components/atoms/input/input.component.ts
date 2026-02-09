@@ -1,24 +1,32 @@
-import { Component, forwardRef, Input, OnInit, Injector } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR, NgControl, FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
+import { Component, forwardRef, inject, Input, OnInit, Injector } from '@angular/core';
+import {
+  ControlValueAccessor,
+  NG_VALUE_ACCESSOR,
+  NgControl,
+  FormsModule,
+  ReactiveFormsModule,
+  FormControl,
+} from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 
 @Component({
   selector: 'app-input',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule],
+  imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule],
   templateUrl: './input.component.html',
   styleUrl: './input.component.scss',
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => InputComponent),
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
 export class InputComponent implements ControlValueAccessor, OnInit {
+  private readonly injector = inject(Injector);
+
   @Input() label = '';
   @Input() placeholder = '';
   @Input() type: 'text' | 'password' | 'email' | 'number' = 'text';
@@ -27,43 +35,41 @@ export class InputComponent implements ControlValueAccessor, OnInit {
 
   control: FormControl | null = null;
 
-  // ControlValueAccessor internal value
-  value: any = '';
+  value: string | number = '';
   disabled = false;
 
-  onChange: (value: any) => void = () => { };
-  onTouched: () => void = () => { };
-
-  constructor(private injector: Injector) { }
+  onChange: (value: string | number) => void = () => {
+    // Placeholder for ControlValueAccessor - implemented in registerOnChange
+  };
+  onTouched: () => void = () => {
+    // Placeholder for ControlValueAccessor - implemented in registerOnTouched
+  };
 
   ngOnInit() {
-    // Attempt to get the NgControl associated with this component to show/hide errors based on touch state
     try {
       const ngControl = this.injector.get(NgControl);
       if (ngControl) {
         ngControl.valueAccessor = this;
-        // Wait for next tick/lifecycle to get the control instance
         setTimeout(() => {
           if (ngControl.control instanceof FormControl) {
             this.control = ngControl.control;
           }
         });
       }
-    } catch (e) {
+    } catch {
       // Standalone usage without form control
     }
   }
 
-  // Value Accessor Methods
-  writeValue(obj: any): void {
+  writeValue(obj: string | number): void {
     this.value = obj;
   }
 
-  registerOnChange(fn: any): void {
+  registerOnChange(fn: (value: string | number) => void): void {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any): void {
+  registerOnTouched(fn: () => void): void {
     this.onTouched = fn;
   }
 
@@ -71,7 +77,6 @@ export class InputComponent implements ControlValueAccessor, OnInit {
     this.disabled = isDisabled;
   }
 
-  // Handle Input Event
   onInput(event: Event) {
     const target = event.target as HTMLInputElement;
     this.value = target.value;

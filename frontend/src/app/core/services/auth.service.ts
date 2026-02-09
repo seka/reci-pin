@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -29,17 +29,20 @@ export interface LoginRequest {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private readonly API_URL = '/api';
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'auth_user';
 
+  private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
+
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient, private router: Router) {
+  constructor() {
     this.restoreSession();
   }
 
@@ -59,15 +62,15 @@ export class AuthService {
   }
 
   signup(data: SignupRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/auth/signup`, data).pipe(
-      tap(response => this.handleAuthResponse(response))
-    );
+    return this.http
+      .post<AuthResponse>(`${this.API_URL}/auth/signup`, data)
+      .pipe(tap((response) => this.handleAuthResponse(response)));
   }
 
   login(data: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/auth/login`, data).pipe(
-      tap(response => this.handleAuthResponse(response))
-    );
+    return this.http
+      .post<AuthResponse>(`${this.API_URL}/auth/login`, data)
+      .pipe(tap((response) => this.handleAuthResponse(response)));
   }
 
   logout(): void {
@@ -119,7 +122,7 @@ export class AuthService {
       tap(() => {
         this.clearAuth();
         this.router.navigate(['/login']);
-      })
+      }),
     );
   }
 }

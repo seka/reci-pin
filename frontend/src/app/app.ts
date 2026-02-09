@@ -9,7 +9,7 @@ import { HeaderComponent } from './shared/components/organisms/header/header.com
     <app-header></app-header>
     <router-outlet></router-outlet>
   `,
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
 })
 export class App {
   protected readonly title = signal('frontend');

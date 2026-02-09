@@ -1,5 +1,4 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService, LoginRequest } from '../../../core/services/auth.service';
@@ -11,31 +10,30 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
   selector: 'app-login',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     RouterModule,
-    ReactiveFormsModule, // Added for potential future use or if InputComponent needs it
+    ReactiveFormsModule,
     AuthCardComponent,
     InputComponent,
-    ButtonComponent
+    ButtonComponent,
   ],
   template: `
     <app-auth-card title="ログイン">
       <form (ngSubmit)="onSubmit()">
-        <app-input 
-          label="メールアドレス" 
-          type="email" 
-          [(ngModel)]="credentials.email" 
-          name="email" 
+        <app-input
+          label="メールアドレス"
+          type="email"
+          [(ngModel)]="credentials.email"
+          name="email"
           [required]="true"
         ></app-input>
 
         <div style="margin-top: 16px;">
-          <app-input 
-            label="パスワード" 
-            type="password" 
-            [(ngModel)]="credentials.password" 
-            name="password" 
+          <app-input
+            label="パスワード"
+            type="password"
+            [(ngModel)]="credentials.password"
+            name="password"
             [required]="true"
           ></app-input>
         </div>
@@ -43,41 +41,56 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
         <div class="actions">
           <app-button variant="primary" type="submit" class="submit-btn">ログイン</app-button>
         </div>
-        
-        <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+
+        @if (errorMessage) {
+          <p class="error">{{ errorMessage }}</p>
+        }
       </form>
 
       <div footer>
         <a routerLink="/signup" style="text-decoration: none;">
-          <app-button variant="accent" type="button" class="full-width-btn">アカウント作成はこちら</app-button>
+          <app-button variant="accent" type="button" class="full-width-btn"
+            >アカウント作成はこちら</app-button
+          >
         </a>
       </div>
     </app-auth-card>
   `,
-  styles: [`
-    .actions { margin-top: 24px; margin-bottom: 16px; }
-    .submit-btn { width: 100%; }
-    .full-width-btn { width: 100%; }
-    .error { color: #f44336; margin-top: 16px; text-align: center; }
-  `]
+  styles: [
+    `
+      .actions {
+        margin-top: 24px;
+        margin-bottom: 16px;
+      }
+      .submit-btn {
+        width: 100%;
+      }
+      .full-width-btn {
+        width: 100%;
+      }
+      .error {
+        color: #f44336;
+        margin-top: 16px;
+        text-align: center;
+      }
+    `,
+  ],
 })
 export class LoginComponent {
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+
   credentials: LoginRequest = { email: '', password: '' };
   errorMessage = '';
 
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) { }
-
   onSubmit() {
     this.authService.login(this.credentials).subscribe({
-      next: (response) => {
+      next: () => {
         this.router.navigate(['/recipes']);
       },
-      error: (err) => {
+      error: () => {
         this.errorMessage = 'ログインに失敗しました';
-      }
+      },
     });
   }
 }

@@ -8,7 +8,7 @@ import { HeadlineComponent } from '../../atoms/headline/headline.component';
   standalone: true,
   imports: [CommonModule, MatCardModule, HeadlineComponent],
   templateUrl: './auth-card.component.html',
-  styleUrl: './auth-card.component.scss'
+  styleUrl: './auth-card.component.scss',
 })
 export class AuthCardComponent {
   @Input() title = '';

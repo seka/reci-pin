@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
+import { AsyncPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { ButtonComponent } from '../../shared/components/atoms/button/button.component';
@@ -8,12 +8,7 @@ import { HeadlineComponent } from '../../shared/components/atoms/headline/headli
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    ButtonComponent,
-    HeadlineComponent
-  ],
+  imports: [AsyncPipe, RouterModule, ButtonComponent, HeadlineComponent],
   template: `
     <div class="settings-container">
       <div class="back-link">
@@ -24,11 +19,13 @@ import { HeadlineComponent } from '../../shared/components/atoms/headline/headli
 
       <section class="settings-section">
         <app-headline level="2">アカウント</app-headline>
-        
-        <div class="user-info" *ngIf="currentUser$ | async as user">
-          <p><strong>名前:</strong> {{ user.name }}</p>
-          <p><strong>メールアドレス:</strong> {{ user.email }}</p>
-        </div>
+
+        @if (currentUser$ | async; as user) {
+          <div class="user-info">
+            <p><strong>名前:</strong> {{ user.name }}</p>
+            <p><strong>メールアドレス:</strong> {{ user.email }}</p>
+          </div>
+        }
       </section>
 
       <section class="settings-section danger-zone">
@@ -37,67 +34,63 @@ import { HeadlineComponent } from '../../shared/components/atoms/headline/headli
           アカウントを削除すると、すべてのレシピやデータが完全に削除されます。
           この操作は取り消せません。
         </p>
-        <app-button 
-          variant="warn" 
-          (click)="onWithdraw()"
-          [disabled]="isProcessing"
-        >
+        <app-button variant="warn" (click)="onWithdraw()" [disabled]="isProcessing">
           {{ isProcessing ? '処理中...' : 'アカウントを削除する' }}
         </app-button>
       </section>
     </div>
   `,
-  styles: [`
-    .settings-container {
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 24px;
-    }
+  styles: [
+    `
+      .settings-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 24px;
+      }
 
-    .settings-section {
-      margin-top: 32px;
-      padding: 24px;
-      background: var(--surface-color, #fff);
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
+      .settings-section {
+        margin-top: 32px;
+        padding: 24px;
+        background: var(--surface-color, #fff);
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
 
-    .user-info p {
-      margin: 8px 0;
-      color: var(--text-secondary, #666);
-    }
+      .user-info p {
+        margin: 8px 0;
+        color: var(--text-secondary, #666);
+      }
 
-    .danger-zone {
-      border: 1px solid #f44336;
-    }
+      .danger-zone {
+        border: 1px solid #f44336;
+      }
 
-    .warning-text {
-      color: var(--text-secondary, #666);
-      margin-bottom: 16px;
-      line-height: 1.6;
-    }
+      .warning-text {
+        color: var(--text-secondary, #666);
+        margin-bottom: 16px;
+        line-height: 1.6;
+      }
 
-    .back-link {
-      margin-bottom: 16px;
-    }
+      .back-link {
+        margin-bottom: 16px;
+      }
 
-    .back-link a {
-      color: var(--primary-color, #1976d2);
-      text-decoration: none;
-    }
+      .back-link a {
+        color: var(--primary-color, #1976d2);
+        text-decoration: none;
+      }
 
-    .back-link a:hover {
-      text-decoration: underline;
-    }
-  `]
+      .back-link a:hover {
+        text-decoration: underline;
+      }
+    `,
+  ],
 })
 export class SettingsComponent {
-  currentUser$;
-  isProcessing = false;
+  private readonly authService = inject(AuthService);
 
-  constructor(private authService: AuthService) {
-    this.currentUser$ = this.authService.currentUser$;
-  }
+  currentUser$ = this.authService.currentUser$;
+  isProcessing = false;
 
   onWithdraw(): void {
     if (!confirm('本当に退会しますか？\n\nすべてのデータが削除され、この操作は取り消せません。')) {
@@ -113,7 +106,7 @@ export class SettingsComponent {
         this.isProcessing = false;
         alert('退会処理に失敗しました。しばらくしてから再度お試しください。');
         console.error('Withdraw error:', err);
-      }
+      },
     });
   }
 }

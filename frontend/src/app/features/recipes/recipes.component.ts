@@ -1,5 +1,4 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { RecipeService, Recipe } from '../../core/services/recipe.service';
@@ -10,14 +9,7 @@ import { ButtonComponent } from '../../shared/components/atoms/button/button.com
 @Component({
   selector: 'app-recipes',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    MatIconModule,
-    RecipeCardComponent,
-    HeadlineComponent,
-    ButtonComponent
-  ],
+  imports: [RouterModule, MatIconModule, RecipeCardComponent, HeadlineComponent, ButtonComponent],
   template: `
     <div class="recipes-container">
       <div class="header">
@@ -32,37 +24,65 @@ import { ButtonComponent } from '../../shared/components/atoms/button/button.com
           </a>
         </div>
       </div>
-      
+
       <div class="recipes-grid">
-        <app-recipe-card *ngFor="let recipe of recipes" [recipe]="recipe" class="recipe-card-item"></app-recipe-card>
+        @for (recipe of recipes; track recipe.id) {
+          <app-recipe-card [recipe]="recipe" class="recipe-card-item"></app-recipe-card>
+        }
       </div>
     </div>
   `,
-  styles: [`
-    .recipes-container { padding: 24px; max-width: 1200px; margin: 0 auto; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .header-actions { display: flex; align-items: center; gap: 16px; }
-    .add-btn { width: auto; }
-    .settings-link { 
-      color: var(--text-secondary, #666); 
-      display: flex; 
-      align-items: center;
-      transition: color 0.2s;
-    }
-    .settings-link:hover { color: var(--primary-color, #1976d2); }
-    .recipes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
-    .recipe-card-item { height: 100%; display: block; }
-  `]
+  styles: [
+    `
+      .recipes-container {
+        padding: 24px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+      }
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .add-btn {
+        width: auto;
+      }
+      .settings-link {
+        color: var(--text-secondary, #666);
+        display: flex;
+        align-items: center;
+        transition: color 0.2s;
+      }
+      .settings-link:hover {
+        color: var(--primary-color, #1976d2);
+      }
+      .recipes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 24px;
+      }
+      .recipe-card-item {
+        height: 100%;
+        display: block;
+      }
+    `,
+  ],
 })
 export class RecipesComponent implements OnInit {
-  recipes: Recipe[] = [];
+  private readonly recipeService = inject(RecipeService);
 
-  constructor(private recipeService: RecipeService) { }
+  recipes: Recipe[] = [];
 
   ngOnInit() {
     this.recipeService.getUserRecipes().subscribe({
-      next: (recipes) => this.recipes = recipes,
-      error: (err: any) => console.error('Failed to load recipes', err)
+      next: (recipes) => (this.recipes = recipes),
+      error: (err: Error) => console.error('Failed to load recipes', err),
     });
   }
 }
