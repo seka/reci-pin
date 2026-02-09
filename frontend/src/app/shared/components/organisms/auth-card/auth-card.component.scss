@@ -1,24 +1,23 @@
 @use '../../../../core/styles' as ds;
 
 .auth-card-container {
-    max-width: 400px;
-    margin: ds.$spacing-10 auto; // Use 80px token
-    padding: 0 ds.$spacing-2; // Use 16px token padding if needed, or keeping container constraint
+  max-width: 400px;
+  margin: ds.$spacing-10 auto; // Use 80px token
+  padding: 0 ds.$spacing-2; // Use 16px token padding if needed, or keeping container constraint
 }
 
 mat-card {
-    padding: ds.$spacing-3; // 24px
-    text-align: center;
+  padding: ds.$spacing-3; // 24px
+  text-align: center;
 }
 
 mat-card-header {
-    justify-content: center;
-    margin-bottom: ds.$spacing-3;
+  justify-content: center;
+  margin-bottom: ds.$spacing-3;
 }
 
-
 mat-card-footer {
-    padding: ds.$spacing-2;
-    margin-top: 0;
-    display: block; // Ensure footer takes width
+  padding: ds.$spacing-2;
+  margin-top: 0;
+  display: block; // Ensure footer takes width
 }

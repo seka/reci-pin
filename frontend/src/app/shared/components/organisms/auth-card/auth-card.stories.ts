@@ -4,26 +4,26 @@ import { AuthCardComponent } from './auth-card.component';
 import { HeadlineComponent } from '../../atoms/headline/headline.component';
 
 const meta: Meta<AuthCardComponent> = {
-    title: 'Organisms/AuthCard',
-    component: AuthCardComponent,
-    tags: ['autodocs'],
-    decorators: [
-        moduleMetadata({
-            imports: [MatCardModule, HeadlineComponent],
-        }),
-    ],
+  title: 'Organisms/AuthCard',
+  component: AuthCardComponent,
+  tags: ['autodocs'],
+  decorators: [
+    moduleMetadata({
+      imports: [MatCardModule, HeadlineComponent],
+    }),
+  ],
 };
 
 export default meta;
 type Story = StoryObj<AuthCardComponent>;
 
 export const Login: Story = {
-    args: {
-        title: 'ログイン',
-    },
-    render: (args) => ({
-        props: args,
-        template: `
+  args: {
+    title: 'ログイン',
+  },
+  render: (args) => ({
+    props: args,
+    template: `
       <app-auth-card [title]="title">
         <div style="padding: 20px; text-align: center;">
           <p>ここにログインフォームが入ります</p>
@@ -33,16 +33,16 @@ export const Login: Story = {
         </div>
       </app-auth-card>
     `,
-    }),
+  }),
 };
 
 export const Signup: Story = {
-    args: {
-        title: '新規登録',
-    },
-    render: (args) => ({
-        props: args,
-        template: `
+  args: {
+    title: '新規登録',
+  },
+  render: (args) => ({
+    props: args,
+    template: `
       <app-auth-card [title]="title">
         <div style="padding: 20px; text-align: center;">
           <p>ここにユーザー登録フォームが入ります</p>
@@ -52,5 +52,5 @@ export const Signup: Story = {
         </div>
       </app-auth-card>
     `,
-    }),
+  }),
 };

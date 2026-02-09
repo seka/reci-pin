@@ -1,24 +1,32 @@
-import { Component, forwardRef, Input, OnInit, Injector } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR, NgControl, FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
+import { Component, forwardRef, inject, Input, OnInit, Injector } from '@angular/core';
+import {
+  ControlValueAccessor,
+  NG_VALUE_ACCESSOR,
+  NgControl,
+  FormsModule,
+  ReactiveFormsModule,
+  FormControl,
+} from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 
 @Component({
   selector: 'app-textarea',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule],
+  imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule],
   templateUrl: './textarea.component.html',
   styleUrl: './textarea.component.scss',
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => TextareaComponent),
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
 export class TextareaComponent implements ControlValueAccessor, OnInit {
+  private readonly injector = inject(Injector);
+
   @Input() label = '';
   @Input() placeholder = '';
   @Input() rows = 4;
@@ -27,13 +35,15 @@ export class TextareaComponent implements ControlValueAccessor, OnInit {
 
   control: FormControl | null = null;
 
-  value: any = '';
+  value: string = '';
   disabled = false;
 
-  onChange: (value: any) => void = () => { };
-  onTouched: () => void = () => { };
-
-  constructor(private injector: Injector) { }
+  onChange: (value: string) => void = () => {
+    // Placeholder for ControlValueAccessor - implemented in registerOnChange
+  };
+  onTouched: () => void = () => {
+    // Placeholder for ControlValueAccessor - implemented in registerOnTouched
+  };
 
   ngOnInit() {
     try {
@@ -46,18 +56,20 @@ export class TextareaComponent implements ControlValueAccessor, OnInit {
           }
         });
       }
-    } catch (e) { }
+    } catch {
+      // Standalone usage without form control
+    }
   }
 
-  writeValue(obj: any): void {
+  writeValue(obj: string): void {
     this.value = obj;
   }
 
-  registerOnChange(fn: any): void {
+  registerOnChange(fn: (value: string) => void): void {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any): void {
+  registerOnTouched(fn: () => void): void {
     this.onTouched = fn;
   }
 

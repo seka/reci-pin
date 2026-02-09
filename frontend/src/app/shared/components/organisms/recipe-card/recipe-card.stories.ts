@@ -7,53 +7,53 @@ import { RecipeCardComponent } from './recipe-card.component';
 import { Recipe } from '../../../../core/services/recipe.service';
 
 const meta: Meta<RecipeCardComponent> = {
-    title: 'Organisms/RecipeCard',
-    component: RecipeCardComponent,
-    tags: ['autodocs'],
-    decorators: [
-        moduleMetadata({
-            imports: [MatCardModule, MatButtonModule, MatIconModule, MatChipsModule],
-        }),
-    ],
+  title: 'Organisms/RecipeCard',
+  component: RecipeCardComponent,
+  tags: ['autodocs'],
+  decorators: [
+    moduleMetadata({
+      imports: [MatCardModule, MatButtonModule, MatIconModule, MatChipsModule],
+    }),
+  ],
 };
 
 export default meta;
 type Story = StoryObj<RecipeCardComponent>;
 
 const mockRecipe: Recipe = {
-    id: 1,
-    user_id: 1,
-    name: '手作りハンバーグ',
-    url: 'https://example.com/hamburg',
-    memo: 'ふっくらジューシーなハンバーグ。玉ねぎはしっかり炒めるのがコツです。',
-    created_at: '2024-02-07T00:00:00Z',
-    updated_at: '2024-02-07T00:00:00Z',
-    tags: [
-        { id: 1, name: '洋食' },
-        { id: 2, name: '夕食' },
-    ],
+  id: 1,
+  user_id: 1,
+  name: '手作りハンバーグ',
+  url: 'https://example.com/hamburg',
+  memo: 'ふっくらジューシーなハンバーグ。玉ねぎはしっかり炒めるのがコツです。',
+  created_at: '2024-02-07T00:00:00Z',
+  updated_at: '2024-02-07T00:00:00Z',
+  tags: [
+    { id: 1, name: '洋食' },
+    { id: 2, name: '夕食' },
+  ],
 };
 
 export const Default: Story = {
-    args: {
-        recipe: mockRecipe,
-    },
+  args: {
+    recipe: mockRecipe,
+  },
 };
 
 export const WithoutTags: Story = {
-    args: {
-        recipe: {
-            ...mockRecipe,
-            tags: [],
-        },
+  args: {
+    recipe: {
+      ...mockRecipe,
+      tags: [],
     },
+  },
 };
 
 export const WithoutUrl: Story = {
-    args: {
-        recipe: {
-            ...mockRecipe,
-            url: '',
-        },
+  args: {
+    recipe: {
+      ...mockRecipe,
+      url: '',
     },
+  },
 };

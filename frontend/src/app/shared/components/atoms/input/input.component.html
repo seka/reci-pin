@@ -1,12 +1,30 @@
 <mat-form-field appearance="outline" class="full-width">
-    <mat-label *ngIf="label">{{ label }}</mat-label>
-    <input matInput [type]="type" [placeholder]="placeholder" [value]="value" [disabled]="disabled"
-        [required]="required" (input)="onInput($event)" (blur)="onBlur()">
-    <!-- Custom error message passed from parent -->
-    <mat-error *ngIf="errorMessage">{{ errorMessage }}</mat-error>
-    <!-- Error message derived from Control interaction if generic -->
-    <mat-error *ngIf="!errorMessage && control?.invalid && (control?.dirty || control?.touched)">
-        <span *ngIf="control?.errors?.['required']">必須項目です</span>
-        <span *ngIf="control?.errors?.['email']">有効なメールアドレスを入力してください</span>
+  @if (label) {
+    <mat-label>{{ label }}</mat-label>
+  }
+  <input
+    matInput
+    [type]="type"
+    [placeholder]="placeholder"
+    [value]="value"
+    [disabled]="disabled"
+    [required]="required"
+    (input)="onInput($event)"
+    (blur)="onBlur()"
+  />
+  <!-- Custom error message passed from parent -->
+  @if (errorMessage) {
+    <mat-error>{{ errorMessage }}</mat-error>
+  }
+  <!-- Error message derived from Control interaction if generic -->
+  @if (!errorMessage && control?.invalid && (control?.dirty || control?.touched)) {
+    <mat-error>
+      @if (control?.errors?.['required']) {
+        <span>必須項目です</span>
+      }
+      @if (control?.errors?.['email']) {
+        <span>有効なメールアドレスを入力してください</span>
+      }
     </mat-error>
+  }
 </mat-form-field>

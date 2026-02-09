@@ -9,26 +9,26 @@ import { ButtonComponent } from '../../atoms/button/button.component';
 
 // Mock AuthService
 const mockAuthService = {
-    currentUser$: of({ id: 1, name: 'Tanaka Taro', email: 'tanaka@example.com' }),
-    logout: () => console.log('Logged out'),
+  currentUser$: of({ id: 1, name: 'Tanaka Taro', email: 'tanaka@example.com' }),
+  logout: () => console.log('Logged out'),
 };
 
 const meta: Meta<HeaderComponent> = {
-    title: 'Organisms/Header',
-    component: HeaderComponent,
-    tags: ['autodocs'],
-    decorators: [
-        applicationConfig({
-            providers: [
-                provideRouter([]),
-                { provide: AuthService, useValue: mockAuthService },
-                { provide: APP_BASE_HREF, useValue: '/' },
-            ],
-        }),
-        moduleMetadata({
-            imports: [LogoComponent, ButtonComponent],
-        }),
-    ],
+  title: 'Organisms/Header',
+  component: HeaderComponent,
+  tags: ['autodocs'],
+  decorators: [
+    applicationConfig({
+      providers: [
+        provideRouter([]),
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: APP_BASE_HREF, useValue: '/' },
+      ],
+    }),
+    moduleMetadata({
+      imports: [LogoComponent, ButtonComponent],
+    }),
+  ],
 };
 
 export default meta;
@@ -37,14 +37,14 @@ type Story = StoryObj<HeaderComponent>;
 export const LoggedIn: Story = {};
 
 export const LoggedOut: Story = {
-    decorators: [
-        applicationConfig({
-            providers: [
-                {
-                    provide: AuthService,
-                    useValue: { ...mockAuthService, currentUser$: of(null) }
-                },
-            ],
-        }),
-    ],
+  decorators: [
+    applicationConfig({
+      providers: [
+        {
+          provide: AuthService,
+          useValue: { ...mockAuthService, currentUser$: of(null) },
+        },
+      ],
+    }),
+  ],
 };
