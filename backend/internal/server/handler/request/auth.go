@@ -14,3 +14,8 @@ type LoginRequest struct {
 type VerifyRequest struct {
 	Token string `json:"token"`
 }
+
+type ChangePasswordRequest struct {
+	CurrentPassword string `json:"current_password"`
+	NewPassword     string `json:"new_password"`
+}

@@ -58,6 +58,7 @@ func (s *Server) setupRoutes() {
 		s.useCaseRegistry.NewGetUserUseCase(),
 		s.useCaseRegistry.NewVerifyEmailUseCase(),
 		s.useCaseRegistry.NewWithdrawUseCase(),
+		s.useCaseRegistry.NewChangePasswordUseCase(),
 	)
 
 	s.router.Post("/api/auth/signup", authHandler.Signup)
@@ -69,6 +70,7 @@ func (s *Server) setupRoutes() {
 
 		// Auth (authenticated routes)
 		r.Delete("/api/auth/withdraw", authHandler.Withdraw)
+		r.Put("/api/auth/password", authHandler.ChangePassword)
 
 		// Recipes
 		recipeHandler := handler.NewRecipeHandler(

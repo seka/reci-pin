@@ -12,12 +12,13 @@ import (
 )
 
 type AuthHandler struct {
-	signupUseCase        auth.SignupUseCase
-	loginUseCase         auth.LoginUseCase
-	generateTokenUseCase auth.GenerateTokenUseCase
-	getUserUseCase       auth.GetUserUseCase
-	verifyEmailUseCase   auth.VerifyEmailUseCase
-	withdrawUseCase      auth.WithdrawUseCase
+	signupUseCase         auth.SignupUseCase
+	loginUseCase          auth.LoginUseCase
+	generateTokenUseCase  auth.GenerateTokenUseCase
+	getUserUseCase        auth.GetUserUseCase
+	verifyEmailUseCase    auth.VerifyEmailUseCase
+	withdrawUseCase       auth.WithdrawUseCase
+	changePasswordUseCase auth.ChangePasswordUseCase
 }
 
 func NewAuthHandler(
@@ -27,14 +28,16 @@ func NewAuthHandler(
 	getUserUseCase auth.GetUserUseCase,
 	verifyEmailUseCase auth.VerifyEmailUseCase,
 	withdrawUseCase auth.WithdrawUseCase,
+	changePasswordUseCase auth.ChangePasswordUseCase,
 ) *AuthHandler {
 	return &AuthHandler{
-		signupUseCase:        signupUseCase,
-		loginUseCase:         loginUseCase,
-		generateTokenUseCase: generateTokenUseCase,
-		getUserUseCase:       getUserUseCase,
-		verifyEmailUseCase:   verifyEmailUseCase,
-		withdrawUseCase:      withdrawUseCase,
+		signupUseCase:         signupUseCase,
+		loginUseCase:          loginUseCase,
+		generateTokenUseCase:  generateTokenUseCase,
+		getUserUseCase:        getUserUseCase,
+		verifyEmailUseCase:    verifyEmailUseCase,
+		withdrawUseCase:       withdrawUseCase,
+		changePasswordUseCase: changePasswordUseCase,
 	}
 }
 
@@ -160,4 +163,36 @@ func (h *AuthHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middleware.GetUserIDFromContext(r.Context())
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var req request.ChangePasswordRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	input := auth.ChangePasswordInput{
+		CurrentPassword: req.CurrentPassword,
+		NewPassword:     req.NewPassword,
+	}
+
+	if err := h.changePasswordUseCase.Execute(r.Context(), userID, input); err != nil {
+		// エラーの内容によってステータスコードを変えるべきだが、簡単のため400にする
+		// 実際には internal error と bad request を区別すべき
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	res := response.MessageResponse{
+		Message: "Password changed successfully",
+	}
+
+	respondJSON(w, http.StatusOK, res)
 }

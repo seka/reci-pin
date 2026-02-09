@@ -72,6 +72,20 @@ func (mr *MockUseCaseMockRecorder) NewAddTagsUseCase() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewAddTagsUseCase", reflect.TypeOf((*MockUseCase)(nil).NewAddTagsUseCase))
 }
 
+// NewChangePasswordUseCase mocks base method.
+func (m *MockUseCase) NewChangePasswordUseCase() auth.ChangePasswordUseCase {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewChangePasswordUseCase")
+	ret0, _ := ret[0].(auth.ChangePasswordUseCase)
+	return ret0
+}
+
+// NewChangePasswordUseCase indicates an expected call of NewChangePasswordUseCase.
+func (mr *MockUseCaseMockRecorder) NewChangePasswordUseCase() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewChangePasswordUseCase", reflect.TypeOf((*MockUseCase)(nil).NewChangePasswordUseCase))
+}
+
 // NewCreateRecipeUseCase mocks base method.
 func (m *MockUseCase) NewCreateRecipeUseCase() recipe.CreateRecipeUseCase {
 	m.ctrl.T.Helper()
