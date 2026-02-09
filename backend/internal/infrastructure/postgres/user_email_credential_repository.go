@@ -139,6 +139,19 @@ func (r *UserEmailCredentialRepository) Update(ctx context.Context, credential *
 	return nil
 }
 
+func (r *UserEmailCredentialRepository) UpdatePassword(ctx context.Context, userID int64, passwordHash string) error {
+	query := `
+		UPDATE user_email_credentials
+		SET password_hash = $2, updated_at = NOW()
+		WHERE user_id = $1
+	`
+	_, err := r.db.Execute(ctx, query, userID, passwordHash)
+	if err != nil {
+		return fmt.Errorf("failed to update password: %w", err)
+	}
+	return nil
+}
+
 // Password utility (Keep this here or move to a service?)
 // Keeping here as part of infrastructure implementation details for now.
 

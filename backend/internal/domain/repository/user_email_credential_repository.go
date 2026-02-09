@@ -12,4 +12,5 @@ type UserEmailCredentialRepository interface {
 	GetByUserID(ctx context.Context, userID int64) (*model.UserEmailCredential, error)
 	GetByToken(ctx context.Context, token string) (*model.UserEmailCredential, error)
 	Update(ctx context.Context, credential *model.UserEmailCredential) error
+	UpdatePassword(ctx context.Context, userID int64, passwordHash string) error
 }
