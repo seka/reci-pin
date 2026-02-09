@@ -1,5 +1,4 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -14,7 +13,6 @@ import { TextareaComponent } from '../../../shared/components/atoms/textarea/tex
   selector: 'app-recipe-form',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     RouterModule,
     MatCardModule,
@@ -22,7 +20,7 @@ import { TextareaComponent } from '../../../shared/components/atoms/textarea/tex
     ButtonComponent,
     HeadlineComponent,
     InputComponent,
-    TextareaComponent
+    TextareaComponent,
   ],
   template: `
     <div class="form-container">
@@ -34,7 +32,6 @@ import { TextareaComponent } from '../../../shared/components/atoms/textarea/tex
         </mat-card-header>
         <mat-card-content>
           <form [formGroup]="recipeForm" (ngSubmit)="onSubmit()">
-            
             <div style="margin-bottom: 16px;">
               <app-input
                 label="レシピ名"
@@ -63,16 +60,24 @@ import { TextareaComponent } from '../../../shared/components/atoms/textarea/tex
               ></app-textarea>
             </div>
 
-            <app-tag-select 
-              [tags]="tags" 
+            <app-tag-select
+              [tags]="tags"
               [selectedTagIds]="selectedTagIds"
-              (selectionChange)="selectedTagIds = $event">
+              (selectionChange)="selectedTagIds = $event"
+            >
             </app-tag-select>
 
             <div class="actions">
-              <app-button type="button" routerLink="/recipes" variant="warn" class="action-btn">キャンセル</app-button>
-              <app-button type="submit" variant="primary" [disabled]="recipeForm.invalid || isSubmitting" class="action-btn">
-                 {{ isSubmitting ? '保存中...' : '保存' }}
+              <app-button type="button" routerLink="/recipes" variant="warn" class="action-btn"
+                >キャンセル</app-button
+              >
+              <app-button
+                type="submit"
+                variant="primary"
+                [disabled]="recipeForm.invalid || isSubmitting"
+                class="action-btn"
+              >
+                {{ isSubmitting ? '保存中...' : '保存' }}
               </app-button>
             </div>
           </form>
@@ -80,30 +85,51 @@ import { TextareaComponent } from '../../../shared/components/atoms/textarea/tex
       </mat-card>
     </div>
   `,
-  styles: [`
-    .recipe-form-container { padding: 24px; max-width: 600px; margin: 0 auto; }
-    mat-card { padding: 24px; }
-    mat-card-title { margin-bottom: 24px; }
-    .full-width { width: 100%; margin-bottom: 8px; }
-    .actions { display: flex; justify-content: flex-end; gap: 16px; margin-top: 24px; }
-    .action-btn { width: auto; min-width: 100px; }
-  `]
+  styles: [
+    `
+      .recipe-form-container {
+        padding: 24px;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      mat-card {
+        padding: 24px;
+      }
+      mat-card-title {
+        margin-bottom: 24px;
+      }
+      .full-width {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+      .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 16px;
+        margin-top: 24px;
+      }
+      .action-btn {
+        width: auto;
+        min-width: 100px;
+      }
+    `,
+  ],
 })
 export class RecipeFormComponent implements OnInit {
+  private readonly fb = inject(FormBuilder);
+  private readonly recipeService = inject(RecipeService);
+  private readonly router = inject(Router);
+
   recipeForm: FormGroup;
   tags: Tag[] = [];
   selectedTagIds: number[] = [];
   isSubmitting = false;
 
-  constructor(
-    private fb: FormBuilder,
-    private recipeService: RecipeService,
-    private router: Router
-  ) {
+  constructor() {
     this.recipeForm = this.fb.group({
       name: ['', Validators.required],
       url: ['', [Validators.required]],
-      memo: ['']
+      memo: [''],
     });
   }
 
@@ -120,8 +146,8 @@ export class RecipeFormComponent implements OnInit {
 
   ngOnInit() {
     this.recipeService.getAllTags().subscribe({
-      next: (tags) => this.tags = tags,
-      error: (err) => console.error('Failed to load tags', err)
+      next: (tags) => (this.tags = tags),
+      error: (err) => console.error('Failed to load tags', err),
     });
   }
 
@@ -130,7 +156,7 @@ export class RecipeFormComponent implements OnInit {
       this.isSubmitting = true;
       const formData = {
         ...this.recipeForm.value,
-        tag_ids: this.selectedTagIds
+        tag_ids: this.selectedTagIds,
       };
 
       this.recipeService.createRecipe(formData).subscribe({
@@ -140,7 +166,7 @@ export class RecipeFormComponent implements OnInit {
         error: (err) => {
           console.error('Failed to create recipe', err);
           this.isSubmitting = false;
-        }
+        },
       });
     }
   }
