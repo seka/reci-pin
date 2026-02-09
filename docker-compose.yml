@@ -72,5 +72,16 @@ services:
       - frontend
     restart: unless-stopped
 
+  mailhog:
+    image: mailhog/mailhog
+    container_name: reci-pin-mailhog
+    ports:
+      - "1025:1025" # SMTP server
+      - "8025:8025" # Web UI
+
+networks:
+  reci-pin-network:
+    driver: bridge
+
 volumes:
   postgres_data:
