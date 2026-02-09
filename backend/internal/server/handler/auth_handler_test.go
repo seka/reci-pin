@@ -2,6 +2,7 @@ package handler_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/server/handler"
+	"github.com/seka/reci-pin/backend/internal/server/middleware"
 	usecasemock "github.com/seka/reci-pin/backend/internal/usecase/mock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -85,6 +87,7 @@ func TestAuthHandler_Signup(t *testing.T) {
 				usecasemock.NewMockGetUserUseCase(ctrl),
 				usecasemock.NewMockVerifyEmailUseCase(ctrl),
 				usecasemock.NewMockWithdrawUseCase(ctrl),
+				usecasemock.NewMockChangePasswordUseCase(ctrl),
 			)
 
 			var req *http.Request
@@ -196,6 +199,7 @@ func TestAuthHandler_Login(t *testing.T) {
 				mockGetUser,
 				usecasemock.NewMockVerifyEmailUseCase(ctrl),
 				usecasemock.NewMockWithdrawUseCase(ctrl),
+				usecasemock.NewMockChangePasswordUseCase(ctrl),
 			)
 
 			body, _ := json.Marshal(tt.body)
@@ -249,6 +253,7 @@ func TestAuthHandler_Verify(t *testing.T) {
 				usecasemock.NewMockGetUserUseCase(ctrl),
 				mockVerify,
 				usecasemock.NewMockWithdrawUseCase(ctrl),
+				usecasemock.NewMockChangePasswordUseCase(ctrl),
 			)
 
 			body, _ := json.Marshal(tt.body)
@@ -257,6 +262,83 @@ func TestAuthHandler_Verify(t *testing.T) {
 			w := httptest.NewRecorder()
 
 			h.Verify(w, req)
+			assert.Equal(t, tt.wantStatus, w.Code)
+		})
+	}
+}
+
+func TestAuthHandler_ChangePassword(t *testing.T) {
+	tests := []struct {
+		name       string
+		body       map[string]interface{}
+		setupMock  func(m *usecasemock.MockChangePasswordUseCase)
+		wantStatus int
+	}{
+		{
+			name: "Success",
+			body: map[string]interface{}{
+				"current_password": "old",
+				"new_password":     "new",
+			},
+			setupMock: func(m *usecasemock.MockChangePasswordUseCase) {
+				m.EXPECT().Execute(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "Invalid JSON",
+			body: nil,
+			setupMock: func(m *usecasemock.MockChangePasswordUseCase) {
+				// No call expected
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "UseCase Error",
+			body: map[string]interface{}{
+				"current_password": "old",
+				"new_password":     "new",
+			},
+			setupMock: func(m *usecasemock.MockChangePasswordUseCase) {
+				m.EXPECT().Execute(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("error"))
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockChangePassword := usecasemock.NewMockChangePasswordUseCase(ctrl)
+			tt.setupMock(mockChangePassword)
+
+			h := handler.NewAuthHandler(
+				usecasemock.NewMockSignupUseCase(ctrl),
+				usecasemock.NewMockLoginUseCase(ctrl),
+				usecasemock.NewMockGenerateTokenUseCase(ctrl),
+				usecasemock.NewMockGetUserUseCase(ctrl),
+				usecasemock.NewMockVerifyEmailUseCase(ctrl),
+				usecasemock.NewMockWithdrawUseCase(ctrl),
+				mockChangePassword,
+			)
+
+			var req *http.Request
+			if tt.name == "Invalid JSON" {
+				req = httptest.NewRequest(http.MethodPut, "/auth/password", bytes.NewReader([]byte("invalid")))
+			} else {
+				body, _ := json.Marshal(tt.body)
+				req = httptest.NewRequest(http.MethodPut, "/auth/password", bytes.NewReader(body))
+			}
+			req.Header.Set("Content-Type", "application/json")
+			// Add dummy user ID to context
+			ctx := context.WithValue(req.Context(), middleware.UserIDKey, int64(1))
+			req = req.WithContext(ctx)
+
+			w := httptest.NewRecorder()
+			h.ChangePassword(w, req)
+
 			assert.Equal(t, tt.wantStatus, w.Code)
 		})
 	}
@@ -285,6 +367,7 @@ func TestAuthHandler_Logout(t *testing.T) {
 				usecasemock.NewMockGetUserUseCase(ctrl),
 				usecasemock.NewMockVerifyEmailUseCase(ctrl),
 				usecasemock.NewMockWithdrawUseCase(ctrl),
+				usecasemock.NewMockChangePasswordUseCase(ctrl),
 			)
 
 			req := httptest.NewRequest(http.MethodPost, "/auth/logout", nil)

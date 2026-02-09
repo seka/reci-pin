@@ -20,6 +20,8 @@ func setupMockRegistry(ctrl *gomock.Controller, m *registrymock.MockUseCase) {
 	m.EXPECT().NewGenerateTokenUseCase().Return(usecasemock.NewMockGenerateTokenUseCase(ctrl))
 	m.EXPECT().NewGetUserUseCase().Return(usecasemock.NewMockGetUserUseCase(ctrl))
 	m.EXPECT().NewVerifyEmailUseCase().Return(usecasemock.NewMockVerifyEmailUseCase(ctrl))
+	m.EXPECT().NewWithdrawUseCase().Return(usecasemock.NewMockWithdrawUseCase(ctrl))
+	m.EXPECT().NewChangePasswordUseCase().Return(usecasemock.NewMockChangePasswordUseCase(ctrl))
 
 	// Recipe
 	m.EXPECT().NewCreateRecipeUseCase().Return(usecasemock.NewMockCreateRecipeUseCase(ctrl))
