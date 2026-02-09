@@ -24,8 +24,15 @@ func NewMailHogSender(host string, port int, from string) *MailHogSender {
 }
 
 func (s *MailHogSender) SendPasswordChangeNotification(to string) error {
-	subject := "Password Changed Successfully"
-	body := "Your password has been changed successfully.\nIf you did not make this change, please contact support immediately."
+	subject := "パスワード変更完了のお知らせ"
+	body := "いつも Reci-pin をご利用いただきありがとうございます。\n" +
+		"パスワードの変更が完了しました。\n\n" +
+		"もし、この変更に心当たりがない場合は、速やかに運営事務局までお問い合わせください。\n\n" +
+		"--------------------------------------------------\n" +
+		"Reci-pin 運営事務局\n" +
+		"お問い合わせ: support@reci-pin.com\n" +
+		"プライバシーポリシー: https://reci-pin.com/privacy\n" +
+		"--------------------------------------------------"
 
 	msg := fmt.Sprintf("From: %s\r\n"+
 		"To: %s\r\n"+
