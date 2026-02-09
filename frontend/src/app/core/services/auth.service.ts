@@ -117,6 +117,10 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
+  changePassword(data: { current_password: string; new_password: string }): Observable<void> {
+    return this.http.put<void>(`${this.API_URL}/auth/password`, data);
+  }
+
   withdraw(): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/auth/withdraw`).pipe(
       tap(() => {
