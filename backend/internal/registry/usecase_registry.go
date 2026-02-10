@@ -23,6 +23,8 @@ type UseCase interface {
 	NewVerifyEmailUseCase() auth.VerifyEmailUseCase
 	NewWithdrawUseCase() auth.WithdrawUseCase
 	NewChangePasswordUseCase() auth.ChangePasswordUseCase
+	NewRequestPasswordResetUseCase() auth.RequestPasswordResetUseCase
+	NewResetPasswordUseCase() auth.ResetPasswordUseCase
 
 	// Recipe
 	NewCreateRecipeUseCase() recipe.CreateRecipeUseCase
@@ -95,6 +97,16 @@ func (u *useCaseRegistry) NewChangePasswordUseCase() auth.ChangePasswordUseCase 
 	// TODO: EmailSenderの設定をConfigから読み込むようにする
 	emailSender := email.NewMailHogSender("mailhog", 1025, "no-reply@reci-pin.com")
 	return auth.NewChangePasswordUseCase(u.repo.NewUserEmailCredentialRepository(), emailSender)
+}
+
+func (u *useCaseRegistry) NewRequestPasswordResetUseCase() auth.RequestPasswordResetUseCase {
+	// TODO: EmailSenderの設定をConfigから読み込むようにする
+	emailSender := email.NewMailHogSender("mailhog", 1025, "no-reply@reci-pin.com")
+	return auth.NewRequestPasswordResetUseCase(u.repo.NewUserEmailCredentialRepository(), u.repo.NewPasswordResetTokenRepository(), emailSender)
+}
+
+func (u *useCaseRegistry) NewResetPasswordUseCase() auth.ResetPasswordUseCase {
+	return auth.NewResetPasswordUseCase(u.repo.NewPasswordResetTokenRepository(), u.repo.NewUserEmailCredentialRepository())
 }
 
 // Recipe UseCases

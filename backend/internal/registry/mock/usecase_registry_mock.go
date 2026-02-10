@@ -240,6 +240,34 @@ func (mr *MockUseCaseMockRecorder) NewRemoveTagsUseCase() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRemoveTagsUseCase", reflect.TypeOf((*MockUseCase)(nil).NewRemoveTagsUseCase))
 }
 
+// NewRequestPasswordResetUseCase mocks base method.
+func (m *MockUseCase) NewRequestPasswordResetUseCase() auth.RequestPasswordResetUseCase {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewRequestPasswordResetUseCase")
+	ret0, _ := ret[0].(auth.RequestPasswordResetUseCase)
+	return ret0
+}
+
+// NewRequestPasswordResetUseCase indicates an expected call of NewRequestPasswordResetUseCase.
+func (mr *MockUseCaseMockRecorder) NewRequestPasswordResetUseCase() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRequestPasswordResetUseCase", reflect.TypeOf((*MockUseCase)(nil).NewRequestPasswordResetUseCase))
+}
+
+// NewResetPasswordUseCase mocks base method.
+func (m *MockUseCase) NewResetPasswordUseCase() auth.ResetPasswordUseCase {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewResetPasswordUseCase")
+	ret0, _ := ret[0].(auth.ResetPasswordUseCase)
+	return ret0
+}
+
+// NewResetPasswordUseCase indicates an expected call of NewResetPasswordUseCase.
+func (mr *MockUseCaseMockRecorder) NewResetPasswordUseCase() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewResetPasswordUseCase", reflect.TypeOf((*MockUseCase)(nil).NewResetPasswordUseCase))
+}
+
 // NewSearchRecipesUseCase mocks base method.
 func (m *MockUseCase) NewSearchRecipesUseCase() recipe.SearchRecipesUseCase {
 	m.ctrl.T.Helper()
