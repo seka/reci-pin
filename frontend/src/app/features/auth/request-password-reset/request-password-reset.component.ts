@@ -1,0 +1,49 @@
+import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
+import { AuthCardComponent } from '../../../shared/components/organisms/auth-card/auth-card.component';
+import { InputComponent } from '../../../shared/components/atoms/input/input.component';
+import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
+
+@Component({
+    selector: 'app-request-password-reset',
+    standalone: true,
+    imports: [
+        CommonModule,
+        FormsModule,
+        RouterModule,
+        AuthCardComponent,
+        InputComponent,
+        ButtonComponent,
+    ],
+    templateUrl: './request-password-reset.component.html',
+    styleUrls: ['./request-password-reset.component.scss'],
+})
+export class RequestPasswordResetComponent {
+    private readonly authService = inject(AuthService);
+
+    email = '';
+    message = '';
+    errorMessage = '';
+    isLoading = false;
+
+    onSubmit() {
+        this.isLoading = true;
+        this.message = '';
+        this.errorMessage = '';
+
+        this.authService.requestPasswordReset(this.email).subscribe({
+            next: (res) => {
+                this.message = res.message;
+                this.isLoading = false;
+            },
+            error: (err) => {
+                this.errorMessage = 'リクエストの送信に失敗しました。';
+                this.isLoading = false;
+                console.error(err);
+            },
+        });
+    }
+}

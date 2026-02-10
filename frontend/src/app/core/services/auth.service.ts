@@ -129,4 +129,19 @@ export class AuthService {
       }),
     );
   }
+
+  requestPasswordReset(email: string): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(`${this.API_URL}/auth/password-reset/request`, { email });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(`${this.API_URL}/auth/password-reset`, {
+      token,
+      new_password: newPassword,
+    });
+  }
+}
+
+export interface MessageResponse {
+  message: string;
 }

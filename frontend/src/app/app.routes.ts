@@ -14,6 +14,20 @@ export const routes: Routes = [
       import('./features/auth/signup/signup.component').then((m) => m.SignupComponent),
   },
   {
+    path: 'password-reset/request',
+    loadComponent: () =>
+      import('./features/auth/request-password-reset/request-password-reset.component').then(
+        (m) => m.RequestPasswordResetComponent,
+      ),
+  },
+  {
+    path: 'password-reset',
+    loadComponent: () =>
+      import('./features/auth/reset-password/reset-password.component').then(
+        (m) => m.ResetPasswordComponent,
+      ),
+  },
+  {
     path: 'recipes/new',
     canActivate: [authGuard],
     loadComponent: () =>
