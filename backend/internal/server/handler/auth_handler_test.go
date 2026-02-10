@@ -88,6 +88,8 @@ func TestAuthHandler_Signup(t *testing.T) {
 				usecasemock.NewMockVerifyEmailUseCase(ctrl),
 				usecasemock.NewMockWithdrawUseCase(ctrl),
 				usecasemock.NewMockChangePasswordUseCase(ctrl),
+				usecasemock.NewMockRequestPasswordResetUseCase(ctrl),
+				usecasemock.NewMockResetPasswordUseCase(ctrl),
 			)
 
 			var req *http.Request
@@ -200,6 +202,8 @@ func TestAuthHandler_Login(t *testing.T) {
 				usecasemock.NewMockVerifyEmailUseCase(ctrl),
 				usecasemock.NewMockWithdrawUseCase(ctrl),
 				usecasemock.NewMockChangePasswordUseCase(ctrl),
+				usecasemock.NewMockRequestPasswordResetUseCase(ctrl),
+				usecasemock.NewMockResetPasswordUseCase(ctrl),
 			)
 
 			body, _ := json.Marshal(tt.body)
@@ -254,6 +258,8 @@ func TestAuthHandler_Verify(t *testing.T) {
 				mockVerify,
 				usecasemock.NewMockWithdrawUseCase(ctrl),
 				usecasemock.NewMockChangePasswordUseCase(ctrl),
+				usecasemock.NewMockRequestPasswordResetUseCase(ctrl),
+				usecasemock.NewMockResetPasswordUseCase(ctrl),
 			)
 
 			body, _ := json.Marshal(tt.body)
@@ -322,6 +328,8 @@ func TestAuthHandler_ChangePassword(t *testing.T) {
 				usecasemock.NewMockVerifyEmailUseCase(ctrl),
 				usecasemock.NewMockWithdrawUseCase(ctrl),
 				mockChangePassword,
+				usecasemock.NewMockRequestPasswordResetUseCase(ctrl),
+				usecasemock.NewMockResetPasswordUseCase(ctrl),
 			)
 
 			var req *http.Request
@@ -368,12 +376,132 @@ func TestAuthHandler_Logout(t *testing.T) {
 				usecasemock.NewMockVerifyEmailUseCase(ctrl),
 				usecasemock.NewMockWithdrawUseCase(ctrl),
 				usecasemock.NewMockChangePasswordUseCase(ctrl),
+				usecasemock.NewMockRequestPasswordResetUseCase(ctrl),
+				usecasemock.NewMockResetPasswordUseCase(ctrl),
 			)
 
 			req := httptest.NewRequest(http.MethodPost, "/auth/logout", nil)
 			w := httptest.NewRecorder()
 
 			h.Logout(w, req)
+			assert.Equal(t, tt.wantStatus, w.Code)
+		})
+	}
+}
+
+func TestAuthHandler_RequestPasswordReset(t *testing.T) {
+	tests := []struct {
+		name       string
+		body       map[string]string
+		setupMock  func(m *usecasemock.MockRequestPasswordResetUseCase)
+		wantStatus int
+	}{
+		{
+			name: "Success",
+			body: map[string]string{"email": "test@example.com"},
+			setupMock: func(m *usecasemock.MockRequestPasswordResetUseCase) {
+				m.EXPECT().Execute(gomock.Any(), "test@example.com").Return(nil)
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "UseCase Error",
+			body: map[string]string{"email": "error@example.com"},
+			setupMock: func(m *usecasemock.MockRequestPasswordResetUseCase) {
+				m.EXPECT().Execute(gomock.Any(), "error@example.com").Return(errors.New("error"))
+			},
+			wantStatus: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockRequest := usecasemock.NewMockRequestPasswordResetUseCase(ctrl)
+			tt.setupMock(mockRequest)
+
+			h := handler.NewAuthHandler(
+				usecasemock.NewMockSignupUseCase(ctrl),
+				usecasemock.NewMockLoginUseCase(ctrl),
+				usecasemock.NewMockGenerateTokenUseCase(ctrl),
+				usecasemock.NewMockGetUserUseCase(ctrl),
+				usecasemock.NewMockVerifyEmailUseCase(ctrl),
+				usecasemock.NewMockWithdrawUseCase(ctrl),
+				usecasemock.NewMockChangePasswordUseCase(ctrl),
+				mockRequest,
+				usecasemock.NewMockResetPasswordUseCase(ctrl),
+			)
+
+			body, _ := json.Marshal(tt.body)
+			req := httptest.NewRequest(http.MethodPost, "/auth/password-reset/request", bytes.NewReader(body))
+			req.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+
+			h.RequestPasswordReset(w, req)
+			assert.Equal(t, tt.wantStatus, w.Code)
+		})
+	}
+}
+
+func TestAuthHandler_ResetPassword(t *testing.T) {
+	tests := []struct {
+		name       string
+		body       map[string]string
+		setupMock  func(m *usecasemock.MockResetPasswordUseCase)
+		wantStatus int
+	}{
+		{
+			name: "Success",
+			body: map[string]string{
+				"token":        "valid_token",
+				"new_password": "new_password",
+			},
+			setupMock: func(m *usecasemock.MockResetPasswordUseCase) {
+				m.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil)
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "UseCase Error",
+			body: map[string]string{
+				"token":        "invalid_token",
+				"new_password": "new_password",
+			},
+			setupMock: func(m *usecasemock.MockResetPasswordUseCase) {
+				m.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(errors.New("error"))
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockReset := usecasemock.NewMockResetPasswordUseCase(ctrl)
+			tt.setupMock(mockReset)
+
+			h := handler.NewAuthHandler(
+				usecasemock.NewMockSignupUseCase(ctrl),
+				usecasemock.NewMockLoginUseCase(ctrl),
+				usecasemock.NewMockGenerateTokenUseCase(ctrl),
+				usecasemock.NewMockGetUserUseCase(ctrl),
+				usecasemock.NewMockVerifyEmailUseCase(ctrl),
+				usecasemock.NewMockWithdrawUseCase(ctrl),
+				usecasemock.NewMockChangePasswordUseCase(ctrl),
+				usecasemock.NewMockRequestPasswordResetUseCase(ctrl),
+				mockReset,
+			)
+
+			body, _ := json.Marshal(tt.body)
+			req := httptest.NewRequest(http.MethodPost, "/auth/password-reset", bytes.NewReader(body))
+			req.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+
+			h.ResetPassword(w, req)
 			assert.Equal(t, tt.wantStatus, w.Code)
 		})
 	}

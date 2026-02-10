@@ -12,13 +12,15 @@ import (
 )
 
 type AuthHandler struct {
-	signupUseCase         auth.SignupUseCase
-	loginUseCase          auth.LoginUseCase
-	generateTokenUseCase  auth.GenerateTokenUseCase
-	getUserUseCase        auth.GetUserUseCase
-	verifyEmailUseCase    auth.VerifyEmailUseCase
-	withdrawUseCase       auth.WithdrawUseCase
-	changePasswordUseCase auth.ChangePasswordUseCase
+	signupUseCase               auth.SignupUseCase
+	loginUseCase                auth.LoginUseCase
+	generateTokenUseCase        auth.GenerateTokenUseCase
+	getUserUseCase              auth.GetUserUseCase
+	verifyEmailUseCase          auth.VerifyEmailUseCase
+	withdrawUseCase             auth.WithdrawUseCase
+	changePasswordUseCase       auth.ChangePasswordUseCase
+	requestPasswordResetUseCase auth.RequestPasswordResetUseCase
+	resetPasswordUseCase        auth.ResetPasswordUseCase
 }
 
 func NewAuthHandler(
@@ -29,15 +31,19 @@ func NewAuthHandler(
 	verifyEmailUseCase auth.VerifyEmailUseCase,
 	withdrawUseCase auth.WithdrawUseCase,
 	changePasswordUseCase auth.ChangePasswordUseCase,
+	requestPasswordResetUseCase auth.RequestPasswordResetUseCase,
+	resetPasswordUseCase auth.ResetPasswordUseCase,
 ) *AuthHandler {
 	return &AuthHandler{
-		signupUseCase:         signupUseCase,
-		loginUseCase:          loginUseCase,
-		generateTokenUseCase:  generateTokenUseCase,
-		getUserUseCase:        getUserUseCase,
-		verifyEmailUseCase:    verifyEmailUseCase,
-		withdrawUseCase:       withdrawUseCase,
-		changePasswordUseCase: changePasswordUseCase,
+		signupUseCase:               signupUseCase,
+		loginUseCase:                loginUseCase,
+		generateTokenUseCase:        generateTokenUseCase,
+		getUserUseCase:              getUserUseCase,
+		verifyEmailUseCase:          verifyEmailUseCase,
+		withdrawUseCase:             withdrawUseCase,
+		changePasswordUseCase:       changePasswordUseCase,
+		requestPasswordResetUseCase: requestPasswordResetUseCase,
+		resetPasswordUseCase:        resetPasswordUseCase,
 	}
 }
 
@@ -192,6 +198,49 @@ func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 
 	res := response.MessageResponse{
 		Message: "Password changed successfully",
+	}
+
+	respondJSON(w, http.StatusOK, res)
+}
+
+func (h *AuthHandler) RequestPasswordReset(w http.ResponseWriter, r *http.Request) {
+	var req request.RequestPasswordResetRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.requestPasswordResetUseCase.Execute(r.Context(), req.Email); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	res := response.MessageResponse{
+		Message: "メールアドレスが登録されている場合、パスワード再設定用のリンクをお送りします。",
+	}
+
+	respondJSON(w, http.StatusOK, res)
+}
+
+func (h *AuthHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
+	var req request.ResetPasswordRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	input := auth.ResetPasswordInput{
+		Token:       req.Token,
+		NewPassword: req.NewPassword,
+	}
+
+	if err := h.resetPasswordUseCase.Execute(r.Context(), input); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	res := response.MessageResponse{
+		Message: "パスワードを再設定しました。ログイン画面へ移動します...",
 	}
 
 	respondJSON(w, http.StatusOK, res)
