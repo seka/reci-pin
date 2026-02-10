@@ -42,6 +42,12 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
           <app-button variant="primary" type="submit" class="submit-btn">ログイン</app-button>
         </div>
 
+        <div style="text-align: center; margin-bottom: 16px;">
+          <a routerLink="/password-reset/request" style="font-size: 14px; color: #666; text-decoration: none;">
+            パスワードを忘れた場合
+          </a>
+        </div>
+
         @if (errorMessage) {
           <p class="error">{{ errorMessage }}</p>
         }
