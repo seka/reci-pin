@@ -56,19 +56,19 @@ func (mr *MockPasswordResetTokenRepositoryMockRecorder) Delete(ctx, token any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockPasswordResetTokenRepository)(nil).Delete), ctx, token)
 }
 
-// Find mocks base method.
-func (m *MockPasswordResetTokenRepository) Find(ctx context.Context, token string) (*model.PasswordResetToken, error) {
+// GetByToken mocks base method.
+func (m *MockPasswordResetTokenRepository) GetByToken(ctx context.Context, token string) (*model.PasswordResetToken, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Find", ctx, token)
+	ret := m.ctrl.Call(m, "GetByToken", ctx, token)
 	ret0, _ := ret[0].(*model.PasswordResetToken)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Find indicates an expected call of Find.
-func (mr *MockPasswordResetTokenRepositoryMockRecorder) Find(ctx, token any) *gomock.Call {
+// GetByToken indicates an expected call of GetByToken.
+func (mr *MockPasswordResetTokenRepositoryMockRecorder) GetByToken(ctx, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockPasswordResetTokenRepository)(nil).Find), ctx, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByToken", reflect.TypeOf((*MockPasswordResetTokenRepository)(nil).GetByToken), ctx, token)
 }
 
 // Save mocks base method.

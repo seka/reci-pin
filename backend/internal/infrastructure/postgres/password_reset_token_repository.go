@@ -28,7 +28,7 @@ func (r *PasswordResetTokenRepository) Save(ctx context.Context, token string, u
 	return nil
 }
 
-func (r *PasswordResetTokenRepository) Find(ctx context.Context, token string) (*model.PasswordResetToken, error) {
+func (r *PasswordResetTokenRepository) GetByToken(ctx context.Context, token string) (*model.PasswordResetToken, error) {
 	query := `
 		SELECT token, user_id, expires_at, created_at
 		FROM password_reset_tokens

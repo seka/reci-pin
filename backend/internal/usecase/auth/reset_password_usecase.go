@@ -41,7 +41,7 @@ func (uc *resetPasswordInteractor) Execute(ctx context.Context, input ResetPassw
 	}
 
 	// 2. Find token
-	t, err := uc.tokenRepo.Find(ctx, input.Token)
+	t, err := uc.tokenRepo.GetByToken(ctx, input.Token)
 	if err != nil {
 		return fmt.Errorf("failed to find token: %w", err)
 	}
