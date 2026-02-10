@@ -76,15 +76,15 @@ import { HeadlineComponent } from '../../../shared/components/atoms/headline/hea
       .change-password-container {
         max-width: 600px;
         margin: 0 auto;
-        padding: 24px;
+        padding: var(--spacing-3);
       }
 
       .back-link {
-        margin-bottom: 16px;
+        margin-bottom: var(--spacing-2);
       }
 
       .back-link a {
-        color: var(--primary-color, #1976d2);
+        color: var(--color-primary);
         text-decoration: none;
       }
 
@@ -93,32 +93,32 @@ import { HeadlineComponent } from '../../../shared/components/atoms/headline/hea
       }
 
       .password-form {
-        margin-top: 16px;
+        margin-top: var(--spacing-2);
         display: flex;
         flex-direction: column;
-        gap: 12px;
-        background: var(--surface-color, #fff);
-        padding: 24px;
+        gap: var(--spacing-1_5);
+        background: var(--color-surface);
+        padding: var(--spacing-3);
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
 
       .hint {
-        font-size: 0.85rem;
-        color: var(--text-secondary, #666);
+        font-size: var(--font-size-2);
+        color: var(--color-text-secondary);
         margin-top: -8px;
         margin-left: 4px;
       }
 
       .forgot-password-link {
-        font-size: 0.85rem;
+        font-size: var(--font-size-2);
         margin-top: -8px;
         margin-left: 4px;
         text-align: left;
       }
 
       .forgot-password-link a {
-        color: var(--primary-color, #1976d2);
+        color: var(--color-primary);
         text-decoration: none;
       }
 
@@ -127,12 +127,12 @@ import { HeadlineComponent } from '../../../shared/components/atoms/headline/hea
       }
 
       .actions {
-        margin-top: 8px;
+        margin-top: var(--spacing-1);
       }
 
       .error-global {
-        color: #f44336;
-        margin-top: 12px;
+        color: var(--color-error);
+        margin-top: var(--spacing-1_5);
         font-weight: bold;
       }
     `,

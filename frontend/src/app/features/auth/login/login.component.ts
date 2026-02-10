@@ -28,7 +28,7 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
           [required]="true"
         ></app-input>
 
-        <div style="margin-top: 16px;">
+        <div style="margin-top: var(--spacing-2);">
           <app-input
             label="パスワード"
             type="password"
@@ -42,8 +42,8 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
           <app-button variant="primary" type="submit" class="submit-btn">ログイン</app-button>
         </div>
 
-        <div style="text-align: center; margin-bottom: 16px;">
-          <a routerLink="/password-reset/request" style="font-size: 14px; color: #666; text-decoration: none;">
+        <div style="text-align: center; margin-bottom: var(--spacing-2);">
+          <a routerLink="/password-reset/request" style="font-size: var(--font-size-2); color: var(--color-text-secondary); text-decoration: none;">
             パスワードを忘れた場合
           </a>
         </div>
@@ -65,8 +65,8 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
   styles: [
     `
       .actions {
-        margin-top: 24px;
-        margin-bottom: 16px;
+        margin-top: var(--spacing-3);
+        margin-bottom: var(--spacing-2);
       }
       .submit-btn {
         width: 100%;
@@ -75,8 +75,8 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
         width: 100%;
       }
       .error {
-        color: #f44336;
-        margin-top: 16px;
+        color: var(--color-error);
+        margin-top: var(--spacing-2);
         text-align: center;
       }
     `,
