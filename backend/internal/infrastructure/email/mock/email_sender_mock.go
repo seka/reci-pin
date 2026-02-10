@@ -52,3 +52,17 @@ func (mr *MockEmailSenderMockRecorder) SendPasswordChangeNotification(to any) *g
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendPasswordChangeNotification", reflect.TypeOf((*MockEmailSender)(nil).SendPasswordChangeNotification), to)
 }
+
+// SendPasswordReset mocks base method.
+func (m *MockEmailSender) SendPasswordReset(to, token string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SendPasswordReset", to, token)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SendPasswordReset indicates an expected call of SendPasswordReset.
+func (mr *MockEmailSenderMockRecorder) SendPasswordReset(to, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendPasswordReset", reflect.TypeOf((*MockEmailSender)(nil).SendPasswordReset), to, token)
+}

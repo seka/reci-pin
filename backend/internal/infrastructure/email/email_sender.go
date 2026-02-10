@@ -7,6 +7,7 @@ import (
 
 type EmailSender interface {
 	SendPasswordChangeNotification(to string) error
+	SendPasswordReset(to string, token string) error
 }
 
 type MailHogSender struct {
@@ -42,6 +43,35 @@ func (s *MailHogSender) SendPasswordChangeNotification(to string) error {
 
 	addr := fmt.Sprintf("%s:%d", s.host, s.port)
 	// MailHog uses no authentication by default
+	if err := smtp.SendMail(addr, nil, s.from, []string{to}, []byte(msg)); err != nil {
+		return fmt.Errorf("failed to send email: %w", err)
+	}
+
+	return nil
+}
+
+func (s *MailHogSender) SendPasswordReset(to string, token string) error {
+	resetURL := fmt.Sprintf("http://localhost:4200/password-reset?token=%s", token)
+	subject := "パスワード再設定のご案内"
+	body := fmt.Sprintf("いつも Reci-pin をご利用いただきありがとうございます。\n"+
+		"パスワード再設定のリクエストを受け付けました。\n\n"+
+		"以下のリンクをクリックして、新しいパスワードを設定してください。\n\n"+
+		"%s\n\n"+
+		"※このリンクは30分間有効です。\n"+
+		"※本メールに心当たりがない場合は、破棄してください。\n\n"+
+		"--------------------------------------------------\n"+
+		"Reci-pin 運営事務局\n"+
+		"お問い合わせ: support@reci-pin.com\n"+
+		"プライバシーポリシー: https://reci-pin.com/privacy\n"+
+		"--------------------------------------------------", resetURL)
+
+	msg := fmt.Sprintf("From: %s\r\n"+
+		"To: %s\r\n"+
+		"Subject: %s\r\n"+
+		"\r\n"+
+		"%s\r\n", s.from, to, subject, body)
+
+	addr := fmt.Sprintf("%s:%d", s.host, s.port)
 	if err := smtp.SendMail(addr, nil, s.from, []string{to}, []byte(msg)); err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
 	}
