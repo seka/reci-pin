@@ -47,20 +47,20 @@ import { Recipe } from '../../../../core/services/recipe.service';
         flex-direction: column;
       }
       mat-card-title {
-        color: #e91e63;
+        color: var(--color-primary);
         font-weight: 700;
       }
       mat-card-content {
         flex-grow: 1;
-        margin-top: 16px;
-        margin-bottom: 16px;
+        margin-top: var(--spacing-2);
+        margin-bottom: var(--spacing-2);
       }
       p {
-        color: #666;
+        color: var(--color-text-secondary);
         line-height: 1.6;
       }
       mat-chip-set {
-        margin-top: 12px;
+        margin-top: var(--spacing-1_5);
       }
     `,
   ],

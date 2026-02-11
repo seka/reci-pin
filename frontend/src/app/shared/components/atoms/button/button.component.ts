@@ -85,11 +85,11 @@ import { MatButtonModule } from '@angular/material/button';
 
       /* Ensure white text for accent (secondary) filled buttons in MDC */
       :host ::ng-deep .mat-mdc-unelevated-button.mat-accent {
-        --mdc-filled-button-label-text-color: #fff;
-        color: #fff !important;
+        --mdc-filled-button-label-text-color: var(--color-surface);
+        color: var(--color-surface) !important;
       }
       :host ::ng-deep .mat-mdc-unelevated-button.mat-accent .mdc-button__label {
-        color: #fff !important;
+        color: var(--color-surface) !important;
       }
     `,
   ],

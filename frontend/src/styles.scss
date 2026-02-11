@@ -195,6 +195,14 @@ body {
   --font-size-6: #{ds.$font-size-2xl}; // 24px
   --font-size-7: #{ds.$font-size-3xl}; // 32px
   --font-size-8: #{ds.$font-size-4xl}; // 36px
+
+  // Radius
+  --radius-0: #{ds.$radius-0};
+  --radius-1: #{ds.$radius-1};
+  --radius-2: #{ds.$radius-2};
+  --radius-3: #{ds.$radius-3};
+  --radius-4: #{ds.$radius-4};
+  --radius-full: #{ds.$radius-full};
 }
 
 // --- Pop Design Overrides ---
@@ -214,15 +222,7 @@ body {
 
 // Rounded Cards
 .mat-mdc-card {
-  border-radius: ds.$radius-xl !important; // 16px -> 12px or use XL? DADS doesn't have 24px token yet, maybe define larger radius?
-  // Let's use hardcoded 24px for now if radius.scss doesn't have it, or update radius.scss?
-  // radius.scss has radius-xl: 16px. 24px is effectively radius-3?
-  // Let's stick to using tokens. radius-xl is 16px.
-  // Wait, previous code was 24px. Let's update radius.scss to have a larger one or just use 24px for now.
-  // Actually, let's update radius.scss to match reality if needed.
-  // For now, let's use a hardcoded value or add to tokens.
-  // I will use 24px hardcoded for now to avoid side tracking, but try to use tokens where fitting.
-  border-radius: 24px !important;
+  border-radius: ds.$radius-4 !important; // 16px
 
   box-shadow: 0 8px 24px rgba(233, 30, 99, 0.15) !important; // Updated to match primary color hue roughly
   border: 1px solid rgba(233, 30, 99, 0.1); // Updated to match primary color hue roughly
@@ -231,7 +231,7 @@ body {
 
 // Inputs
 .mat-mdc-form-field-outline {
-  border-radius: ds.$radius-xl !important;
+  border-radius: ds.$radius-4 !important;
 }
 
 // Dialogs

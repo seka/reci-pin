@@ -50,42 +50,42 @@ import { HeadlineComponent } from '../../shared/components/atoms/headline/headli
       .settings-container {
         max-width: 600px;
         margin: 0 auto;
-        padding: 24px;
+        padding: var(--spacing-3);
       }
 
       .settings-section {
-        margin-top: 32px;
-        padding: 24px;
-        background: var(--surface-color, #fff);
-        border-radius: 8px;
+        margin-top: var(--spacing-4);
+        padding: var(--spacing-3);
+        background: var(--color-surface);
+        border-radius: var(--radius-2);
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
 
       .user-info p {
         margin: 8px 0;
-        color: var(--text-secondary, #666);
+        color: var(--color-text-secondary);
       }
 
       .account-actions {
-        margin-top: 16px;
+        margin-top: var(--spacing-2);
       }
 
       .danger-zone {
-        border: 1px solid #f44336;
+        border: 1px solid var(--color-error);
       }
 
       .warning-text {
-        color: var(--text-secondary, #666);
-        margin-bottom: 16px;
+        color: var(--color-text-secondary);
+        margin-bottom: var(--spacing-2);
         line-height: 1.6;
       }
 
       .back-link {
-        margin-bottom: 16px;
+        margin-bottom: var(--spacing-2);
       }
 
       .back-link a {
-        color: var(--primary-color, #1976d2);
+        color: var(--color-primary);
         text-decoration: none;
       }
 

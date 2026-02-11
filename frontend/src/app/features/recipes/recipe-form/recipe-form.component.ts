@@ -32,7 +32,7 @@ import { TextareaComponent } from '../../../shared/components/atoms/textarea/tex
         </mat-card-header>
         <mat-card-content>
           <form [formGroup]="recipeForm" (ngSubmit)="onSubmit()">
-            <div style="margin-bottom: 16px;">
+            <div style="margin-bottom: var(--spacing-2);">
               <app-input
                 label="レシピ名"
                 formControlName="name"
@@ -41,7 +41,7 @@ import { TextareaComponent } from '../../../shared/components/atoms/textarea/tex
               ></app-input>
             </div>
 
-            <div style="margin-bottom: 16px;">
+            <div style="margin-bottom: var(--spacing-2);">
               <app-input
                 label="URL"
                 formControlName="url"
@@ -51,7 +51,7 @@ import { TextareaComponent } from '../../../shared/components/atoms/textarea/tex
               ></app-input>
             </div>
 
-            <div style="margin-bottom: 16px;">
+            <div style="margin-bottom: var(--spacing-2);">
               <app-textarea
                 label="メモ"
                 formControlName="memo"
@@ -88,25 +88,25 @@ import { TextareaComponent } from '../../../shared/components/atoms/textarea/tex
   styles: [
     `
       .recipe-form-container {
-        padding: 24px;
+        padding: var(--spacing-3);
         max-width: 600px;
         margin: 0 auto;
       }
       mat-card {
-        padding: 24px;
+        padding: var(--spacing-3);
       }
       mat-card-title {
-        margin-bottom: 24px;
+        margin-bottom: var(--spacing-3);
       }
       .full-width {
         width: 100%;
-        margin-bottom: 8px;
+        margin-bottom: var(--spacing-1);
       }
       .actions {
         display: flex;
         justify-content: flex-end;
-        gap: 16px;
-        margin-top: 24px;
+        gap: var(--spacing-2);
+        margin-top: var(--spacing-3);
       }
       .action-btn {
         width: auto;

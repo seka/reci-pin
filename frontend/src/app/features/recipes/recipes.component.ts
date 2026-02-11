@@ -35,7 +35,7 @@ import { ButtonComponent } from '../../shared/components/atoms/button/button.com
   styles: [
     `
       .recipes-container {
-        padding: 24px;
+        padding: var(--spacing-3);
         max-width: 1200px;
         margin: 0 auto;
       }
@@ -43,29 +43,29 @@ import { ButtonComponent } from '../../shared/components/atoms/button/button.com
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 24px;
+        margin-bottom: var(--spacing-3);
       }
       .header-actions {
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: var(--spacing-2);
       }
       .add-btn {
         width: auto;
       }
       .settings-link {
-        color: var(--text-secondary, #666);
+        color: var(--color-text-secondary);
         display: flex;
         align-items: center;
         transition: color 0.2s;
       }
       .settings-link:hover {
-        color: var(--primary-color, #1976d2);
+        color: var(--color-primary);
       }
       .recipes-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 24px;
+        gap: var(--spacing-3);
       }
       .recipe-card-item {
         height: 100%;

@@ -28,7 +28,7 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
           [required]="true"
         ></app-input>
 
-        <div style="margin-top: 16px;">
+        <div style="margin-top: var(--spacing-2);">
           <app-input
             label="メールアドレス"
             type="email"
@@ -38,7 +38,7 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
           ></app-input>
         </div>
 
-        <div style="margin-top: 16px;">
+        <div style="margin-top: var(--spacing-2);">
           <app-input
             label="パスワード"
             type="password"
@@ -69,8 +69,8 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
   styles: [
     `
       .actions {
-        margin-top: 24px;
-        margin-bottom: 16px;
+        margin-top: var(--spacing-3);
+        margin-bottom: var(--spacing-2);
       }
       .submit-btn {
         width: 100%;
@@ -79,8 +79,8 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
         width: 100%;
       }
       .error {
-        color: #f44336;
-        margin-top: 16px;
+        color: var(--color-error);
+        margin-top: var(--spacing-2);
         text-align: center;
       }
     `,

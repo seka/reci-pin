@@ -38,7 +38,7 @@ import { NgTemplateOutlet } from '@angular/common';
       h4,
       h5,
       h6 {
-        margin: 0 0 16px;
+        margin: 0 0 var(--spacing-2);
         font-weight: 700;
         line-height: 1.2;
       }
@@ -46,27 +46,27 @@ import { NgTemplateOutlet } from '@angular/common';
       /* Typography System - Pop Design */
       .h1 {
         font-size: 2.5rem;
-        color: #333;
+        color: var(--color-text-main);
       }
       .h2 {
         font-size: 2rem;
-        color: #e91e63; /* Main Title Pinkish */
+        color: var(--color-primary); /* Main Title Pinkish */
       }
       .h3 {
         font-size: 1.75rem;
-        color: #333;
+        color: var(--color-text-main);
       }
       .h4 {
         font-size: 1.5rem;
-        color: #333;
+        color: var(--color-text-main);
       }
       .h5 {
         font-size: 1.25rem;
-        color: #333;
+        color: var(--color-text-main);
       }
       .h6 {
         font-size: 1rem;
-        color: #333;
+        color: var(--color-text-main);
         text-transform: uppercase;
         letter-spacing: 0.05em;
       }

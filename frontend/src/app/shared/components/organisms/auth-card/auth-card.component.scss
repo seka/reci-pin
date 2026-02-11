@@ -13,11 +13,11 @@ mat-card {
 
 mat-card-header {
   justify-content: center;
-  margin-bottom: ds.$spacing-3;
+  margin-bottom: var(--spacing-3);
 }
 
 mat-card-footer {
-  padding: ds.$spacing-2;
+  padding: var(--spacing-2);
   margin-top: 0;
   display: block; // Ensure footer takes width
 }
