@@ -4,6 +4,18 @@
 # Server settings
 PORT ?= 8080
 
+# ============================================================================
+# Development targets
+# ============================================================================
+
+.PHONY: bootstrap
+bootstrap: ## Install all development tools
+	@echo "Installing development tools..."
+	go install go.uber.org/mock/mockgen@latest
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	go install github.com/air-verse/air@latest
+	@echo "All tools installed successfully!"
+
 # Go parameters
 GOCMD=go
 GOBUILD=$(GOCMD) build
