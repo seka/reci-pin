@@ -28,7 +28,7 @@ type LoginInput struct {
 func (uc *loginInteractor) Execute(ctx context.Context, input LoginInput) (int64, error) {
 	// メールアドレスから認証情報を取得
 	credential, err := uc.credentialRepo.GetByEmail(ctx, input.Email)
-	if err != nil {
+	if err != nil || credential == nil {
 		return 0, errors.New("invalid email or password")
 	}
 
