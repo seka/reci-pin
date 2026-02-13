@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/seka/reci-pin/backend/internal/domain/notification"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/email"
 )
 
 type RequestPasswordResetUseCase interface {
@@ -18,13 +18,13 @@ type RequestPasswordResetUseCase interface {
 type requestPasswordResetInteractor struct {
 	userRepo    repository.UserEmailCredentialRepository
 	tokenRepo   repository.PasswordResetTokenRepository
-	emailSender email.EmailSender
+	emailSender notification.EmailSender
 }
 
 func NewRequestPasswordResetUseCase(
 	userRepo repository.UserEmailCredentialRepository,
 	tokenRepo repository.PasswordResetTokenRepository,
-	emailSender email.EmailSender,
+	emailSender notification.EmailSender,
 ) RequestPasswordResetUseCase {
 	return &requestPasswordResetInteractor{
 		userRepo:    userRepo,

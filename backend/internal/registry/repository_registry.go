@@ -2,7 +2,8 @@ package registry
 
 import (
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/postgres"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 )
 
 // Repository defines the interface for creating repositories
@@ -17,11 +18,11 @@ type Repository interface {
 
 // repositoryRegistry implements the Repository interface
 type repositoryRegistry struct {
-	db postgres.Database
+	db database.Database
 }
 
 // NewRepository creates a new Repository registry
-func NewRepository(db postgres.Database) Repository {
+func NewRepository(db database.Database) Repository {
 	return &repositoryRegistry{db: db}
 }
 
