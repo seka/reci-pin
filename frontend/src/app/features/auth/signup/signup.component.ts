@@ -84,7 +84,8 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
       .error {
         color: var(--color-error);
         margin-top: var(--spacing-2);
-        text-align: center;
+        text-align: left !important;
+        width: 100%;
       }
     `,
   ],
@@ -122,6 +123,12 @@ export class SignupComponent {
                   return 'パスワードには少なくとも1つの英字を含める必要があります';
                 case 'PASSWORD_NO_NUMERIC':
                   return 'パスワードには少なくとも1つの数字を含める必要があります';
+                case 'EMAIL_INVALID_FORMAT':
+                  return 'メールアドレスの形式が正しくありません';
+                case 'EMAIL_TOO_LONG':
+                  return `メールアドレスは${d.params?.max || 254}文字以下である必要があります`;
+                case 'REQUIRED':
+                  return 'この項目は必須です';
                 default:
                   return '入力内容が正しくありません';
               }

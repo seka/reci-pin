@@ -6,6 +6,7 @@ import (
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
+	"github.com/seka/reci-pin/backend/internal/domain/validation"
 )
 
 type CreateTagUseCase interface {
@@ -21,6 +22,10 @@ func NewCreateTagUseCase(tagRepo repository.TagRepository) CreateTagUseCase {
 }
 
 func (uc *createTagInteractor) Execute(ctx context.Context, name string) (*model.Tag, error) {
+	if err := validation.ValidateTag(name); err != nil {
+		return nil, err
+	}
+
 	// Check if tag already exists
 	existingTag, err := uc.tagRepo.GetByName(ctx, name)
 	if err == nil && existingTag != nil {

@@ -2,54 +2,34 @@ package auth
 
 import (
 	"regexp"
+
+	"github.com/seka/reci-pin/backend/internal/domain/validation"
 )
-
-const (
-	ErrCodePasswordTooShort  = "PASSWORD_TOO_SHORT"
-	ErrCodePasswordNoAlpha   = "PASSWORD_NO_ALPHA"
-	ErrCodePasswordNoNumeric = "PASSWORD_NO_NUMERIC"
-)
-
-type ValidationError struct {
-	Field  string
-	Code   string
-	Params map[string]interface{}
-}
-
-func (e ValidationError) Error() string {
-	return e.Code
-}
-
-type ValidationErrors []ValidationError
-
-func (v ValidationErrors) Error() string {
-	return "validation failed"
-}
 
 func ValidatePassword(password string) error {
-	var errs ValidationErrors
+	var errs validation.ValidationErrors
 
 	if len(password) < 8 {
-		errs = append(errs, ValidationError{
+		errs = append(errs, validation.ValidationError{
 			Field:  "password",
-			Code:   ErrCodePasswordTooShort,
+			Code:   validation.ErrCodePasswordTooShort,
 			Params: map[string]interface{}{"min": 8},
 		})
 	}
 
 	hasAlpha := regexp.MustCompile(`[a-zA-Z]`).MatchString(password)
 	if !hasAlpha {
-		errs = append(errs, ValidationError{
+		errs = append(errs, validation.ValidationError{
 			Field: "password",
-			Code:  ErrCodePasswordNoAlpha,
+			Code:  validation.ErrCodePasswordNoAlpha,
 		})
 	}
 
 	hasNumeric := regexp.MustCompile(`[0-9]`).MatchString(password)
 	if !hasNumeric {
-		errs = append(errs, ValidationError{
+		errs = append(errs, validation.ValidationError{
 			Field: "password",
-			Code:  ErrCodePasswordNoNumeric,
+			Code:  validation.ErrCodePasswordNoNumeric,
 		})
 	}
 

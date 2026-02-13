@@ -38,6 +38,7 @@ import { TextareaComponent } from '../../../shared/components/atoms/textarea/tex
                 formControlName="name"
                 placeholder="例: オムライス"
                 [required]="true"
+                [errorMessage]="fieldErrors['name']"
               ></app-input>
             </div>
 
@@ -48,6 +49,7 @@ import { TextareaComponent } from '../../../shared/components/atoms/textarea/tex
                 placeholder="https://example.com/recipe"
                 [required]="true"
                 (blur)="onUrlBlur()"
+                [errorMessage]="fieldErrors['url']"
               ></app-input>
             </div>
 
@@ -57,6 +59,7 @@ import { TextareaComponent } from '../../../shared/components/atoms/textarea/tex
                 formControlName="memo"
                 placeholder="メモを入力"
                 [rows]="4"
+                [errorMessage]="fieldErrors['memo']"
               ></app-textarea>
             </div>
 
@@ -123,6 +126,7 @@ export class RecipeFormComponent implements OnInit {
   recipeForm: FormGroup;
   tags: Tag[] = [];
   selectedTagIds: number[] = [];
+  fieldErrors: { [key: string]: string[] } = {};
   isSubmitting = false;
 
   constructor() {
@@ -152,6 +156,7 @@ export class RecipeFormComponent implements OnInit {
   }
 
   onSubmit() {
+    this.fieldErrors = {};
     if (this.recipeForm.valid) {
       this.isSubmitting = true;
       const formData = {
@@ -166,6 +171,25 @@ export class RecipeFormComponent implements OnInit {
         error: (err) => {
           console.error('Failed to create recipe', err);
           this.isSubmitting = false;
+
+          if (err.error && err.error.error && err.error.error.details) {
+            const details = err.error.error.details;
+            Object.keys(details).forEach((field) => {
+              const messages = (details as any)[field].map((d: any) => {
+                switch (d.code) {
+                  case 'REQUIRED':
+                    return 'この項目は必須です';
+                  case 'TEXT_TOO_LONG':
+                    return `${d.params?.max}文字以内で入力してください`;
+                  case 'URL_INVALID_FORMAT':
+                    return 'URLの形式が正しくありません';
+                  default:
+                    return '入力内容が正しくありません';
+                }
+              });
+              this.fieldErrors[field] = messages;
+            });
+          }
         },
       });
     }

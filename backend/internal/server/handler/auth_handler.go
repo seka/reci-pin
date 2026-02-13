@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
+	"github.com/seka/reci-pin/backend/internal/domain/validation"
 	"github.com/seka/reci-pin/backend/internal/server/handler/request"
 	"github.com/seka/reci-pin/backend/internal/server/handler/response"
 	"github.com/seka/reci-pin/backend/internal/server/middleware"
@@ -90,7 +91,7 @@ func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	_, err := h.signupUseCase.Execute(r.Context(), input)
 	if err != nil {
 		log.Printf("SignupUseCase error: %v", err)
-		var validationErrors auth.ValidationErrors
+		var validationErrors validation.ValidationErrors
 		if errors.As(err, &validationErrors) {
 			details := make(map[string][]response.ErrorDetail)
 			for _, ve := range validationErrors {

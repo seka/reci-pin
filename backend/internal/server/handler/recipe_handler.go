@@ -2,10 +2,12 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/seka/reci-pin/backend/internal/domain/validation"
 	"github.com/seka/reci-pin/backend/internal/server/handler/request"
 	"github.com/seka/reci-pin/backend/internal/server/handler/response"
 	"github.com/seka/reci-pin/backend/internal/server/middleware"
@@ -83,6 +85,18 @@ func (h *RecipeHandler) CreateRecipe(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.createRecipeUseCase.Execute(r.Context(), input)
 	if err != nil {
+		var validationErrors validation.ValidationErrors
+		if errors.As(err, &validationErrors) {
+			details := make(map[string][]response.ErrorDetail)
+			for _, ve := range validationErrors {
+				details[ve.Field] = append(details[ve.Field], response.ErrorDetail{
+					Code:   ve.Code,
+					Params: ve.Params,
+				})
+			}
+			respondError(w, http.StatusBadRequest, "VALIDATION_FAILED", details)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -312,6 +326,18 @@ func (h *RecipeHandler) CreateTag(w http.ResponseWriter, r *http.Request) {
 
 	tag, err := h.createTagUseCase.Execute(r.Context(), req.Name)
 	if err != nil {
+		var validationErrors validation.ValidationErrors
+		if errors.As(err, &validationErrors) {
+			details := make(map[string][]response.ErrorDetail)
+			for _, ve := range validationErrors {
+				details[ve.Field] = append(details[ve.Field], response.ErrorDetail{
+					Code:   ve.Code,
+					Params: ve.Params,
+				})
+			}
+			respondError(w, http.StatusBadRequest, "VALIDATION_FAILED", details)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

@@ -6,6 +6,7 @@ import (
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
+	"github.com/seka/reci-pin/backend/internal/domain/validation"
 )
 
 type CreateRecipeUseCase interface {
@@ -29,6 +30,10 @@ type CreateRecipeInput struct {
 }
 
 func (uc *createRecipeInteractor) Execute(ctx context.Context, input CreateRecipeInput) (*model.Recipe, error) {
+	if err := validation.ValidateRecipe(input.Name, input.URL); err != nil {
+		return nil, err
+	}
+
 	recipe := &model.Recipe{
 		UserID: input.UserID,
 		Name:   input.Name,

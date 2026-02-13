@@ -11,6 +11,7 @@ import (
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
+	"github.com/seka/reci-pin/backend/internal/domain/validation"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 )
 
@@ -40,6 +41,11 @@ type SignupInput struct {
 }
 
 func (uc *signupInteractor) Execute(ctx context.Context, input SignupInput) (int64, error) {
+	// Validate email
+	if err := validation.ValidateEmail(input.Email); err != nil {
+		return 0, err
+	}
+
 	// Validate password
 	if err := ValidatePassword(input.Password); err != nil {
 		return 0, err
