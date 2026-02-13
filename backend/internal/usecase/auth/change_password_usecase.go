@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/seka/reci-pin/backend/internal/domain/notification"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/email"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/postgres"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 )
 
 type ChangePasswordUseCase interface {
@@ -21,12 +21,12 @@ type ChangePasswordInput struct {
 
 type changePasswordInteractor struct {
 	credentialRepo repository.UserEmailCredentialRepository
-	emailSender    email.EmailSender
+	emailSender    notification.EmailSender
 }
 
 func NewChangePasswordUseCase(
 	credentialRepo repository.UserEmailCredentialRepository,
-	emailSender email.EmailSender,
+	emailSender notification.EmailSender,
 ) ChangePasswordUseCase {
 	return &changePasswordInteractor{
 		credentialRepo: credentialRepo,

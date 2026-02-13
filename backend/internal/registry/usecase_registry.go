@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/seka/reci-pin/backend/config"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/email"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/notification/mailhog"
 	"github.com/seka/reci-pin/backend/internal/usecase/auth"
 	"github.com/seka/reci-pin/backend/internal/usecase/recipe"
 	"github.com/seka/reci-pin/backend/internal/usecase/recipe_image"
@@ -95,13 +95,13 @@ func (u *useCaseRegistry) NewWithdrawUseCase() auth.WithdrawUseCase {
 
 func (u *useCaseRegistry) NewChangePasswordUseCase() auth.ChangePasswordUseCase {
 	// TODO: EmailSenderの設定をConfigから読み込むようにする
-	emailSender := email.NewMailHogSender("mailhog", 1025, "no-reply@reci-pin.com")
+	emailSender := mailhog.New("mailhog", 1025, "no-reply@reci-pin.com")
 	return auth.NewChangePasswordUseCase(u.repo.NewUserEmailCredentialRepository(), emailSender)
 }
 
 func (u *useCaseRegistry) NewRequestPasswordResetUseCase() auth.RequestPasswordResetUseCase {
 	// TODO: EmailSenderの設定をConfigから読み込むようにする
-	emailSender := email.NewMailHogSender("mailhog", 1025, "no-reply@reci-pin.com")
+	emailSender := mailhog.New("mailhog", 1025, "no-reply@reci-pin.com")
 	return auth.NewRequestPasswordResetUseCase(u.repo.NewUserEmailCredentialRepository(), u.repo.NewPasswordResetTokenRepository(), emailSender)
 }
 

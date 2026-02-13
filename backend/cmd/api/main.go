@@ -12,7 +12,8 @@ import (
 	"time"
 
 	"github.com/seka/reci-pin/backend/config"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/postgres"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 	"github.com/seka/reci-pin/backend/internal/registry"
 	"github.com/seka/reci-pin/backend/internal/server"
 )
@@ -81,7 +82,7 @@ func main() {
 	log.Println("Shutdown complete")
 }
 
-func connectDatabase(ctx context.Context, db postgres.Database) error {
+func connectDatabase(ctx context.Context, db database.Database) error {
 	if err := db.Connect(ctx); err != nil {
 		return err
 	}
@@ -89,7 +90,7 @@ func connectDatabase(ctx context.Context, db postgres.Database) error {
 	return nil
 }
 
-func createServer(cfg *config.Config, db postgres.Database) *server.Server {
+func createServer(cfg *config.Config, db database.Database) *server.Server {
 	repoRegistry := registry.NewRepository(db)
 	useCaseRegistry := registry.NewUseCase(repoRegistry, cfg)
 	return server.New(cfg, useCaseRegistry)

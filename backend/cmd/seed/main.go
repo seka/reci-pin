@@ -10,7 +10,8 @@ import (
 	"github.com/seka/reci-pin/backend/config"
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/postgres"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 	"github.com/seka/reci-pin/backend/internal/registry"
 )
 
@@ -61,7 +62,7 @@ func main() {
 	log.Println("Seeding completed successfully")
 }
 
-func cleanData(ctx context.Context, db postgres.Database) error {
+func cleanData(ctx context.Context, db database.Database) error {
 	// Execute raw SQL to truncate tables
 	queries := []string{
 		"TRUNCATE TABLE recipe_tags CASCADE",

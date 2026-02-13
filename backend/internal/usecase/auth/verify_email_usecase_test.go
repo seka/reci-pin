@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	repositorymock "github.com/seka/reci-pin/backend/internal/domain/repository/mock"
+	repositorymock "github.com/seka/reci-pin/backend/internal/domain/notification/mock"
 	"github.com/seka/reci-pin/backend/internal/usecase/auth"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
