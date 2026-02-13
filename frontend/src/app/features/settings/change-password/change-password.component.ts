@@ -12,6 +12,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
 import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
 import { HeadlineComponent } from '../../../shared/components/atoms/headline/headline.component';
+import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
 
 @Component({
   selector: 'app-change-password',
@@ -39,6 +40,7 @@ import { HeadlineComponent } from '../../../shared/components/atoms/headline/hea
           formControlName="currentPassword"
           [errorMessage]="getErrorMessage('currentPassword')"
           [required]="true"
+          [maxLength]="VALIDATION_RULES.PASSWORD.MAX_LENGTH"
         ></app-input>
         <p class="forgot-password-link">
           <a routerLink="/password-reset/request">パスワードを忘れた場合</a>
@@ -50,8 +52,10 @@ import { HeadlineComponent } from '../../../shared/components/atoms/headline/hea
           formControlName="newPassword"
           [errorMessage]="getErrorMessage('newPassword')"
           [required]="true"
+          [maxLength]="VALIDATION_RULES.PASSWORD.MAX_LENGTH"
+          [showCounter]="true"
         ></app-input>
-        <p class="hint">8文字以上の英数字を入力してください。</p>
+        <p class="hint">{{ VALIDATION_RULES.PASSWORD.MIN_LENGTH }}文字以上の英数字を入力してください。</p>
 
         <app-input
           label="新しいパスワード（確認）"
@@ -59,6 +63,7 @@ import { HeadlineComponent } from '../../../shared/components/atoms/headline/hea
           formControlName="confirmNewPassword"
           [errorMessage]="getErrorMessage('confirmNewPassword')"
           [required]="true"
+          [maxLength]="VALIDATION_RULES.PASSWORD.MAX_LENGTH"
         ></app-input>
 
         <div class="actions">
@@ -146,11 +151,20 @@ export class ChangePasswordComponent {
   isProcessing = false;
   errorMessage = '';
 
+  protected readonly VALIDATION_RULES = VALIDATION_RULES;
+
   form = this.fb.group(
     {
-      currentPassword: ['', Validators.required],
-      newPassword: ['', [Validators.required, Validators.minLength(8)]],
-      confirmNewPassword: ['', Validators.required],
+      currentPassword: ['', [Validators.required, Validators.maxLength(VALIDATION_RULES.PASSWORD.MAX_LENGTH)]],
+      newPassword: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(VALIDATION_RULES.PASSWORD.MIN_LENGTH),
+          Validators.maxLength(VALIDATION_RULES.PASSWORD.MAX_LENGTH),
+        ],
+      ],
+      confirmNewPassword: ['', [Validators.required, Validators.maxLength(VALIDATION_RULES.PASSWORD.MAX_LENGTH)]],
     },
     { validators: this.passwordMatchValidator }
   );
@@ -165,7 +179,8 @@ export class ChangePasswordComponent {
     const control = this.form.get(controlName);
     if (control?.touched && control?.errors) {
       if (control.errors['required']) return '必須項目です';
-      if (control.errors['minlength']) return '8文字以上で入力してください';
+      if (control.errors['minlength']) return `${VALIDATION_RULES.PASSWORD.MIN_LENGTH}文字以上で入力してください`;
+      if (control.errors['maxlength']) return `${VALIDATION_RULES.PASSWORD.MAX_LENGTH}文字以内で入力してください`;
       if (controlName === 'confirmNewPassword' && this.form.errors?.['mismatch']) {
         return 'パスワードが一致しません';
       }

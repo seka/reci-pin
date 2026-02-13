@@ -1,10 +1,11 @@
-import { Component, inject } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { Component, inject, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService, LoginRequest } from '../../../core/services/auth.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { AuthCardComponent } from '../../../shared/components/organisms/auth-card/auth-card.component';
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
 import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
+import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
 
 @Component({
   selector: 'app-login',
@@ -19,27 +20,27 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
   ],
   template: `
     <app-auth-card title="ログイン">
-      <form (ngSubmit)="onSubmit()">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <app-input
           label="メールアドレス"
           type="email"
-          [(ngModel)]="credentials.email"
-          name="email"
+          formControlName="email"
           [required]="true"
+          [maxLength]="VALIDATION_RULES.EMAIL.MAX_LENGTH"
         ></app-input>
 
         <div style="margin-top: var(--spacing-2);">
           <app-input
             label="パスワード"
             type="password"
-            [(ngModel)]="credentials.password"
-            name="password"
+            formControlName="password"
             [required]="true"
+            [maxLength]="VALIDATION_RULES.PASSWORD.MAX_LENGTH"
           ></app-input>
         </div>
 
         <div class="actions">
-          <app-button variant="primary" type="submit" class="submit-btn">ログイン</app-button>
+          <app-button variant="primary" type="submit" class="submit-btn" [disabled]="loginForm.invalid">ログイン</app-button>
         </div>
 
         <div style="text-align: center; margin-bottom: var(--spacing-2);">
@@ -71,6 +72,10 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
       .submit-btn {
         width: 100%;
       }
+      .submit-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
       .full-width-btn {
         width: 100%;
       }
@@ -82,15 +87,29 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
     `,
   ],
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly fb = inject(FormBuilder);
 
-  credentials: LoginRequest = { email: '', password: '' };
+  loginForm!: FormGroup;
   errorMessage = '';
 
+  protected readonly VALIDATION_RULES = VALIDATION_RULES;
+
+  ngOnInit() {
+    this.loginForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email, Validators.maxLength(VALIDATION_RULES.EMAIL.MAX_LENGTH)]],
+      password: ['', [Validators.required, Validators.maxLength(VALIDATION_RULES.PASSWORD.MAX_LENGTH)]],
+    });
+  }
+
   onSubmit() {
-    this.authService.login(this.credentials).subscribe({
+    if (this.loginForm.invalid) {
+      return;
+    }
+
+    this.authService.login(this.loginForm.value).subscribe({
       next: () => {
         this.router.navigate(['/recipes']);
       },

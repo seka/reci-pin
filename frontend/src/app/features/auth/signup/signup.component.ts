@@ -1,10 +1,11 @@
-import { Component, inject } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { Component, inject, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService, SignupRequest } from '../../../core/services/auth.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { AuthCardComponent } from '../../../shared/components/organisms/auth-card/auth-card.component';
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
 import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
+import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
 
 @Component({
   selector: 'app-signup',
@@ -19,13 +20,14 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
   ],
   template: `
     <app-auth-card title="アカウント作成">
-      <form (ngSubmit)="onSubmit()">
+      <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
           <app-input
             label="名前"
             type="text"
-            [(ngModel)]="user.name"
-            name="name"
+            formControlName="name"
             [required]="true"
+            [maxLength]="VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH"
+            [showCounter]="true"
             [errorMessage]="fieldErrors['name']"
           ></app-input>
 
@@ -33,9 +35,10 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
           <app-input
             label="メールアドレス"
             type="email"
-            [(ngModel)]="user.email"
-            name="email"
+            formControlName="email"
             [required]="true"
+            [maxLength]="VALIDATION_RULES.EMAIL.MAX_LENGTH"
+            [showCounter]="true"
             [errorMessage]="fieldErrors['email']"
           ></app-input>
         </div>
@@ -44,15 +47,16 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
           <app-input
             label="パスワード"
             type="password"
-            [(ngModel)]="user.password"
-            name="password"
+            formControlName="password"
             [required]="true"
+            [maxLength]="VALIDATION_RULES.PASSWORD.MAX_LENGTH"
+            [showCounter]="true"
             [errorMessage]="fieldErrors['password']"
           ></app-input>
         </div>
 
         <div class="actions">
-          <app-button variant="primary" type="submit" class="submit-btn">登録</app-button>
+          <app-button variant="primary" type="submit" class="submit-btn" [disabled]="signupForm.invalid">登録</app-button>
         </div>
 
         @if (errorMessage) {
@@ -78,6 +82,10 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
       .submit-btn {
         width: 100%;
       }
+      .submit-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
       .full-width-btn {
         width: 100%;
       }
@@ -90,21 +98,40 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
     `,
   ],
 })
-export class SignupComponent {
+export class SignupComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly fb = inject(FormBuilder);
 
-  user: SignupRequest = { name: '', email: '', password: '' };
+  signupForm!: FormGroup;
   fieldErrors: { [key: string]: string[] } = {};
   errorMessage = '';
 
+  protected readonly VALIDATION_RULES = VALIDATION_RULES;
+
+  ngOnInit() {
+    this.signupForm = this.fb.group({
+      name: ['', [Validators.required, Validators.maxLength(VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH)]],
+      email: ['', [Validators.required, Validators.email, Validators.maxLength(VALIDATION_RULES.EMAIL.MAX_LENGTH)]],
+      password: ['', [
+        Validators.required,
+        Validators.minLength(VALIDATION_RULES.PASSWORD.MIN_LENGTH),
+        Validators.maxLength(VALIDATION_RULES.PASSWORD.MAX_LENGTH),
+        Validators.pattern(/[a-zA-Z]/),
+        Validators.pattern(/[0-9]/)
+      ]],
+    });
+  }
+
   onSubmit() {
+    if (this.signupForm.invalid) {
+      return;
+    }
+
     this.fieldErrors = {}; // Reset errors
     this.errorMessage = '';
 
-
-
-    this.authService.signup(this.user).subscribe({
+    this.authService.signup(this.signupForm.value).subscribe({
       next: () => {
         this.router.navigate(['/recipes']);
       },
@@ -119,6 +146,8 @@ export class SignupComponent {
               switch (d.code) {
                 case 'PASSWORD_TOO_SHORT':
                   return `パスワードは${d.params?.min || 8}文字以上である必要があります`;
+                case 'PASSWORD_TOO_LONG':
+                  return `パスワードは${d.params?.max || VALIDATION_RULES.PASSWORD.MAX_LENGTH}文字以下である必要があります`;
                 case 'PASSWORD_NO_ALPHA':
                   return 'パスワードには少なくとも1つの英字を含める必要があります';
                 case 'PASSWORD_NO_NUMERIC':
@@ -126,7 +155,7 @@ export class SignupComponent {
                 case 'EMAIL_INVALID_FORMAT':
                   return 'メールアドレスの形式が正しくありません';
                 case 'EMAIL_TOO_LONG':
-                  return `メールアドレスは${d.params?.max || 254}文字以下である必要があります`;
+                  return `メールアドレスは${d.params?.max || VALIDATION_RULES.EMAIL.MAX_LENGTH}文字以下である必要があります`;
                 case 'REQUIRED':
                   return 'この項目は必須です';
                 default:

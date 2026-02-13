@@ -6,6 +6,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { AuthCardComponent } from '../../../shared/components/organisms/auth-card/auth-card.component';
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
 import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
+import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
 
 @Component({
     selector: 'app-request-password-reset',
@@ -28,6 +29,7 @@ export class RequestPasswordResetComponent {
     message = '';
     errorMessage = '';
     isLoading = false;
+    protected readonly VALIDATION_RULES = VALIDATION_RULES;
 
     onSubmit() {
         this.isLoading = true;

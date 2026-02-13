@@ -8,6 +8,7 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
 import { HeadlineComponent } from '../../../shared/components/atoms/headline/headline.component';
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
 import { TextareaComponent } from '../../../shared/components/atoms/textarea/textarea.component';
+import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
 
 @Component({
   selector: 'app-recipe-form',
@@ -38,6 +39,8 @@ import { TextareaComponent } from '../../../shared/components/atoms/textarea/tex
                 formControlName="name"
                 placeholder="例: オムライス"
                 [required]="true"
+                [maxLength]="VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH"
+                [showCounter]="true"
                 [errorMessage]="fieldErrors['name']"
               ></app-input>
             </div>
@@ -59,6 +62,8 @@ import { TextareaComponent } from '../../../shared/components/atoms/textarea/tex
                 formControlName="memo"
                 placeholder="メモを入力"
                 [rows]="4"
+                [maxLength]="VALIDATION_RULES.RECIPE.MEMO_MAX_LENGTH"
+                [showCounter]="true"
                 [errorMessage]="fieldErrors['memo']"
               ></app-textarea>
             </div>
@@ -114,7 +119,7 @@ import { TextareaComponent } from '../../../shared/components/atoms/textarea/tex
       .action-btn {
         width: auto;
         min-width: 100px;
-      }
+        }
     `,
   ],
 })
@@ -129,11 +134,13 @@ export class RecipeFormComponent implements OnInit {
   fieldErrors: { [key: string]: string[] } = {};
   isSubmitting = false;
 
+  protected readonly VALIDATION_RULES = VALIDATION_RULES;
+
   constructor() {
     this.recipeForm = this.fb.group({
-      name: ['', Validators.required],
-      url: ['', [Validators.required]],
-      memo: [''],
+      name: ['', [Validators.required, Validators.maxLength(VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH)]],
+      url: ['', [Validators.required, Validators.pattern(/^https?:\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}.*|^https?:\/\/localhost.*/)]],
+      memo: ['', Validators.maxLength(VALIDATION_RULES.RECIPE.MEMO_MAX_LENGTH)],
     });
   }
 
@@ -141,7 +148,8 @@ export class RecipeFormComponent implements OnInit {
     const urlControl = this.recipeForm.get('url');
     if (urlControl?.value) {
       let url = urlControl.value.trim();
-      if (url && !/^https?:\/\//i.test(url)) {
+      // If no scheme is present at all (no '://'), prepend https://
+      if (url && !url.includes('://')) {
         url = 'https://' + url;
         urlControl.setValue(url);
       }

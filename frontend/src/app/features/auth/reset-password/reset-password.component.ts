@@ -6,6 +6,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { AuthCardComponent } from '../../../shared/components/organisms/auth-card/auth-card.component';
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
 import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
+import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
 
 @Component({
     selector: 'app-reset-password',
@@ -31,6 +32,7 @@ export class ResetPasswordComponent implements OnInit {
     message = '';
     errorMessage = '';
     isLoading = false;
+    protected readonly VALIDATION_RULES = VALIDATION_RULES;
 
     ngOnInit() {
         this.route.queryParams.subscribe((params) => {
@@ -50,6 +52,12 @@ export class ResetPasswordComponent implements OnInit {
         this.isLoading = true;
         this.message = '';
         this.errorMessage = '';
+
+        // The provided code snippet for insertion appears to be an HTML template fragment
+        // and cannot be directly inserted into a TypeScript method.
+        // To maintain syntactical correctness, this part of the instruction cannot be applied as written.
+        // If the intention was to modify the template, please provide the template content.
+        // If the intention was to replace the authService call, please provide valid TypeScript code.
 
         this.authService.resetPassword(this.token, this.newPassword).subscribe({
             next: (res) => {
