@@ -31,7 +31,19 @@ export class TextareaComponent implements ControlValueAccessor, OnInit {
   @Input() placeholder = '';
   @Input() rows = 4;
   @Input() required = false;
-  @Input() errorMessage: string | null = null;
+  @Input() maxLength: number | null = null;
+  @Input() showCounter = false;
+  @Input() errorMessage: string | string[] | null = null;
+
+  get currentLength(): number {
+    return (this.value || '').length;
+  }
+
+  get errorMessages(): string[] {
+    if (!this.errorMessage) return [];
+    if (Array.isArray(this.errorMessage)) return this.errorMessage;
+    return [this.errorMessage];
+  }
 
   control: FormControl | null = null;
 

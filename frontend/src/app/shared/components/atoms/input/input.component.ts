@@ -1,4 +1,4 @@
-import { Component, forwardRef, inject, Input, OnInit, Injector } from '@angular/core';
+import { Component, forwardRef, inject, Input, OnInit, Injector, Output, EventEmitter } from '@angular/core';
 import {
   ControlValueAccessor,
   NG_VALUE_ACCESSOR,
@@ -31,7 +31,16 @@ export class InputComponent implements ControlValueAccessor, OnInit {
   @Input() placeholder = '';
   @Input() type: 'text' | 'password' | 'email' | 'number' = 'text';
   @Input() required = false;
+  @Input() maxLength: number | null = null;
+  @Input() showCounter = false;
   @Input() errorMessage: string | string[] | null = null;
+  @Input() focus = false;
+
+  get currentLength(): number {
+    return String(this.value || '').length;
+  }
+
+  @Output() blur = new EventEmitter<void>();
 
   get errorMessages(): string[] {
     if (!this.errorMessage) return [];
@@ -91,5 +100,6 @@ export class InputComponent implements ControlValueAccessor, OnInit {
 
   onBlur() {
     this.onTouched();
+    this.blur.emit();
   }
 }
