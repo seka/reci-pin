@@ -83,3 +83,4 @@ proxy/certs/*.pem
 
 *storybook.log
 storybook-static
+/worktrees

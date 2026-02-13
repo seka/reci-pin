@@ -96,6 +96,19 @@ func TestSignupUseCase_Execute(t *testing.T) {
 			wantErr: true,
 			errMsg:  "failed to create user profile",
 		},
+		{
+			name: "異常系_ユーザー作成失敗_パスワード要件満たさず",
+			input: auth.SignupInput{
+				Email:    "test@example.com",
+				Password: "weak",
+				Name:     "Test User",
+			},
+			setup: func(mr *mock.MockUserRepository, mc *mock.MockUserEmailCredentialRepository) {
+				// No repository calls expected as validation fails first
+			},
+			wantErr: true,
+			errMsg:  "validation failed",
+		},
 	}
 
 	for _, tt := range tests {
@@ -109,7 +122,9 @@ func TestSignupUseCase_Execute(t *testing.T) {
 
 			if tt.wantErr {
 				assert.Error(t, err)
-				assert.Contains(t, err.Error(), tt.errMsg)
+				if tt.errMsg != "" {
+					assert.Contains(t, err.Error(), tt.errMsg)
+				}
 				assert.Equal(t, int64(0), userID)
 			} else {
 				assert.NoError(t, err)

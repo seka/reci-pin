@@ -2,6 +2,8 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
+	"log"
 	"net/http"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
@@ -63,8 +65,17 @@ func toUserResponse(user *model.User) *response.UserResponse {
 // Handlers
 
 func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
+	log.Println("Handling Signup request")
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Panic in Signup handler: %v", r)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
+	}()
+
 	var req request.SignupRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Printf("Failed to decode request body: %v", err)
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
@@ -78,6 +89,19 @@ func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	// 登録完了メッセージのみ返却（トークンはメール認証後に発行）
 	_, err := h.signupUseCase.Execute(r.Context(), input)
 	if err != nil {
+		log.Printf("SignupUseCase error: %v", err)
+		var validationErrors auth.ValidationErrors
+		if errors.As(err, &validationErrors) {
+			details := make(map[string][]response.ErrorDetail)
+			for _, ve := range validationErrors {
+				details[ve.Field] = append(details[ve.Field], response.ErrorDetail{
+					Code:   ve.Code,
+					Params: ve.Params,
+				})
+			}
+			respondError(w, http.StatusBadRequest, "VALIDATION_FAILED", details)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

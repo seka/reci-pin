@@ -40,6 +40,11 @@ type SignupInput struct {
 }
 
 func (uc *signupInteractor) Execute(ctx context.Context, input SignupInput) (int64, error) {
+	// Validate password
+	if err := ValidatePassword(input.Password); err != nil {
+		return 0, err
+	}
+
 	// Check if email already exists
 	existingCred, err := uc.credentialRepo.GetByEmail(ctx, input.Email)
 	if err == nil && existingCred != nil {

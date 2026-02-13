@@ -20,13 +20,14 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
   template: `
     <app-auth-card title="アカウント作成">
       <form (ngSubmit)="onSubmit()">
-        <app-input
-          label="名前"
-          type="text"
-          [(ngModel)]="user.name"
-          name="name"
-          [required]="true"
-        ></app-input>
+          <app-input
+            label="名前"
+            type="text"
+            [(ngModel)]="user.name"
+            name="name"
+            [required]="true"
+            [errorMessage]="fieldErrors['name']"
+          ></app-input>
 
         <div style="margin-top: var(--spacing-2);">
           <app-input
@@ -35,6 +36,7 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
             [(ngModel)]="user.email"
             name="email"
             [required]="true"
+            [errorMessage]="fieldErrors['email']"
           ></app-input>
         </div>
 
@@ -45,6 +47,7 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
             [(ngModel)]="user.password"
             name="password"
             [required]="true"
+            [errorMessage]="fieldErrors['password']"
           ></app-input>
         </div>
 
@@ -91,14 +94,45 @@ export class SignupComponent {
   private readonly router = inject(Router);
 
   user: SignupRequest = { name: '', email: '', password: '' };
+  fieldErrors: { [key: string]: string[] } = {};
   errorMessage = '';
 
   onSubmit() {
+    this.fieldErrors = {}; // Reset errors
+    this.errorMessage = '';
+
+
+
     this.authService.signup(this.user).subscribe({
       next: () => {
         this.router.navigate(['/recipes']);
       },
-      error: () => {
+      error: (err) => {
+        // バックエンドからのエラーレスポンスを処理
+        if (err.error && err.error.error && err.error.error.details) {
+          const details = err.error.error.details;
+
+          // 各フィールドのエラーをマッピング
+          Object.keys(details).forEach(field => {
+            const messages = (details as any)[field].map((d: any) => {
+              switch (d.code) {
+                case 'PASSWORD_TOO_SHORT':
+                  return `パスワードは${d.params?.min || 8}文字以上である必要があります`;
+                case 'PASSWORD_NO_ALPHA':
+                  return 'パスワードには少なくとも1つの英字を含める必要があります';
+                case 'PASSWORD_NO_NUMERIC':
+                  return 'パスワードには少なくとも1つの数字を含める必要があります';
+                default:
+                  return '入力内容が正しくありません';
+              }
+            });
+            this.fieldErrors[field] = messages;
+          });
+
+          if (Object.keys(this.fieldErrors).length > 0) {
+            return;
+          }
+        }
         this.errorMessage = '登録に失敗しました';
       },
     });

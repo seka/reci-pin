@@ -31,7 +31,13 @@ export class InputComponent implements ControlValueAccessor, OnInit {
   @Input() placeholder = '';
   @Input() type: 'text' | 'password' | 'email' | 'number' = 'text';
   @Input() required = false;
-  @Input() errorMessage: string | null = null;
+  @Input() errorMessage: string | string[] | null = null;
+
+  get errorMessages(): string[] {
+    if (!this.errorMessage) return [];
+    if (Array.isArray(this.errorMessage)) return this.errorMessage;
+    return [this.errorMessage];
+  }
 
   control: FormControl | null = null;
 

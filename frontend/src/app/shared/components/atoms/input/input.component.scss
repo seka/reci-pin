@@ -6,3 +6,16 @@
 .full-width {
   width: 100%;
 }
+
+.custom-error {
+  color: #f44336; // Material Design Error Color (Standard)
+  font-size: 12px; // Caption size
+  line-height: 1.4;
+  margin-top: -16px; // Pull up slightly to sit in the subscript area
+  margin-bottom: 8px;
+  padding: 0 16px; // Align with input text
+}
+
+.error-line {
+  margin-bottom: 2px;
+}

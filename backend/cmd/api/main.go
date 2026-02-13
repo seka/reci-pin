@@ -44,14 +44,10 @@ func main() {
 
 	// Start Database
 	db := postgres.New(cfg.Database.DSN())
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		if err := runDatabase(ctx, db); err != nil {
-			errCh <- fmt.Errorf("database error: %w", err)
-			cancel() // Cancel context to stop other components
-		}
-	}()
+	if err := connectDatabase(ctx, db); err != nil {
+		log.Fatalf("database error: %v", err)
+	}
+	defer db.Close()
 
 	// Start Server
 	srv := createServer(&cfg, db)
@@ -85,14 +81,11 @@ func main() {
 	log.Println("Shutdown complete")
 }
 
-func runDatabase(ctx context.Context, db postgres.Database) error {
+func connectDatabase(ctx context.Context, db postgres.Database) error {
 	if err := db.Connect(ctx); err != nil {
 		return err
 	}
-	defer db.Close()
 	log.Println("Successfully connected to database")
-
-	<-ctx.Done()
 	return nil
 }
 
