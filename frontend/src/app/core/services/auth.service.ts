@@ -32,7 +32,7 @@ export interface LoginRequest {
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly API_URL = '/api';
+  private readonly API_URL = 'http://localhost:8080/api';
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'auth_user';
 
