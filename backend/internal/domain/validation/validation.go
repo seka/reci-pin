@@ -7,18 +7,6 @@ import (
 	"unicode/utf8"
 )
 
-// Common Error Codes
-const (
-	ErrCodeEmailInvalidFormat  = "EMAIL_INVALID_FORMAT"
-	ErrCodeEmailTooLong        = "EMAIL_TOO_LONG"
-	ErrCodeRequired            = "REQUIRED"
-	ErrCodeTextTooLong         = "TEXT_TOO_LONG"
-	ErrCodeURLInvalidFormat    = "URL_INVALID_FORMAT"
-	ErrCodePasswordTooShort    = "PASSWORD_TOO_SHORT"
-	ErrCodePasswordNoAlpha     = "PASSWORD_NO_ALPHA"
-	ErrCodePasswordNoNumeric   = "PASSWORD_NO_NUMERIC"
-)
-
 type ValidationError struct {
 	Field  string
 	Code   string
@@ -44,11 +32,11 @@ func ValidateEmail(email string) error {
 		return errs
 	}
 
-	if len(email) > 254 {
+	if len(email) > EmailMaxLength {
 		errs = append(errs, ValidationError{
 			Field:  "email",
 			Code:   ErrCodeEmailTooLong,
-			Params: map[string]interface{}{"max": 254},
+			Params: map[string]interface{}{"max": EmailMaxLength},
 		})
 	}
 
@@ -72,11 +60,18 @@ func ValidateEmail(email string) error {
 func ValidatePassword(password string) error {
 	var errs ValidationErrors
 
-	if len(password) < 8 {
+	if len(password) < PasswordMinLength {
 		errs = append(errs, ValidationError{
 			Field:  "password",
 			Code:   ErrCodePasswordTooShort,
-			Params: map[string]interface{}{"min": 8},
+			Params: map[string]interface{}{"min": PasswordMinLength},
+		})
+	}
+	if len(password) > PasswordMaxLength {
+		errs = append(errs, ValidationError{
+			Field:  "password",
+			Code:   ErrCodePasswordTooLong,
+			Params: map[string]interface{}{"max": PasswordMaxLength},
 		})
 	}
 
@@ -108,16 +103,17 @@ func ValidateRecipe(name, link string) error {
 
 	if name == "" {
 		errs = append(errs, ValidationError{Field: "name", Code: ErrCodeRequired})
-	} else if utf8.RuneCountInString(name) > 100 {
+	} else if utf8.RuneCountInString(name) > RecipeNameMaxLength {
 		errs = append(errs, ValidationError{
 			Field:  "name",
 			Code:   ErrCodeTextTooLong,
-			Params: map[string]interface{}{"max": 100},
+			Params: map[string]interface{}{"max": RecipeNameMaxLength},
 		})
 	}
 
 	if link != "" {
-		if _, err := url.ParseRequestURI(link); err != nil {
+		u, err := url.ParseRequestURI(link)
+		if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
 			errs = append(errs, ValidationError{
 				Field: "url",
 				Code:  ErrCodeURLInvalidFormat,
@@ -137,11 +133,11 @@ func ValidateTag(name string) error {
 
 	if name == "" {
 		errs = append(errs, ValidationError{Field: "name", Code: ErrCodeRequired})
-	} else if utf8.RuneCountInString(name) > 30 {
+	} else if utf8.RuneCountInString(name) > TagNameMaxLength {
 		errs = append(errs, ValidationError{
 			Field:  "name",
 			Code:   ErrCodeTextTooLong,
-			Params: map[string]interface{}{"max": 30},
+			Params: map[string]interface{}{"max": TagNameMaxLength},
 		})
 	}
 

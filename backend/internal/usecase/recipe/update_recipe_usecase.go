@@ -7,6 +7,7 @@ import (
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
+	"github.com/seka/reci-pin/backend/internal/domain/validation"
 )
 
 type UpdateRecipeUseCase interface {
@@ -30,6 +31,11 @@ type UpdateRecipeInput struct {
 }
 
 func (uc *updateRecipeInteractor) Execute(ctx context.Context, input UpdateRecipeInput) (*model.Recipe, error) {
+	// Validation
+	if err := validation.ValidateRecipe(input.Name, input.URL); err != nil {
+		return nil, err
+	}
+
 	// Get existing recipe to verify ownership
 	recipe, err := uc.recipeRepo.GetByID(ctx, input.ID)
 	if err != nil {
