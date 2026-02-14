@@ -8,7 +8,7 @@ import { RouterModule } from '@angular/router';
   imports: [CommonModule, RouterModule],
   template: `
     <a routerLink="/" class="logo" [ngClass]="size">
-      <span class="icon">📍</span>
+      <img src="/logo.png" alt="ReciPin" class="logo-img" />
       <span class="text">ReciPin</span>
     </a>
   `,
@@ -26,8 +26,10 @@ import { RouterModule } from '@angular/router';
         opacity: 0.8;
       }
 
-      .icon {
-        margin-right: 8px;
+      .logo-img {
+        height: 1.8em;
+        width: auto;
+        margin-right: 12px;
       }
 
       /* Sizes */
@@ -42,7 +44,7 @@ import { RouterModule } from '@angular/router';
       }
 
       .text {
-        color: #e91e63; /* Pinkish/Terracotta based */
+        color: #e65e38; /* Terracotta Primary Brand Color */
       }
     `,
   ],
