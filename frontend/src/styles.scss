@@ -57,17 +57,18 @@ $pop-typography: mat.m2-define-typography-config($font-family: "'M PLUS Rounded 
 
 // Custom Terracotta Palette (Mapped to Pink Primitive)
 $terracotta-palette: (
-  50: ds.$pink-50,
-  100: ds.$pink-100,
-  200: ds.$pink-200,
-  300: ds.$pink-300,
-  400: ds.$pink-400,
-  500: ds.$pink-500,
+  50: ds.$terracotta-50,
+  100: ds.$terracotta-100,
+  200: ds.$terracotta-200,
+  300: ds.$terracotta-300,
+  400: ds.$terracotta-400,
+  500: ds.$terracotta-500,
   // Main
-  600: ds.$pink-600,
-  700: ds.$pink-700,
-  800: ds.$pink-800,
-  900: ds.$pink-900,
+  600: ds.$terracotta-500,
+  // Using 500 as 600 fallback if needed
+  700: ds.$terracotta-500,
+  800: ds.$terracotta-500,
+  900: ds.$terracotta-500,
   A100: #ffffff,
   A200: #ffeae6,
   A400: #ffb8b3,
