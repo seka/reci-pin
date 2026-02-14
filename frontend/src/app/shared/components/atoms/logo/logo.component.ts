@@ -27,9 +27,9 @@ import { RouterModule } from '@angular/router';
       }
 
       .logo-img {
-        height: 1.8em;
+        height: 2.2em;
         width: auto;
-        margin-right: 12px;
+        margin-right: 16px;
       }
 
       /* Sizes */
