@@ -46,6 +46,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: dev
     container_name: recipin_frontend
     ports:
       - "4200:4200"
