@@ -9,25 +9,13 @@ import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { TranslateServerLoader } from './core/i18n/translate-server.loader';
+import { TranslateHttpLoader, TRANSLATE_HTTP_LOADER_CONFIG } from '@ngx-translate/http-loader';
 
 
-
-class CustomHttpLoader implements TranslateLoader {
-  constructor(
-    private http: HttpClient,
-    private prefix: string = '/assets/i18n/',
-    private suffix: string = '.json'
-  ) { }
-
-  public getTranslation(lang: string): Observable<any> {
-    return this.http.get(`${this.prefix}${lang}${this.suffix}`);
-  }
-}
-
-export function httpLoaderFactory(http: HttpClient) {
+export function httpLoaderFactory() {
   const platformId = inject(PLATFORM_ID);
   if (isPlatformBrowser(platformId)) {
-    return new CustomHttpLoader(http);
+    return new TranslateHttpLoader();
   }
   return new TranslateServerLoader();
 }
@@ -38,12 +26,18 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor]), withFetch()),
     provideClientHydration(withEventReplay()),
+    {
+      provide: TRANSLATE_HTTP_LOADER_CONFIG,
+      useValue: {
+        prefix: '/assets/i18n/',
+        suffix: '.json'
+      }
+    },
     provideTranslateService({
       defaultLanguage: 'ja',
       loader: {
         provide: TranslateLoader,
         useFactory: httpLoaderFactory,
-        deps: [HttpClient],
       },
     }),
   ],
