@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { TranslatePipe } from '@ngx-translate/core';
 import { RecipeService, Recipe } from '../../core/services/recipe.service';
 import { RecipeCardComponent } from '../../shared/components/organisms/recipe-card/recipe-card.component';
 import { HeadlineComponent } from '../../shared/components/atoms/headline/headline.component';
@@ -9,15 +10,15 @@ import { ButtonComponent } from '../../shared/components/atoms/button/button.com
 @Component({
   selector: 'app-recipes',
   standalone: true,
-  imports: [RouterModule, MatIconModule, RecipeCardComponent, HeadlineComponent, ButtonComponent],
+  imports: [RouterModule, MatIconModule, TranslatePipe, RecipeCardComponent, HeadlineComponent, ButtonComponent],
   template: `
     <div class="recipes-container">
       <div class="header">
-        <app-headline variant="h2">マイレシピ</app-headline>
+        <app-headline variant="h2">{{ 'RECIPE.MY_RECIPES' | translate }}</app-headline>
         <div class="header-actions">
           <app-button routerLink="/recipes/new" variant="primary" class="add-btn">
             <mat-icon style="vertical-align: middle; margin-right: 4px;">add</mat-icon>
-            新規レシピ追加
+            {{ 'RECIPE.ADD_NEW' | translate }}
           </app-button>
           <a routerLink="/settings" class="settings-link" title="設定">
             <mat-icon>settings</mat-icon>

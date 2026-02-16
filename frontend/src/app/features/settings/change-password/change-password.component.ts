@@ -13,6 +13,7 @@ import { InputComponent } from '../../../shared/components/atoms/input/input.com
 import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
 import { HeadlineComponent } from '../../../shared/components/atoms/headline/headline.component';
 import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-change-password',
@@ -24,18 +25,19 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
     InputComponent,
     ButtonComponent,
     HeadlineComponent,
+    TranslatePipe,
   ],
   template: `
     <div class="change-password-container">
       <div class="back-link">
-        <a routerLink="/settings">← 設定に戻る</a>
+        <a routerLink="/settings">{{ 'SETTINGS.BACK_TO_SETTINGS' | translate }}</a>
       </div>
 
-      <app-headline level="1">パスワード変更</app-headline>
+      <app-headline level="1">{{ 'SETTINGS.CHANGE_PASSWORD_TITLE' | translate }}</app-headline>
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="password-form">
         <app-input
-          label="現在のパスワード"
+          [label]="'SETTINGS.CURRENT_PASSWORD' | translate"
           type="password"
           formControlName="currentPassword"
           [errorMessage]="getErrorMessage('currentPassword')"
@@ -43,11 +45,11 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
           [maxLength]="VALIDATION_RULES.PASSWORD.MAX_LENGTH"
         ></app-input>
         <p class="forgot-password-link">
-          <a routerLink="/password-reset/request">パスワードを忘れた場合</a>
+          <a routerLink="/password-reset/request">{{ 'AUTH.FORGOT_PASSWORD' | translate }}</a>
         </p>
 
         <app-input
-          label="新しいパスワード"
+          [label]="'SETTINGS.NEW_PASSWORD' | translate"
           type="password"
           formControlName="newPassword"
           [errorMessage]="getErrorMessage('newPassword')"
@@ -55,10 +57,10 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
           [maxLength]="VALIDATION_RULES.PASSWORD.MAX_LENGTH"
           [showCounter]="true"
         ></app-input>
-        <p class="hint">{{ VALIDATION_RULES.PASSWORD.MIN_LENGTH }}文字以上の英数字を入力してください。</p>
+        <p class="hint">{{ 'SETTINGS.PASSWORD_HINT' | translate: { min: VALIDATION_RULES.PASSWORD.MIN_LENGTH } }}</p>
 
         <app-input
-          label="新しいパスワード（確認）"
+          [label]="'SETTINGS.NEW_PASSWORD_CONFIRM' | translate"
           type="password"
           formControlName="confirmNewPassword"
           [errorMessage]="getErrorMessage('confirmNewPassword')"
@@ -68,7 +70,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
 
         <div class="actions">
           <app-button type="submit" [disabled]="form.invalid || isProcessing">
-            {{ isProcessing ? '変更中...' : 'パスワードを変更する' }}
+            {{ isProcessing ? ('SETTINGS.CHANGING_PASSWORD' | translate) : ('SETTINGS.CHANGE_PASSWORD_BUTTON' | translate) }}
           </app-button>
         </div>
 
@@ -147,6 +149,7 @@ export class ChangePasswordComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private translate = inject(TranslateService);
 
   isProcessing = false;
   errorMessage = '';
@@ -178,11 +181,13 @@ export class ChangePasswordComponent {
   getErrorMessage(controlName: string): string | null {
     const control = this.form.get(controlName);
     if (control?.touched && control?.errors) {
-      if (control.errors['required']) return '必須項目です';
-      if (control.errors['minlength']) return `${VALIDATION_RULES.PASSWORD.MIN_LENGTH}文字以上で入力してください`;
-      if (control.errors['maxlength']) return `${VALIDATION_RULES.PASSWORD.MAX_LENGTH}文字以内で入力してください`;
+      if (control.errors['required']) return this.translate.instant('VALIDATION.REQUIRED');
+      if (control.errors['minlength'])
+        return this.translate.instant('VALIDATION.MIN_LENGTH', { min: VALIDATION_RULES.PASSWORD.MIN_LENGTH });
+      if (control.errors['maxlength'])
+        return this.translate.instant('VALIDATION.MAX_LENGTH', { max: VALIDATION_RULES.PASSWORD.MAX_LENGTH });
       if (controlName === 'confirmNewPassword' && this.form.errors?.['mismatch']) {
-        return 'パスワードが一致しません';
+        return this.translate.instant('VALIDATION.PASSWORD_MISMATCH');
       }
     }
     return null;
@@ -205,16 +210,16 @@ export class ChangePasswordComponent {
       })
       .subscribe({
         next: () => {
-          alert('パスワードを変更しました。');
+          alert(this.translate.instant('SETTINGS.PASSWORD_CHANGED'));
           this.router.navigate(['/settings']);
         },
         error: (err) => {
           this.isProcessing = false;
           // Backend returns bad request for incorrect password or validation errors
           if (err.status === 400 || err.status === 401) {
-            this.errorMessage = '現在のパスワードが間違っているか、新しいパスワードが無効です。';
+            this.errorMessage = this.translate.instant('SETTINGS.CHANGE_FAILED_INVALID');
           } else {
-            this.errorMessage = 'パスワードの変更に失敗しました。時間をおいて再度お試しください。';
+            this.errorMessage = this.translate.instant('SETTINGS.CHANGE_FAILED_ERROR');
           }
           console.error(err);
         },

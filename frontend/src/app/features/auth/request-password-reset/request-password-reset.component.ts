@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthCardComponent } from '../../../shared/components/organisms/auth-card/auth-card.component';
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
@@ -15,6 +16,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
         CommonModule,
         FormsModule,
         RouterModule,
+        TranslatePipe,
         AuthCardComponent,
         InputComponent,
         ButtonComponent,
@@ -24,6 +26,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
 })
 export class RequestPasswordResetComponent {
     private readonly authService = inject(AuthService);
+    private readonly translate = inject(TranslateService);
 
     email = '';
     message = '';
@@ -42,7 +45,7 @@ export class RequestPasswordResetComponent {
                 this.isLoading = false;
             },
             error: (err) => {
-                this.errorMessage = 'リクエストの送信に失敗しました。';
+                this.errorMessage = this.translate.instant('AUTH.REQUEST_FAILED');
                 this.isLoading = false;
                 console.error(err);
             },

@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthCardComponent } from '../../../shared/components/organisms/auth-card/auth-card.component';
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
@@ -14,15 +15,16 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
     FormsModule,
     RouterModule,
     ReactiveFormsModule,
+    TranslatePipe,
     AuthCardComponent,
     InputComponent,
     ButtonComponent,
   ],
   template: `
-    <app-auth-card title="ログイン">
+    <app-auth-card [title]="'AUTH.LOGIN_BUTTON' | translate">
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <app-input
-          label="メールアドレス"
+          [label]="'AUTH.EMAIL' | translate"
           type="email"
           formControlName="email"
           [required]="true"
@@ -31,7 +33,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
 
         <div style="margin-top: var(--spacing-2);">
           <app-input
-            label="パスワード"
+            [label]="'AUTH.PASSWORD' | translate"
             type="password"
             formControlName="password"
             [required]="true"
@@ -40,12 +42,12 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
         </div>
 
         <div class="actions">
-          <app-button variant="primary" type="submit" class="submit-btn" [disabled]="loginForm.invalid">ログイン</app-button>
+          <app-button variant="primary" type="submit" class="submit-btn" [disabled]="loginForm.invalid">{{ 'AUTH.LOGIN_BUTTON' | translate }}</app-button>
         </div>
 
         <div style="text-align: center; margin-bottom: var(--spacing-2);">
           <a routerLink="/password-reset/request" style="font-size: var(--font-size-2); color: var(--color-text-secondary); text-decoration: none;">
-            パスワードを忘れた場合
+            {{ 'AUTH.FORGOT_PASSWORD' | translate }}
           </a>
         </div>
 
@@ -57,7 +59,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
       <div footer>
         <a routerLink="/signup" style="text-decoration: none;">
           <app-button variant="accent" type="button" class="full-width-btn"
-            >アカウント作成はこちら</app-button
+            >{{ 'AUTH.CREATE_ACCOUNT' | translate }}</app-button
           >
         </a>
       </div>
@@ -91,6 +93,7 @@ export class LoginComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
+  private readonly translate = inject(TranslateService);
 
   loginForm!: FormGroup;
   errorMessage = '';
@@ -114,7 +117,7 @@ export class LoginComponent implements OnInit {
         this.router.navigate(['/recipes']);
       },
       error: () => {
-        this.errorMessage = 'ログインに失敗しました';
+        this.errorMessage = this.translate.instant('AUTH.LOGIN_FAILED');
       },
     });
   }

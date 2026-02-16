@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { ButtonComponent } from '../../shared/components/atoms/button/button.component';
 import { HeadlineComponent } from '../../shared/components/atoms/headline/headline.component';
@@ -8,39 +9,37 @@ import { HeadlineComponent } from '../../shared/components/atoms/headline/headli
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [AsyncPipe, RouterModule, ButtonComponent, HeadlineComponent],
+  imports: [AsyncPipe, RouterModule, TranslatePipe, ButtonComponent, HeadlineComponent],
   template: `
     <div class="settings-container">
       <div class="back-link">
-        <a routerLink="/recipes">← レシピ一覧に戻る</a>
+        <a routerLink="/recipes">{{ 'SETTINGS.BACK_TO_RECIPES' | translate }}</a>
       </div>
 
-      <app-headline level="1">設定</app-headline>
+      <app-headline level="1">{{ 'SETTINGS.TITLE' | translate }}</app-headline>
 
       <section class="settings-section">
-        <app-headline level="2">アカウント</app-headline>
+        <app-headline level="2">{{ 'SETTINGS.ACCOUNT' | translate }}</app-headline>
 
         @if (currentUser$ | async; as user) {
           <div class="user-info">
-            <p><strong>名前:</strong> {{ user.name }}</p>
-            <p><strong>メールアドレス:</strong> {{ user.email }}</p>
+            <p><strong>{{ 'SETTINGS.NAME' | translate }}:</strong> {{ user.name }}</p>
+            <p><strong>{{ 'SETTINGS.EMAIL' | translate }}:</strong> {{ user.email }}</p>
           </div>
         }
         <div class="account-actions">
           <a routerLink="/settings/password" style="text-decoration: none;">
-            <app-button variant="outline">パスワードを変更する</app-button>
+            <app-button variant="outline">{{ 'SETTINGS.CHANGE_PASSWORD_BUTTON' | translate }}</app-button>
           </a>
         </div>
       </section>
 
       <section class="settings-section danger-zone">
-        <app-headline level="2">退会</app-headline>
-        <p class="warning-text">
-          アカウントを削除すると、すべてのレシピやデータが完全に削除されます。
-          この操作は取り消せません。
+        <app-headline level="2">{{ 'SETTINGS.WITHDRAW_TITLE' | translate }}</app-headline>
+        <p class="warning-text" [innerHTML]="'SETTINGS.WITHDRAW_WARNING' | translate">
         </p>
         <app-button variant="warn" (click)="onWithdraw()" [disabled]="isProcessing">
-          {{ isProcessing ? '処理中...' : 'アカウントを削除する' }}
+          {{ isProcessing ? ('SETTINGS.WITHDRAWING' | translate) : ('SETTINGS.WITHDRAW_BUTTON' | translate) }}
         </app-button>
       </section>
     </div>
@@ -97,23 +96,24 @@ import { HeadlineComponent } from '../../shared/components/atoms/headline/headli
 })
 export class SettingsComponent {
   private readonly authService = inject(AuthService);
+  private readonly translate = inject(TranslateService);
 
   currentUser$ = this.authService.currentUser$;
   isProcessing = false;
 
   onWithdraw(): void {
-    if (!confirm('本当に退会しますか？\n\nすべてのデータが削除され、この操作は取り消せません。')) {
+    if (!confirm(this.translate.instant('SETTINGS.WITHDRAW_CONFIRM'))) {
       return;
     }
 
     this.isProcessing = true;
     this.authService.withdraw().subscribe({
       next: () => {
-        alert('退会が完了しました。ご利用ありがとうございました。');
+        alert(this.translate.instant('SETTINGS.WITHDRAW_SUCCESS'));
       },
       error: (err: Error) => {
         this.isProcessing = false;
-        alert('退会処理に失敗しました。しばらくしてから再度お試しください。');
+        alert(this.translate.instant('SETTINGS.WITHDRAW_FAILED'));
         console.error('Withdraw error:', err);
       },
     });

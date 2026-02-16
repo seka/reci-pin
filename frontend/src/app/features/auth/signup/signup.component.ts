@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthCardComponent } from '../../../shared/components/organisms/auth-card/auth-card.component';
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
@@ -14,15 +15,16 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
     FormsModule,
     RouterModule,
     ReactiveFormsModule,
+    TranslatePipe,
     AuthCardComponent,
     InputComponent,
     ButtonComponent,
   ],
   template: `
-    <app-auth-card title="アカウント作成">
+    <app-auth-card [title]="'AUTH.SIGNUP_TITLE' | translate">
       <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
           <app-input
-            label="名前"
+            [label]="'AUTH.NAME' | translate"
             type="text"
             formControlName="name"
             [required]="true"
@@ -33,7 +35,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
 
         <div style="margin-top: var(--spacing-2);">
           <app-input
-            label="メールアドレス"
+            [label]="'AUTH.EMAIL' | translate"
             type="email"
             formControlName="email"
             [required]="true"
@@ -45,7 +47,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
 
         <div style="margin-top: var(--spacing-2);">
           <app-input
-            label="パスワード"
+            [label]="'AUTH.PASSWORD' | translate"
             type="password"
             formControlName="password"
             [required]="true"
@@ -56,7 +58,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
         </div>
 
         <div class="actions">
-          <app-button variant="primary" type="submit" class="submit-btn" [disabled]="signupForm.invalid">登録</app-button>
+          <app-button variant="primary" type="submit" class="submit-btn" [disabled]="signupForm.invalid">{{ 'AUTH.REGISTER' | translate }}</app-button>
         </div>
 
         @if (errorMessage) {
@@ -67,7 +69,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
       <div footer>
         <a routerLink="/login" style="text-decoration: none;">
           <app-button variant="accent" type="button" class="full-width-btn"
-            >ログインページへ</app-button
+            >{{ 'AUTH.LOGIN_LINK' | translate }}</app-button
           >
         </a>
       </div>
@@ -102,6 +104,7 @@ export class SignupComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
+  private readonly translate = inject(TranslateService);
 
   signupForm!: FormGroup;
   fieldErrors: { [key: string]: string[] } = {};
@@ -145,21 +148,21 @@ export class SignupComponent implements OnInit {
             const messages = (details as any)[field].map((d: any) => {
               switch (d.code) {
                 case 'PASSWORD_TOO_SHORT':
-                  return `パスワードは${d.params?.min || 8}文字以上である必要があります`;
+                  return this.translate.instant('VALIDATION.MIN_LENGTH', { min: d.params?.min || 8 });
                 case 'PASSWORD_TOO_LONG':
-                  return `パスワードは${d.params?.max || VALIDATION_RULES.PASSWORD.MAX_LENGTH}文字以下である必要があります`;
+                  return this.translate.instant('VALIDATION.MAX_LENGTH', { max: d.params?.max || VALIDATION_RULES.PASSWORD.MAX_LENGTH });
                 case 'PASSWORD_NO_ALPHA':
-                  return 'パスワードには少なくとも1つの英字を含める必要があります';
+                  return this.translate.instant('VALIDATION.PASSWORD_NO_ALPHA');
                 case 'PASSWORD_NO_NUMERIC':
-                  return 'パスワードには少なくとも1つの数字を含める必要があります';
+                  return this.translate.instant('VALIDATION.PASSWORD_NO_NUMERIC');
                 case 'EMAIL_INVALID_FORMAT':
-                  return 'メールアドレスの形式が正しくありません';
+                  return this.translate.instant('VALIDATION.INVALID_EMAIL');
                 case 'EMAIL_TOO_LONG':
-                  return `メールアドレスは${d.params?.max || VALIDATION_RULES.EMAIL.MAX_LENGTH}文字以下である必要があります`;
+                  return this.translate.instant('VALIDATION.MAX_LENGTH', { max: d.params?.max || VALIDATION_RULES.EMAIL.MAX_LENGTH });
                 case 'REQUIRED':
-                  return 'この項目は必須です';
+                  return this.translate.instant('VALIDATION.REQUIRED');
                 default:
-                  return '入力内容が正しくありません';
+                  return this.translate.instant('VALIDATION.INVALID_INPUT');
               }
             });
             this.fieldErrors[field] = messages;
@@ -169,7 +172,7 @@ export class SignupComponent implements OnInit {
             return;
           }
         }
-        this.errorMessage = '登録に失敗しました';
+        this.errorMessage = this.translate.instant('AUTH.SIGNUP_FAILED');
       },
     });
   }

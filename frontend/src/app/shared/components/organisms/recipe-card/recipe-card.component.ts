@@ -3,12 +3,13 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
+import { TranslatePipe } from '@ngx-translate/core';
 import { Recipe } from '../../../../core/services/recipe.service';
 
 @Component({
   selector: 'app-recipe-card',
   standalone: true,
-  imports: [MatCardModule, MatButtonModule, MatIconModule, MatChipsModule],
+  imports: [MatCardModule, MatButtonModule, MatIconModule, MatChipsModule, TranslatePipe],
   template: `
     <mat-card class="recipe-card">
       <mat-card-header>
@@ -33,7 +34,7 @@ import { Recipe } from '../../../../core/services/recipe.service';
             target="_blank"
             rel="noopener noreferrer"
           >
-            レシピを見る
+            {{ 'RECIPE.VIEW_DETAILS' | translate }}
           </a>
         }
       </mat-card-actions>

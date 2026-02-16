@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { RecipeService, Tag } from '../../../core/services/recipe.service';
 import { TagSelectComponent } from '../../../shared/components/molecules/tag-select/tag-select.component';
 import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
@@ -17,6 +18,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
     ReactiveFormsModule,
     RouterModule,
     MatCardModule,
+    TranslatePipe,
     TagSelectComponent,
     ButtonComponent,
     HeadlineComponent,
@@ -28,16 +30,16 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
       <mat-card>
         <mat-card-header>
           <mat-card-title>
-            <app-headline variant="h2">新規レシピ作成</app-headline>
+            <app-headline variant="h2">{{ 'RECIPE.NEW_TITLE' | translate }}</app-headline>
           </mat-card-title>
         </mat-card-header>
         <mat-card-content>
           <form [formGroup]="recipeForm" (ngSubmit)="onSubmit()">
             <div style="margin-bottom: var(--spacing-2);">
               <app-input
-                label="レシピ名"
+                [label]="'RECIPE.NAME' | translate"
                 formControlName="name"
-                placeholder="例: オムライス"
+                [placeholder]="'RECIPE.NAME_PLACEHOLDER' | translate"
                 [required]="true"
                 [maxLength]="VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH"
                 [showCounter]="true"
@@ -58,9 +60,9 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
 
             <div style="margin-bottom: var(--spacing-2);">
               <app-textarea
-                label="メモ"
+                [label]="'RECIPE.MEMO' | translate"
                 formControlName="memo"
-                placeholder="メモを入力"
+                [placeholder]="'RECIPE.MEMO_PLACEHOLDER' | translate"
                 [rows]="4"
                 [maxLength]="VALIDATION_RULES.RECIPE.MEMO_MAX_LENGTH"
                 [showCounter]="true"
@@ -77,7 +79,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
 
             <div class="actions">
               <app-button type="button" routerLink="/recipes" variant="warn" class="action-btn"
-                >キャンセル</app-button
+                >{{ 'COMMON.CANCEL' | translate }}</app-button
               >
               <app-button
                 type="submit"
@@ -85,7 +87,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
                 [disabled]="recipeForm.invalid || isSubmitting"
                 class="action-btn"
               >
-                {{ isSubmitting ? '保存中...' : '保存' }}
+                {{ isSubmitting ? ('RECIPE.SAVING' | translate) : ('RECIPE.SAVE' | translate) }}
               </app-button>
             </div>
           </form>
@@ -127,6 +129,7 @@ export class RecipeFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly recipeService = inject(RecipeService);
   private readonly router = inject(Router);
+  private readonly translate = inject(TranslateService);
 
   recipeForm: FormGroup;
   tags: Tag[] = [];
@@ -186,13 +189,13 @@ export class RecipeFormComponent implements OnInit {
               const messages = (details as any)[field].map((d: any) => {
                 switch (d.code) {
                   case 'REQUIRED':
-                    return 'この項目は必須です';
+                    return this.translate.instant('VALIDATION.REQUIRED');
                   case 'TEXT_TOO_LONG':
-                    return `${d.params?.max}文字以内で入力してください`;
+                    return this.translate.instant('VALIDATION.MAX_LENGTH', { max: d.params?.max });
                   case 'URL_INVALID_FORMAT':
-                    return 'URLの形式が正しくありません';
+                    return this.translate.instant('VALIDATION.INVALID_URL');
                   default:
-                    return '入力内容が正しくありません';
+                    return this.translate.instant('VALIDATION.INVALID_INPUT');
                 }
               });
               this.fieldErrors[field] = messages;

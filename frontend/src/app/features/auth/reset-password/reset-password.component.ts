@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthCardComponent } from '../../../shared/components/organisms/auth-card/auth-card.component';
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
@@ -15,6 +16,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
         CommonModule,
         FormsModule,
         RouterModule,
+        TranslatePipe,
         AuthCardComponent,
         InputComponent,
         ButtonComponent,
@@ -26,6 +28,7 @@ export class ResetPasswordComponent implements OnInit {
     private readonly authService = inject(AuthService);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
+    private readonly translate = inject(TranslateService);
 
     token = '';
     newPassword = '';
@@ -38,26 +41,20 @@ export class ResetPasswordComponent implements OnInit {
         this.route.queryParams.subscribe((params) => {
             this.token = params['token'] || '';
             if (!this.token) {
-                this.errorMessage = '無効なリンクです。';
+                this.errorMessage = this.translate.instant('AUTH.INVALID_LINK');
             }
         });
     }
 
     onSubmit() {
         if (!this.token) {
-            this.errorMessage = 'トークンが不足しています。';
+            this.errorMessage = this.translate.instant('AUTH.MISSING_TOKEN');
             return;
         }
 
         this.isLoading = true;
         this.message = '';
         this.errorMessage = '';
-
-        // The provided code snippet for insertion appears to be an HTML template fragment
-        // and cannot be directly inserted into a TypeScript method.
-        // To maintain syntactical correctness, this part of the instruction cannot be applied as written.
-        // If the intention was to modify the template, please provide the template content.
-        // If the intention was to replace the authService call, please provide valid TypeScript code.
 
         this.authService.resetPassword(this.token, this.newPassword).subscribe({
             next: (res) => {
@@ -68,7 +65,7 @@ export class ResetPasswordComponent implements OnInit {
                 }, 3000);
             },
             error: (err) => {
-                this.errorMessage = 'パスワードの再設定に失敗しました。リンクの有効期限が切れている可能性があります。';
+                this.errorMessage = this.translate.instant('AUTH.RESET_FAILED_EXPIRED');
                 this.isLoading = false;
                 console.error(err);
             },
