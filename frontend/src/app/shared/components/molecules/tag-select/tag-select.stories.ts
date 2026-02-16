@@ -1,12 +1,17 @@
-import { Meta, StoryObj } from '@storybook/angular';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { moduleMetadata, Meta, StoryObj } from '@storybook/angular';
 import { TagSelectComponent } from './tag-select.component';
 
 const meta: Meta<TagSelectComponent> = {
   title: 'Molecules/TagSelect',
   component: TagSelectComponent,
   tags: ['autodocs'],
+  decorators: [
+    moduleMetadata({
+      imports: [BrowserAnimationsModule],
+    }),
+  ],
   argTypes: {
-    selectionChange: { action: 'selectionChange' },
   },
 };
 

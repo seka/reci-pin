@@ -1,42 +1,73 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { Tag } from '../../../../core/services/recipe.service';
+import { Component, Input, forwardRef, inject, ElementRef, ViewChild, OnInit } from '@angular/core';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormControl, ReactiveFormsModule } from '@angular/forms';
+import { Tag, RecipeService } from '../../../../core/services/recipe.service';
+import { CommonModule } from '@angular/common';
+import { MatChipsModule, MatChipInputEvent } from '@angular/material/chips';
+import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { Observable, startWith, map } from 'rxjs';
 
 @Component({
   selector: 'app-tag-select',
   standalone: true,
-  imports: [],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatChipsModule,
+    MatAutocompleteModule,
+    MatIconModule,
+    MatFormFieldModule,
+  ],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => TagSelectComponent),
+      multi: true,
+    },
+  ],
   template: `
     <div class="tags-section">
       <span class="section-label" id="tag-select-label">タグ選択</span>
-      <p class="helper-text">このレシピに関連するタグを選択してください。</p>
+      <p class="helper-text">タグを入力して検索、またはEnterで新規作成できます。</p>
 
-      @if (tags.length > 0) {
-        <div class="tags-container" role="group" aria-labelledby="tag-select-label">
-          @for (tag of tags; track tag.id) {
-            <div class="tag-item">
-              <input
-                type="checkbox"
-                [id]="'tag-' + tag.id"
-                [value]="tag.id"
-                [checked]="isSelected(tag.id)"
-                (change)="onChange($event, tag.id)"
-              />
-              <label [for]="'tag-' + tag.id">
-                {{ tag.name }}
-              </label>
-            </div>
+      <mat-form-field class="tag-chip-list" appearance="outline">
+        <mat-label>タグ</mat-label>
+        <mat-chip-grid #chipGrid aria-label="Tag selection">
+          @for (tagId of selectedTagIds; track tagId) {
+            <mat-chip-row (removed)="remove(tagId)">
+              {{ getTagName(tagId) }}
+              <button matChipRemove [attr.aria-label]="'remove ' + getTagName(tagId)">
+                <mat-icon>cancel</mat-icon>
+              </button>
+            </mat-chip-row>
           }
-        </div>
-      } @else {
-        <p class="no-tags-message">登録されているタグがありません。</p>
-      }
+          <input
+            placeholder="新しいタグ..."
+            #tagInput
+            [formControl]="tagCtrl"
+            [matChipInputFor]="chipGrid"
+            [matAutocomplete]="auto"
+            [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+            (matChipInputTokenEnd)="add($event)"
+          />
+        </mat-chip-grid>
+        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
+          @for (tag of filteredTags | async; track tag.id) {
+            <mat-option [value]="tag">
+              {{ tag.name }}
+            </mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
     </div>
   `,
   styles: [
     `
       .tags-section {
         margin-top: 16px;
-        margin-bottom: 24px;
+        margin-bottom: 8px;
       }
       .section-label {
         font-size: 1rem;
@@ -51,74 +82,140 @@ import { Tag } from '../../../../core/services/recipe.service';
         margin-bottom: 12px;
         margin-top: 0;
       }
-
-      .tags-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-      }
-
-      .tag-item {
-        position: relative;
-      }
-      .tag-item input[type='checkbox'] {
-        position: absolute;
-        opacity: 0;
-        width: 0;
-        height: 0;
-      }
-      .tag-item label {
-        display: inline-flex;
-        align-items: center;
-        padding: 6px 16px;
-        border: 1px solid #ddd;
-        border-radius: 999px; /* Pill shape */
-        background: #fff;
-        cursor: pointer;
-        font-weight: 500;
-        transition: all 0.2s ease;
-        color: #555;
-        user-select: none;
-        font-size: 0.9rem;
-      }
-      .tag-item label:hover {
-        background: #f5f5f5;
-      }
-      .tag-item input[type='checkbox']:checked + label {
-        background: #e0f7fa; /* Light Cyan */
-        border-color: #00bcd4;
-        color: #006064;
-        font-weight: bold;
-      }
-      .tag-item input[type='checkbox']:checked + label::before {
-        content: '✓';
-        margin-right: 6px;
-        font-weight: bold;
-      }
-      .no-tags-message {
-        color: #888;
-        font-style: italic;
+      .tag-chip-list {
+        width: 100%;
       }
     `,
   ],
 })
-export class TagSelectComponent {
+export class TagSelectComponent implements ControlValueAccessor, OnInit {
   @Input() tags: Tag[] = [];
-  @Input() selectedTagIds: number[] = [];
-  @Output() selectionChange = new EventEmitter<number[]>();
 
-  isSelected(tagId: number): boolean {
-    return this.selectedTagIds.includes(tagId);
+  separatorKeysCodes: number[] = [ENTER, COMMA];
+  tagCtrl = new FormControl('');
+  filteredTags: Observable<Tag[]>;
+  selectedTagIds: number[] = [];
+  isDisabled = false;
+
+  @ViewChild('tagInput') tagInput!: ElementRef<HTMLInputElement>;
+
+  private readonly recipeService = inject(RecipeService);
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onChange: (value: number[]) => void = () => { };
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onTouched: () => void = () => { };
+
+  constructor() {
+    this.filteredTags = this.tagCtrl.valueChanges.pipe(
+      startWith(null),
+      map((tag: string | null) => (tag ? this._filter(tag) : this.getUnselectedTags()))
+    );
   }
 
-  onChange(event: Event, tagId: number) {
-    const target = event.target as HTMLInputElement;
-    let newSelection = [...this.selectedTagIds];
-    if (target.checked) {
-      newSelection.push(tagId);
-    } else {
-      newSelection = newSelection.filter((id) => id !== tagId);
+  ngOnInit() {
+    // Ensure initial filtering works correctly
+    this.tagCtrl.setValue(null);
+  }
+
+  getTagName(id: number): string {
+    return this.tags.find((t) => t.id === id)?.name || '';
+  }
+
+  private getUnselectedTags(): Tag[] {
+    return this.tags.filter(tag => !this.selectedTagIds.includes(tag.id));
+  }
+
+  add(event: MatChipInputEvent): void {
+    const value = (event.value || '').trim();
+
+    if (value) {
+      // Check if tag already exists in the full list
+      const existingTag = this.tags.find((t) => t.name === value);
+
+      if (existingTag) {
+        if (!this.selectedTagIds.includes(existingTag.id)) {
+          this.selectedTagIds = [...this.selectedTagIds, existingTag.id];
+          this.triggerChange();
+        }
+      } else {
+        // Create new tag
+        this.recipeService.createTag(value).subscribe({
+          next: (newTag) => {
+            this.tags = [...this.tags, newTag];
+            this.selectedTagIds = [...this.selectedTagIds, newTag.id];
+            this.triggerChange();
+
+            // Clear input manually since we handled the event thoroughly
+            event.chipInput!.clear();
+            this.tagCtrl.setValue(null);
+          },
+          error: (err) => console.error('Failed to create tag', err)
+        });
+        return; // Return early to avoid clearing input before async op completes (though we clear it in subscribe)
+      }
     }
-    this.selectionChange.emit(newSelection);
+
+    // Clear the input value
+    event.chipInput!.clear();
+    this.tagCtrl.setValue(null);
+  }
+
+  remove(tagId: number): void {
+    const index = this.selectedTagIds.indexOf(tagId);
+
+    if (index >= 0) {
+      this.selectedTagIds.splice(index, 1);
+      this.triggerChange();
+    }
+  }
+
+  selected(event: MatAutocompleteSelectedEvent): void {
+    const tag: Tag = event.option.value;
+    if (!this.selectedTagIds.includes(tag.id)) {
+      this.selectedTagIds.push(tag.id);
+      this.triggerChange();
+    }
+    this.tagInput.nativeElement.value = '';
+    this.tagCtrl.setValue(null);
+  }
+
+  private _filter(value: string | Tag | null): Tag[] {
+    // If value is a Tag object (from autocomplete selection), use its name, otherwise use the string
+    const filterValue = (typeof value === 'string' ? value : value?.name || '').toLowerCase();
+
+    return this.tags.filter((tag) =>
+      tag.name.toLowerCase().includes(filterValue) &&
+      !this.selectedTagIds.includes(tag.id)
+    );
+  }
+
+  triggerChange() {
+    this.onChange(this.selectedTagIds);
+    this.onTouched();
+    // Force refresh filtered list
+    this.tagCtrl.setValue(null);
+  }
+
+  // ControlValueAccessor implementation
+  writeValue(value: number[]): void {
+    this.selectedTagIds = value || [];
+  }
+
+  registerOnChange(fn: (value: number[]) => void): void {
+    this.onChange = fn;
+  }
+
+  registerOnTouched(fn: () => void): void {
+    this.onTouched = fn;
+  }
+
+  setDisabledState?(isDisabled: boolean): void {
+    this.isDisabled = isDisabled;
+    if (isDisabled) {
+      this.tagCtrl.disable();
+    } else {
+      this.tagCtrl.enable();
+    }
   }
 }

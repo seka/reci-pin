@@ -72,8 +72,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
 
             <app-tag-select
               [tags]="tags"
-              [selectedTagIds]="selectedTagIds"
-              (selectionChange)="selectedTagIds = $event"
+              formControlName="tag_ids"
             >
             </app-tag-select>
 
@@ -133,8 +132,7 @@ export class RecipeFormComponent implements OnInit {
 
   recipeForm: FormGroup;
   tags: Tag[] = [];
-  selectedTagIds: number[] = [];
-  fieldErrors: { [key: string]: string[] } = {};
+  fieldErrors: Record<string, string[]> = {};
   isSubmitting = false;
 
   protected readonly VALIDATION_RULES = VALIDATION_RULES;
@@ -144,6 +142,7 @@ export class RecipeFormComponent implements OnInit {
       name: ['', [Validators.required, Validators.maxLength(VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH)]],
       url: ['', [Validators.required, Validators.pattern(/^https?:\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}.*|^https?:\/\/localhost.*/)]],
       memo: ['', Validators.maxLength(VALIDATION_RULES.RECIPE.MEMO_MAX_LENGTH)],
+      tag_ids: [[]],
     });
   }
 
@@ -170,10 +169,7 @@ export class RecipeFormComponent implements OnInit {
     this.fieldErrors = {};
     if (this.recipeForm.valid) {
       this.isSubmitting = true;
-      const formData = {
-        ...this.recipeForm.value,
-        tag_ids: this.selectedTagIds,
-      };
+      const formData = this.recipeForm.value;
 
       this.recipeService.createRecipe(formData).subscribe({
         next: () => {
