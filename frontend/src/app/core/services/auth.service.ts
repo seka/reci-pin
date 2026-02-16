@@ -1,8 +1,9 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { isPlatformBrowser } from '@angular/common';
 
 export interface User {
   id: number;
@@ -38,6 +39,7 @@ export class AuthService {
 
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
+  private readonly platformId = inject(PLATFORM_ID);
 
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
@@ -47,6 +49,9 @@ export class AuthService {
   }
 
   private restoreSession() {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     try {
       const storedUser = localStorage.getItem(this.USER_KEY);
       const token = localStorage.getItem(this.TOKEN_KEY);
@@ -88,24 +93,29 @@ export class AuthService {
   }
 
   private saveToken(token: string): void {
-    if (token) {
+    if (isPlatformBrowser(this.platformId) && token) {
       localStorage.setItem(this.TOKEN_KEY, token);
     }
   }
 
   private saveUser(user: User): void {
-    if (user) {
+    if (isPlatformBrowser(this.platformId) && user) {
       localStorage.setItem(this.USER_KEY, JSON.stringify(user));
     }
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
+    if (isPlatformBrowser(this.platformId)) {
+      return localStorage.getItem(this.TOKEN_KEY);
+    }
+    return null;
   }
 
   clearAuth(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.USER_KEY);
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem(this.TOKEN_KEY);
+      localStorage.removeItem(this.USER_KEY);
+    }
     this.currentUserSubject.next(null);
   }
 
