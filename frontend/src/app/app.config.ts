@@ -8,16 +8,14 @@ import { Observable, of } from 'rxjs';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
-import { TranslateServerLoader } from './core/i18n/translate-server.loader';
+
 import { TranslateHttpLoader, TRANSLATE_HTTP_LOADER_CONFIG } from '@ngx-translate/http-loader';
 
 
+// TranslateServerLoader is removed from here to avoid bundling 'fs' in browser
+// It will be provided in app.config.server.ts
 export function httpLoaderFactory() {
-  const platformId = inject(PLATFORM_ID);
-  if (isPlatformBrowser(platformId)) {
-    return new TranslateHttpLoader();
-  }
-  return new TranslateServerLoader();
+  return new TranslateHttpLoader();
 }
 
 export const appConfig: ApplicationConfig = {
