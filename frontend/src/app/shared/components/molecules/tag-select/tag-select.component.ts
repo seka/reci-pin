@@ -109,7 +109,7 @@ export class TagSelectComponent implements ControlValueAccessor, OnInit {
   constructor() {
     this.filteredTags = this.tagCtrl.valueChanges.pipe(
       startWith(null),
-      map((tag: string | null) => (tag ? this._filter(tag) : this.getUnselectedTags()))
+      map((tag: string | null) => (tag ? this.filter(tag) : this.getUnselectedTags()))
     );
   }
 
@@ -180,7 +180,7 @@ export class TagSelectComponent implements ControlValueAccessor, OnInit {
     this.tagCtrl.setValue(null);
   }
 
-  private _filter(value: string | Tag | null): Tag[] {
+  private filter(value: string | Tag | null): Tag[] {
     // If value is a Tag object (from autocomplete selection), use its name, otherwise use the string
     const filterValue = (typeof value === 'string' ? value : value?.name || '').toLowerCase();
 
