@@ -1,27 +1,40 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
+import { CommonModule, AsyncPipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { TranslatePipe } from '@ngx-translate/core';
+import { Observable, startWith, map } from 'rxjs';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
+
 import { RecipeService, Recipe, Tag } from '../../core/services/recipe.service';
 import { RecipeCardComponent } from '../../shared/components/organisms/recipe-card/recipe-card.component';
 import { HeadlineComponent } from '../../shared/components/atoms/headline/headline.component';
 import { ButtonComponent } from '../../shared/components/atoms/button/button.component';
-import { TagSelectComponent } from '../../shared/components/molecules/tag-select/tag-select.component';
 import { InputComponent } from '../../shared/components/atoms/input/input.component';
 
 @Component({
   selector: 'app-recipes',
   standalone: true,
   imports: [
+    CommonModule,
     RouterModule,
     FormsModule,
+    ReactiveFormsModule,
     MatIconModule,
+    MatButtonToggleModule,
+    MatChipsModule,
+    MatAutocompleteModule,
+    MatFormFieldModule,
     TranslatePipe,
+    AsyncPipe,
     RecipeCardComponent,
     HeadlineComponent,
     ButtonComponent,
-    TagSelectComponent,
     InputComponent
   ],
   template: `
@@ -40,21 +53,63 @@ import { InputComponent } from '../../shared/components/atoms/input/input.compon
       </div>
 
       <div class="search-section">
-        <div class="search-row">
+        <div class="search-mode-toggle">
+          <mat-button-toggle-group [(ngModel)]="searchMode">
+            <mat-button-toggle value="keyword">キーワード</mat-button-toggle>
+            <mat-button-toggle value="tag">タグ</mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
+
+        <div class="search-row" *ngIf="searchMode === 'keyword'">
           <app-input
             [(ngModel)]="searchQuery"
+            (keyup.enter)="search()"
+            label="キーワードで絞り込み"
+            floatLabel="always"
             placeholder="キーワードで検索..."
             class="search-input"
           ></app-input>
           <app-button (click)="search()" variant="secondary" class="search-btn">
-            <mat-icon>search</mat-icon>
+            <mat-icon style="font-size: 18px; width: 18px; height: 18px; vertical-align: middle; margin-right: 4px;">search</mat-icon>
             検索
           </app-button>
         </div>
-        <app-tag-select
-          [(ngModel)]="selectedTagIds"
-          [tags]="availableTags"
-        ></app-tag-select>
+
+        <div class="search-row" *ngIf="searchMode === 'tag'">
+           <mat-form-field class="tag-chip-list" appearance="outline" floatLabel="always">
+            <mat-label>タグで絞り込み</mat-label>
+            <mat-chip-grid #chipGrid aria-label="Tag selection">
+              @for (tagId of selectedTagIds; track tagId) {
+                <mat-chip-row (removed)="removeTag(tagId)">
+                  {{ getTagName(tagId) }}
+                  <button matChipRemove [attr.aria-label]="'remove ' + getTagName(tagId)">
+                    <mat-icon>cancel</mat-icon>
+                  </button>
+                </mat-chip-row>
+              }
+              <input
+                placeholder="タグを選択..."
+                #tagInput
+                [formControl]="tagCtrl"
+                [matChipInputFor]="chipGrid"
+                [matAutocomplete]="auto"
+                [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                (matChipInputTokenEnd)="appendTag($event)"
+              />
+            </mat-chip-grid>
+            <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectedTag($event)">
+              @for (tag of filteredTags | async; track tag.id) {
+                <mat-option [value]="tag">
+                  {{ tag.name }}
+                </mat-option>
+              }
+            </mat-autocomplete>
+          </mat-form-field>
+          <app-button (click)="search()" variant="secondary" class="search-btn">
+            <mat-icon style="font-size: 18px; width: 18px; height: 18px; vertical-align: middle; margin-right: 4px;">search</mat-icon>
+            検索
+          </app-button>
+        </div>
       </div>
 
       <div class="recipes-grid">
@@ -83,18 +138,30 @@ import { InputComponent } from '../../shared/components/atoms/input/input.compon
         border-radius: var(--radius-2);
         margin-bottom: var(--spacing-3);
         box-shadow: var(--shadow-1);
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-2);
+      }
+      .search-mode-toggle {
+        display: flex;
+        justify-content: flex-start;
       }
       .search-row {
         display: flex;
         gap: var(--spacing-2);
-        align-items: flex-start;
-        margin-bottom: var(--spacing-2);
+        align-items: center;
+        width: 100%;
       }
       .search-input {
         flex: 1;
       }
-      .search-btn {
-        height: 56px; /* Match standard input height */
+      .tag-chip-list {
+        flex: 1;
+      }
+      /* Override mat-form-field bottom margin for both inputs to prevent layout shift */
+      .tag-chip-list ::ng-deep .mat-mdc-form-field-subscript-wrapper,
+      .search-input ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+        display: none;
       }
       .header-actions {
         display: flex;
@@ -133,6 +200,26 @@ export class RecipesComponent implements OnInit {
   searchQuery = '';
   selectedTagIds: number[] = [];
 
+  // Search Mode
+  searchMode: 'keyword' | 'tag' = 'keyword';
+
+  // Tag Chips Logic
+  separatorKeysCodes: number[] = [ENTER, COMMA];
+  tagCtrl = new FormControl('');
+  filteredTags: Observable<Tag[]>;
+  @ViewChild('tagInput') tagInput!: ElementRef<HTMLInputElement>;
+
+  constructor() {
+    this.filteredTags = this.tagCtrl.valueChanges.pipe(
+      startWith(null),
+      map((tag: string | null | Tag) => {
+        // Handle both string input and Tag object selection
+        const filterValue = typeof tag === 'string' ? tag : (tag?.name || '');
+        return filterValue ? this._filter(filterValue) : this.getUnselectedTags();
+      })
+    );
+  }
+
   ngOnInit() {
     this.loadRecipes();
     this.loadTags();
@@ -152,13 +239,73 @@ export class RecipesComponent implements OnInit {
     });
   }
 
+
+
   search() {
+    const query = this.searchMode === 'keyword' ? this.searchQuery : '';
+    const tagIds = this.searchMode === 'tag' ? this.selectedTagIds : [];
+
     this.recipeService.searchRecipes({
-      query: this.searchQuery,
-      tag_ids: this.selectedTagIds
+      query: query,
+      tag_ids: tagIds
     }).subscribe({
       next: (recipes) => (this.recipes = recipes),
       error: (err: Error) => console.error('Failed to search recipes', err),
     });
+  }
+
+  // --- Tag Logic ---
+
+  appendTag(event: any): void {
+    const value = (event.value || '').trim();
+
+    // If matches an existing tag, select it
+    if (value) {
+      const existingTag = this.availableTags.find(
+        tag => tag.name.toLowerCase() === value.toLowerCase()
+      );
+
+      if (existingTag && !this.selectedTagIds.includes(existingTag.id)) {
+        this.selectedTagIds.push(existingTag.id);
+      }
+    }
+
+    // Always clear input
+    if (event.chipInput) {
+      event.chipInput.clear();
+    }
+    this.tagCtrl.setValue(null);
+  }
+
+  removeTag(tagId: number): void {
+    const index = this.selectedTagIds.indexOf(tagId);
+    if (index >= 0) {
+      this.selectedTagIds.splice(index, 1);
+    }
+  }
+
+  selectedTag(event: MatAutocompleteSelectedEvent): void {
+    const tag: Tag = event.option.value;
+    if (!this.selectedTagIds.includes(tag.id)) {
+      this.selectedTagIds.push(tag.id);
+    }
+    this.tagInput.nativeElement.value = '';
+    this.tagCtrl.setValue(null);
+  }
+
+  getTagName(id: number): string {
+    return this.availableTags.find((t) => t.id === id)?.name || '';
+  }
+
+  private _filter(value: string): Tag[] {
+    const filterValue = value.toLowerCase();
+    return this.availableTags.filter((tag) =>
+      tag.name.toLowerCase().includes(filterValue) &&
+      !this.selectedTagIds.includes(tag.id)
+    );
+  }
+
+  private getUnselectedTags(): Tag[] {
+    return this.availableTags.filter(tag => !this.selectedTagIds.includes(tag.id));
   }
 }
