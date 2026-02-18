@@ -57,3 +57,6 @@ temp/
 
 # Certificates
 proxy/certs/*.pem
+
+# Binaries
+stress_test
