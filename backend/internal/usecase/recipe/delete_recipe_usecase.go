@@ -14,10 +14,17 @@ type DeleteRecipeUseCase interface {
 
 type deleteRecipeInteractor struct {
 	recipeRepo repository.RecipeRepository
+	searchRepo repository.RecipeSearchRepository
 }
 
-func NewDeleteRecipeUseCase(recipeRepo repository.RecipeRepository) DeleteRecipeUseCase {
-	return &deleteRecipeInteractor{recipeRepo: recipeRepo}
+func NewDeleteRecipeUseCase(
+	recipeRepo repository.RecipeRepository,
+	searchRepo repository.RecipeSearchRepository,
+) DeleteRecipeUseCase {
+	return &deleteRecipeInteractor{
+		recipeRepo: recipeRepo,
+		searchRepo: searchRepo,
+	}
 }
 
 func (uc *deleteRecipeInteractor) Execute(ctx context.Context, id, userID int64) error {
@@ -33,6 +40,11 @@ func (uc *deleteRecipeInteractor) Execute(ctx context.Context, id, userID int64)
 
 	if err := uc.recipeRepo.Delete(ctx, id); err != nil {
 		return fmt.Errorf("failed to delete recipe: %w", err)
+	}
+
+	// Delete from index
+	if err := uc.searchRepo.Delete(ctx, id); err != nil {
+		fmt.Printf("failed to delete recipe from index: %v\n", err)
 	}
 
 	return nil

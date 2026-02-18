@@ -16,10 +16,17 @@ type UpdateRecipeUseCase interface {
 
 type updateRecipeInteractor struct {
 	recipeRepo repository.RecipeRepository
+	searchRepo repository.RecipeSearchRepository
 }
 
-func NewUpdateRecipeUseCase(recipeRepo repository.RecipeRepository) UpdateRecipeUseCase {
-	return &updateRecipeInteractor{recipeRepo: recipeRepo}
+func NewUpdateRecipeUseCase(
+	recipeRepo repository.RecipeRepository,
+	searchRepo repository.RecipeSearchRepository,
+) UpdateRecipeUseCase {
+	return &updateRecipeInteractor{
+		recipeRepo: recipeRepo,
+		searchRepo: searchRepo,
+	}
 }
 
 type UpdateRecipeInput struct {
@@ -53,6 +60,20 @@ func (uc *updateRecipeInteractor) Execute(ctx context.Context, input UpdateRecip
 
 	if err := uc.recipeRepo.Update(ctx, recipe); err != nil {
 		return nil, fmt.Errorf("failed to update recipe: %w", err)
+	}
+
+	// Fetch tags for indexing
+	tags, err := uc.recipeRepo.GetTags(ctx, recipe.ID)
+	if err != nil {
+		// Log warning but proceed with indexing without tags if failed
+		fmt.Printf("failed to get tags for indexing: %v\n", err)
+	} else {
+		recipe.Tags = tags
+	}
+
+	// Update index
+	if err := uc.searchRepo.Index(ctx, recipe); err != nil {
+		fmt.Printf("failed to update recipe index: %v\n", err)
 	}
 
 	return recipe, nil

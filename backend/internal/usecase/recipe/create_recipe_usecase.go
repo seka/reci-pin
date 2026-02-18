@@ -15,10 +15,17 @@ type CreateRecipeUseCase interface {
 
 type createRecipeInteractor struct {
 	recipeRepo repository.RecipeRepository
+	searchRepo repository.RecipeSearchRepository
 }
 
-func NewCreateRecipeUseCase(recipeRepo repository.RecipeRepository) CreateRecipeUseCase {
-	return &createRecipeInteractor{recipeRepo: recipeRepo}
+func NewCreateRecipeUseCase(
+	recipeRepo repository.RecipeRepository,
+	searchRepo repository.RecipeSearchRepository,
+) CreateRecipeUseCase {
+	return &createRecipeInteractor{
+		recipeRepo: recipeRepo,
+		searchRepo: searchRepo,
+	}
 }
 
 type CreateRecipeInput struct {
@@ -50,6 +57,16 @@ func (uc *createRecipeInteractor) Execute(ctx context.Context, input CreateRecip
 		if err := uc.recipeRepo.AddTags(ctx, recipe.ID, input.TagIDs); err != nil {
 			return nil, fmt.Errorf("failed to add tags to recipe: %w", err)
 		}
+		// Set tags to recipe for indexing (only ID is needed for current implementation)
+		for _, tagID := range input.TagIDs {
+			recipe.Tags = append(recipe.Tags, model.Tag{ID: tagID})
+		}
+	}
+
+	// Index recipe for search
+	if err := uc.searchRepo.Index(ctx, recipe); err != nil {
+		// Log error but do not fail the request (dual write best effort)
+		fmt.Printf("failed to index recipe: %v\n", err)
 	}
 
 	return recipe, nil

@@ -12,7 +12,9 @@ import (
 	"time"
 
 	"github.com/seka/reci-pin/backend/config"
+	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
+	es "github.com/seka/reci-pin/backend/internal/infrastructure/database/elasticsearch"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 	"github.com/seka/reci-pin/backend/internal/registry"
 	"github.com/seka/reci-pin/backend/internal/server"
@@ -50,8 +52,14 @@ func main() {
 	}
 	defer db.Close()
 
+	// Start Elasticsearch
+	esClient, err := es.NewClient()
+	if err != nil {
+		log.Fatalf("elasticsearch error: %v", err)
+	}
+
 	// Start Server
-	srv := createServer(&cfg, db)
+	srv := createServer(&cfg, db, esClient)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -90,8 +98,8 @@ func connectDatabase(ctx context.Context, db database.Database) error {
 	return nil
 }
 
-func createServer(cfg *config.Config, db database.Database) *server.Server {
-	repoRegistry := registry.NewRepository(db)
+func createServer(cfg *config.Config, db database.Database, esClient *elasticsearch.TypedClient) *server.Server {
+	repoRegistry := registry.NewRepository(db, esClient)
 	useCaseRegistry := registry.NewUseCase(repoRegistry, cfg)
 	return server.New(cfg, useCaseRegistry)
 }
