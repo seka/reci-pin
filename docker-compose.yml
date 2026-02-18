@@ -33,6 +33,7 @@ services:
       BACKEND_PORT: 8080
       JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
       JWT_EXPIRATION_HOURS: ${JWT_EXPIRATION_HOURS:-24}
+      ELASTICSEARCH_ADDRESS: http://elasticsearch:9200
     ports:
       - "${BACKEND_PORT:-8080}:8080"
     volumes:
@@ -81,9 +82,23 @@ services:
       - "1025:1025" # SMTP server
       - "8025:8025" # Web UI
 
+  elasticsearch:
+    image: elasticsearch:8.17.2
+    container_name: reci-pin-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    restart: unless-stopped
+
 networks:
   reci-pin-network:
     driver: bridge
 
 volumes:
   postgres_data:
+  elasticsearch_data:
