@@ -35,6 +35,7 @@ export class InputComponent implements ControlValueAccessor, OnInit {
   @Input() showCounter = false;
   @Input() errorMessage: string | string[] | null = null;
   @Input() focus = false;
+  @Input() floatLabel: 'always' | 'auto' = 'auto';
 
   get currentLength(): number {
     return String(this.value || '').length;
