@@ -12,7 +12,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/seka/reci-pin/backend/config"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 	"github.com/seka/reci-pin/backend/internal/registry"
 	"github.com/seka/reci-pin/backend/internal/server"
@@ -31,6 +33,7 @@ func init() {
 	// Note: db-name will be generated dynamically
 	flag.IntVar(&cfg.Server.Port, "port", 0, "Server port (0 for random)")
 	flag.StringVar(&cfg.JWT.Secret, "jwt-secret", "test-secret", "JWT secret")
+	cfg.JWT.ExpirationHours = 24
 }
 
 func main() {
@@ -74,8 +77,17 @@ func run() error {
 	}
 	defer db.Close()
 
+	// Connect to Elasticsearch
+	esCfg := elasticsearch.Config{
+		Addresses: []string{"http://localhost:9200"},
+	}
+	esClient, err := elasticsearch.NewTypedClient(esCfg)
+	if err != nil {
+		return fmt.Errorf("creating elasticsearch client: %w", err)
+	}
+
 	// Initialize Server
-	repoReg := registry.NewRepository(db, nil)
+	repoReg := registry.NewRepository(db, esClient)
 	useCaseReg := registry.NewUseCase(repoReg, &testCfg)
 	srv := server.New(&testCfg, useCaseReg)
 
@@ -89,10 +101,13 @@ func run() error {
 	}()
 
 	// Wait for server to be ready
-	baseURL := fmt.Sprintf("http://localhost:%d/api", testCfg.Server.Port)
-	if err := waitForServer(baseURL + "/health"); err != nil {
+	// Health check is at root /health, not /api/health
+	healthURL := fmt.Sprintf("http://localhost:%d/health", testCfg.Server.Port)
+	if err := waitForServer(healthURL); err != nil {
 		return fmt.Errorf("server failed to start: %w", err)
 	}
+	
+	baseURL := fmt.Sprintf("http://localhost:%d/api", testCfg.Server.Port)
 
 	// 3. Run Scenarios
 	log.Println("Starting api scenarios...")
@@ -104,7 +119,7 @@ func run() error {
 	jar, _ := cookiejar.New(nil)
 	client.Jar = jar
 
-	if err := runScenario(client, baseURL); err != nil {
+	if err := runScenario(ctx, client, baseURL, db); err != nil {
 		return fmt.Errorf("scenario failed: %w", err)
 	}
 
@@ -211,7 +226,7 @@ func waitForServer(url string) error {
 	return fmt.Errorf("timeout waiting for server %s", url)
 }
 
-func runScenario(client *http.Client, baseURL string) error {
+func runScenario(ctx context.Context, client *http.Client, baseURL string, db database.Database) error {
 	// 1. Sign Up
 	email := fmt.Sprintf("test_%d@example.com", time.Now().Unix())
 	password := "password123"
@@ -222,12 +237,43 @@ func runScenario(client *http.Client, baseURL string) error {
 		"email":    email,
 		"password": password,
 	}
-	resp, err := postJSON(client, baseURL+"/signup", payload)
+	resp, err := postJSON(client, baseURL+"/auth/signup", payload)
 	if err != nil {
 		return fmt.Errorf("signup request: %w", err)
 	}
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return fmt.Errorf("signup failed status: %d", resp.StatusCode)
+	}
+
+	// 1.5 Verify Email
+	log.Println("1.5 Verifying email...")
+	// Fetch token from DB
+	rows, err := db.Query(ctx, "SELECT verification_token FROM user_email_credentials WHERE email = $1", email)
+	if err != nil {
+		return fmt.Errorf("querying verification token: %w", err)
+	}
+	defer rows.Close()
+
+	var token string
+	if rows.Next() {
+		if err := rows.Scan(&token); err != nil {
+			return fmt.Errorf("scanning verification token: %w", err)
+		}
+	} else {
+		return fmt.Errorf("verification token not found for email: %s", email)
+	}
+	rows.Close()
+
+	// Call Verify API
+	verifyPayload := map[string]string{
+		"token": token,
+	}
+	resp, err = postJSON(client, baseURL+"/auth/verify", verifyPayload)
+	if err != nil {
+		return fmt.Errorf("verify request: %w", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("verify failed status: %d", resp.StatusCode)
 	}
 
 	// 2. Login
@@ -236,13 +282,24 @@ func runScenario(client *http.Client, baseURL string) error {
 		"email":    email,
 		"password": password,
 	}
-	resp, err = postJSON(client, baseURL+"/login", loginPayload)
+	resp, err = postJSON(client, baseURL+"/auth/login", loginPayload)
 	if err != nil {
 		return fmt.Errorf("login request: %w", err)
 	}
-	// Check cookie? Client should handle it.
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("login failed status: %d", resp.StatusCode)
+	}
+	
+	// Extract token
+	var loginResp struct {
+		Token string `json:"token"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&loginResp); err != nil {
+		return fmt.Errorf("decoding login response: %w", err)
+	}
+	token = loginResp.Token
+	if token == "" {
+		return fmt.Errorf("login succeeded but token is empty")
 	}
 
 	// 3. Create Recipe
@@ -253,7 +310,7 @@ func runScenario(client *http.Client, baseURL string) error {
 		"memo":    "Created by integration test",
 		"tag_ids": []int{}, // Empty for now
 	}
-	resp, err = postJSON(client, baseURL+"/recipes", recipePayload)
+	resp, err = postJSONWithAuth(client, baseURL+"/recipes", recipePayload, token)
 	if err != nil {
 		return fmt.Errorf("create recipe request: %w", err)
 	}
@@ -261,11 +318,98 @@ func runScenario(client *http.Client, baseURL string) error {
 		return fmt.Errorf("create recipe failed status: %d", resp.StatusCode)
 	}
 
+	// 4. Search Recipe (Wait for indexing)
+	log.Println("4. Searching recipe...")
+	// Elasticsearch indexing is async, so we might need a retry loop
+	found := false
+	searchPayload := map[string]string{
+		"query": "Integration",
+	}
+	
+	for i := 0; i < 20; i++ { // Increased retries
+		time.Sleep(500 * time.Millisecond) // Wait a bit
+		
+		// Search is POST /api/recipes/search
+		resp, err := postJSONWithAuth(client, baseURL+"/recipes/search", searchPayload, token)
+		if err != nil {
+			log.Printf("Search request failed: %v", err)
+			continue
+		}
+		defer resp.Body.Close()
+		
+		if resp.StatusCode == http.StatusOK {
+			// Note: Response structure might differ. 
+			// Check handler response: respondJSON(w, http.StatusOK, response.NewRecipes(recipes))
+			// NewRecipes returns []RecipeResponse. 
+			// If it's a list directly, `var recipes []map...` works.
+			// If it's wrapped in object, we need that.
+			// response.NewRecipes returns definition in response package.
+			// Usually it is `type RecipesResponse struct { Recipes []RecipeResponse }` or just `[]RecipeResponse`.
+			// Let's assume []RecipeResponse based on common Go patterns if not wrapped.
+			// But looking at code `respondJSON(w, http.StatusOK, response.NewRecipes(recipes))`
+			// I should check `response.NewRecipes`.
+			// Failing that, decode interface{} and inspect.
+			
+			var body interface{}
+			if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+				log.Printf("Failed to decode search response: %v", err)
+				continue
+			}
+			
+			// Assuming it returns a JSON array of recipes or object with "recipes" key
+			// internal/server/handler/response/recipe.go likely defines it.
+			// If I look at `GetRecipe` -> `response.NewRecipe(result)`.
+			// `GetUserRecipes` -> `response.NewRecipes(recipes)`.
+			// Standard is usually object `{"recipes": [...]}` or just `[...]`.
+			
+			// Let's try to handle both or inspect.
+			// For simplicity in test, verify simply by looking for the name in the whole JSON string dump 
+			// if strict typing is hard without seeing response package.
+			// But clean way is better.
+			// I'll assume array []map[string]interface{} first. 
+			// Wait, if I Decode to interface{}, I can assert type.
+			
+			if recipesList, ok := body.([]interface{}); ok {
+				for _, r := range recipesList {
+					if rMap, ok := r.(map[string]interface{}); ok {
+						if name, ok := rMap["name"].(string); ok && name == "Integration Recipe" {
+							found = true
+							break
+						}
+					}
+				}
+			} else if recipesObj, ok := body.(map[string]interface{}); ok {
+				// Maybe wrapped in {"recipes": [...]}
+				if list, ok := recipesObj["recipes"].([]interface{}); ok {
+					for _, r := range list {
+						if rMap, ok := r.(map[string]interface{}); ok {
+							if name, ok := rMap["name"].(string); ok && name == "Integration Recipe" {
+								found = true
+								break
+							}
+						}
+					}
+				}
+			}
+		}
+		if found {
+			break
+		}
+	}
+	
+	if !found {
+		return fmt.Errorf("search failed: recipe not found after retries")
+	}
+
 	log.Println("Scenario completed!")
 	return nil
 }
 
 func postJSON(client *http.Client, url string, data interface{}) (*http.Response, error) {
+	return postJSONWithAuth(client, url, data, "")
+}
+
+func postJSONWithAuth(client *http.Client, url string, data interface{}, token string) (*http.Response, error) {
 	b, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
@@ -275,5 +419,8 @@ func postJSON(client *http.Client, url string, data interface{}) (*http.Response
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	if token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
 	return client.Do(req)
 }
