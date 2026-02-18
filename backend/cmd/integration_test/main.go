@@ -75,7 +75,7 @@ func run() error {
 	defer db.Close()
 
 	// Initialize Server
-	repoReg := registry.NewRepository(db)
+	repoReg := registry.NewRepository(db, nil)
 	useCaseReg := registry.NewUseCase(repoReg, &testCfg)
 	srv := server.New(&testCfg, useCaseReg)
 

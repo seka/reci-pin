@@ -52,7 +52,7 @@ func main() {
 	}
 
 	// Initialize Registry
-	repoReg := registry.NewRepository(db)
+	repoReg := registry.NewRepository(db, nil)
 
 	// Seed Data
 	if err := seedData(ctx, repoReg); err != nil {

@@ -101,6 +101,16 @@ seed.force: ## Clean database and run seed
 	@echo "Cleaning and seeding database..."
 	go run ./cmd/seed/main.go -clean
 
+.PHONY: sync-es.run
+sync-es.run: ## Sync data from DB to Elasticsearch
+	@echo "Syncing data to Elasticsearch from host..."
+	go run ./cmd/sync_es/main.go
+
+.PHONY: sync-es.docker
+sync-es.docker: ## Sync data from DB to Elasticsearch (run inside Docker)
+	@echo "Syncing data to Elasticsearch inside Docker container..."
+	docker-compose -f ../docker-compose.yml exec backend go run ./cmd/sync_es/main.go -db-host=postgres
+
 # ============================================================================
 # Integration test targets
 # ============================================================================
