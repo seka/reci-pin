@@ -36,12 +36,7 @@ type CreateRecipeImageResponse struct {
 func NewRecipeImage(i *model.RecipeImage, publicBaseURL *url.URL) RecipeImageResponse {
 	imageURL := ""
 	if publicBaseURL != nil && i.ImagePath != "" {
-		var err error
-		imageURL, err = url.JoinPath(publicBaseURL.String(), i.ImagePath)
-		if err != nil {
-			// fallback if URL is invalid, though imagePath is usually simple
-			imageURL = ""
-		}
+		imageURL = publicBaseURL.JoinPath(i.ImagePath).String()
 	}
 
 	return RecipeImageResponse{

@@ -48,7 +48,7 @@ func NewClient(ctx context.Context, bucket string, endpoint string, publicBaseUR
 
 	var internalPathPrefix string
 	if parsedInternal != nil {
-		internalPathPrefix, _ = url.JoinPath(parsedInternal.Path, bucket)
+		internalPathPrefix = parsedInternal.JoinPath(bucket).Path
 		if !strings.HasSuffix(internalPathPrefix, "/") {
 			internalPathPrefix += "/"
 		}
@@ -87,8 +87,7 @@ func (c *client) GeneratePresignedURL(ctx context.Context, key string, contentTy
 				// Construct final public URL
 				parsedPresigned.Scheme = c.publicBaseURL.Scheme
 				parsedPresigned.Host = c.publicBaseURL.Host
-				newPath, _ := url.JoinPath(c.publicBaseURL.Path, relPath)
-				parsedPresigned.Path = newPath
+				parsedPresigned.Path = c.publicBaseURL.JoinPath(relPath).Path
 
 				urlStr = parsedPresigned.String()
 			}
