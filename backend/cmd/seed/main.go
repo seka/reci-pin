@@ -250,7 +250,7 @@ func createRecipeImages(ctx context.Context, repoReg registry.Repository) error 
 		for j := 0; j < numImages; j++ {
 			image := &model.RecipeImage{
 				RecipeID:  recipe.ID,
-				ImagePath: fmt.Sprintf("/images/recipe_%d_%d.jpg", recipe.ID, j+1),
+				ImagePath: fmt.Sprintf("recipes/%d/seed_%d.jpg", recipe.ID, j+1),
 			}
 			if err := imageRepo.Create(ctx, image); err != nil {
 				return fmt.Errorf("creating image for recipe %d: %w", recipe.ID, err)

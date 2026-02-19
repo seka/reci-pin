@@ -87,7 +87,8 @@ export class RecipeCardComponent {
 
   get thumbnailUrl(): string | null {
     if (this.recipe.images?.length) {
-      return `/storage/${this.recipe.images[0].image_path}`;
+      const path = this.recipe.images[0].image_path.replace(/^\/+/, '');
+      return `/storage/${path}`;
     }
     return null;
   }
