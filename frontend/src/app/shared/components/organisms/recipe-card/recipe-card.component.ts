@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Recipe } from '../../../../core/services/recipe.service';
+import { VALIDATION_RULES } from '../../../../core/constants/validation.constants';
 
 @Component({
   selector: 'app-recipe-card',
@@ -86,11 +87,24 @@ export class RecipeCardComponent {
   @Input() recipe!: Recipe;
 
   get thumbnailUrl(): string | null {
-    if (this.recipe.images?.length) {
-      const path = this.recipe.images[0].image_path.replace(/^\/+/, '');
-      return `/storage/${path}`;
+    if (!this.recipe.images?.length) return null;
+
+    const imageUrl = this.recipe.images[0].image_url;
+    if (!imageUrl) return null;
+
+    try {
+      const url = new URL(imageUrl, window.location.origin);
+      const allowedDomains = [...VALIDATION_RULES.IMAGE.ALLOWED_DOMAINS, window.location.hostname];
+
+      if (allowedDomains.includes(url.hostname)) {
+        return imageUrl;
+      }
+      console.warn('Blocked image from untrusted domain:', url.hostname);
+      return null;
+    } catch (e) {
+      console.error('Invalid image URL:', imageUrl);
+      return null;
     }
-    return null;
   }
 
   getExternalUrl(url: string): string {

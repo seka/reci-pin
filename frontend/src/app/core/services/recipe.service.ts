@@ -23,6 +23,7 @@ export interface RecipeImage {
   id: number;
   recipe_id: number;
   image_path: string;
+  image_url: string;
   created_at: string;
 }
 
