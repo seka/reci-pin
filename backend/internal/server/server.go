@@ -86,7 +86,7 @@ func (s *Server) setupRoutes() {
 			s.useCaseRegistry.NewSearchRecipesUseCase(),
 			s.useCaseRegistry.NewAddTagsUseCase(),
 			s.useCaseRegistry.NewRemoveTagsUseCase(),
-			s.useCaseRegistry.NewAddImageUseCase(),
+			s.useCaseRegistry.NewCreateRecipeImageUseCase(),
 			s.useCaseRegistry.NewCreateTagUseCase(),
 			s.useCaseRegistry.NewGetAllTagsUseCase(),
 			s.useCaseRegistry.NewDeleteTagUseCase(),

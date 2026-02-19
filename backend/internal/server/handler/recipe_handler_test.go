@@ -14,6 +14,7 @@ import (
 	"github.com/seka/reci-pin/backend/internal/server/handler"
 	"github.com/seka/reci-pin/backend/internal/server/middleware"
 	usecasemock "github.com/seka/reci-pin/backend/internal/usecase/mock"
+	"github.com/seka/reci-pin/backend/internal/usecase/recipe_image"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
@@ -101,7 +102,7 @@ func TestRecipeHandler_CreateRecipe(t *testing.T) {
 				usecasemock.NewMockSearchRecipesUseCase(ctrl),
 				usecasemock.NewMockAddTagsUseCase(ctrl),
 				usecasemock.NewMockRemoveTagsUseCase(ctrl),
-				usecasemock.NewMockAddImageUseCase(ctrl),
+				usecasemock.NewMockCreateRecipeImageUseCase(ctrl),
 				usecasemock.NewMockCreateTagUseCase(ctrl),
 				usecasemock.NewMockGetAllTagsUseCase(ctrl),
 				usecasemock.NewMockDeleteTagUseCase(ctrl),
@@ -192,7 +193,7 @@ func TestRecipeHandler_GetRecipe(t *testing.T) {
 				usecasemock.NewMockSearchRecipesUseCase(ctrl),
 				usecasemock.NewMockAddTagsUseCase(ctrl),
 				usecasemock.NewMockRemoveTagsUseCase(ctrl),
-				usecasemock.NewMockAddImageUseCase(ctrl),
+				usecasemock.NewMockCreateRecipeImageUseCase(ctrl),
 				usecasemock.NewMockCreateTagUseCase(ctrl),
 				usecasemock.NewMockGetAllTagsUseCase(ctrl),
 				usecasemock.NewMockDeleteTagUseCase(ctrl),
@@ -293,7 +294,7 @@ func TestRecipeHandler_UpdateRecipe(t *testing.T) {
 				usecasemock.NewMockSearchRecipesUseCase(ctrl),
 				usecasemock.NewMockAddTagsUseCase(ctrl),
 				usecasemock.NewMockRemoveTagsUseCase(ctrl),
-				usecasemock.NewMockAddImageUseCase(ctrl),
+				usecasemock.NewMockCreateRecipeImageUseCase(ctrl),
 				usecasemock.NewMockCreateTagUseCase(ctrl),
 				usecasemock.NewMockGetAllTagsUseCase(ctrl),
 				usecasemock.NewMockDeleteTagUseCase(ctrl),
@@ -387,7 +388,7 @@ func TestRecipeHandler_DeleteRecipe(t *testing.T) {
 				usecasemock.NewMockSearchRecipesUseCase(ctrl),
 				usecasemock.NewMockAddTagsUseCase(ctrl),
 				usecasemock.NewMockRemoveTagsUseCase(ctrl),
-				usecasemock.NewMockAddImageUseCase(ctrl),
+				usecasemock.NewMockCreateRecipeImageUseCase(ctrl),
 				usecasemock.NewMockCreateTagUseCase(ctrl),
 				usecasemock.NewMockGetAllTagsUseCase(ctrl),
 				usecasemock.NewMockDeleteTagUseCase(ctrl),
@@ -481,7 +482,7 @@ func TestRecipeHandler_SearchRecipes(t *testing.T) {
 				mockSearch,
 				usecasemock.NewMockAddTagsUseCase(ctrl),
 				usecasemock.NewMockRemoveTagsUseCase(ctrl),
-				usecasemock.NewMockAddImageUseCase(ctrl),
+				usecasemock.NewMockCreateRecipeImageUseCase(ctrl),
 				usecasemock.NewMockCreateTagUseCase(ctrl),
 				usecasemock.NewMockGetAllTagsUseCase(ctrl),
 				usecasemock.NewMockDeleteTagUseCase(ctrl),
@@ -572,7 +573,7 @@ func TestRecipeHandler_GetUserRecipes(t *testing.T) {
 				usecasemock.NewMockSearchRecipesUseCase(ctrl),
 				usecasemock.NewMockAddTagsUseCase(ctrl),
 				usecasemock.NewMockRemoveTagsUseCase(ctrl),
-				usecasemock.NewMockAddImageUseCase(ctrl),
+				usecasemock.NewMockCreateRecipeImageUseCase(ctrl),
 				usecasemock.NewMockCreateTagUseCase(ctrl),
 				usecasemock.NewMockGetAllTagsUseCase(ctrl),
 				usecasemock.NewMockDeleteTagUseCase(ctrl),
@@ -665,7 +666,7 @@ func TestRecipeHandler_AddTags(t *testing.T) {
 				usecasemock.NewMockSearchRecipesUseCase(ctrl),
 				mockAddTags,
 				usecasemock.NewMockRemoveTagsUseCase(ctrl),
-				usecasemock.NewMockAddImageUseCase(ctrl),
+				usecasemock.NewMockCreateRecipeImageUseCase(ctrl),
 				usecasemock.NewMockCreateTagUseCase(ctrl),
 				usecasemock.NewMockGetAllTagsUseCase(ctrl),
 				usecasemock.NewMockDeleteTagUseCase(ctrl),
@@ -764,7 +765,7 @@ func TestRecipeHandler_RemoveTags(t *testing.T) {
 				usecasemock.NewMockSearchRecipesUseCase(ctrl),
 				usecasemock.NewMockAddTagsUseCase(ctrl),
 				mockRemoveTags,
-				usecasemock.NewMockAddImageUseCase(ctrl),
+				usecasemock.NewMockCreateRecipeImageUseCase(ctrl),
 				usecasemock.NewMockCreateTagUseCase(ctrl),
 				usecasemock.NewMockGetAllTagsUseCase(ctrl),
 				usecasemock.NewMockDeleteTagUseCase(ctrl),
@@ -802,7 +803,7 @@ func TestRecipeHandler_AddImage(t *testing.T) {
 		userID   int64
 	}
 	type mocks struct {
-		setup func(m *usecasemock.MockAddImageUseCase)
+		setup func(m *usecasemock.MockCreateRecipeImageUseCase)
 	}
 	tests := []struct {
 		name       string
@@ -812,34 +813,65 @@ func TestRecipeHandler_AddImage(t *testing.T) {
 	}{
 		{
 			name: "Success",
-			args: args{recipeID: "100", body: map[string]interface{}{"image_path": "path/to/img"}, userID: 1},
+			args: args{
+				recipeID: "100",
+				body: map[string]interface{}{
+					"filename":     "test.jpg",
+					"content_type": "image/jpeg",
+					"size":         int64(10240),
+				},
+				userID: 1,
+			},
 			mocks: mocks{
-				setup: func(m *usecasemock.MockAddImageUseCase) {
-					m.EXPECT().Execute(gomock.Any(), int64(100), int64(1), "path/to/img").
-						Return(&model.RecipeImage{ID: 1}, nil)
+				setup: func(m *usecasemock.MockCreateRecipeImageUseCase) {
+					input := recipe_image.CreateRecipeImageInput{
+						RecipeID:    100,
+						UserID:      1,
+						Filename:    "test.jpg",
+						ContentType: "image/jpeg",
+						Size:        10240,
+					}
+					m.EXPECT().Execute(gomock.Any(), input).
+						Return(&model.RecipeImage{ID: 1, ImagePath: "recipes/100/123_test.jpg"}, "https://s3.example.com/presigned-url", nil)
 				},
 			},
 			wantStatus: http.StatusCreated,
 		},
 		{
-			name:       "Invalid ID",
-			args:       args{recipeID: "abc", userID: 1},
-			mocks:      mocks{setup: func(m *usecasemock.MockAddImageUseCase) {}},
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name:       "Invalid JSON",
-			args:       args{recipeID: "100", userID: 1, body: nil},
-			mocks:      mocks{setup: func(m *usecasemock.MockAddImageUseCase) {}},
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "Error",
-			args: args{recipeID: "100", body: map[string]interface{}{"image_path": "path"}, userID: 1},
+			name: "Invalid ID",
+			args: args{recipeID: "abc", userID: 1},
 			mocks: mocks{
-				setup: func(m *usecasemock.MockAddImageUseCase) {
-					m.EXPECT().Execute(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-						Return(nil, errors.New("failed"))
+				setup: func(m *usecasemock.MockCreateRecipeImageUseCase) {},
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "Invalid JSON",
+			args: args{
+				recipeID: "100",
+				userID:   1,
+				body:     nil,
+			},
+			mocks: mocks{
+				setup: func(m *usecasemock.MockCreateRecipeImageUseCase) {},
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "UseCase Error",
+			args: args{
+				recipeID: "100",
+				body: map[string]interface{}{
+					"filename":     "test.jpg",
+					"content_type": "image/jpeg",
+					"size":         int64(10240),
+				},
+				userID: 1,
+			},
+			mocks: mocks{
+				setup: func(m *usecasemock.MockCreateRecipeImageUseCase) {
+					m.EXPECT().Execute(gomock.Any(), gomock.Any()).
+						Return(nil, "", errors.New("failed"))
 				},
 			},
 			wantStatus: http.StatusInternalServerError,
@@ -851,8 +883,8 @@ func TestRecipeHandler_AddImage(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockAddImage := usecasemock.NewMockAddImageUseCase(ctrl)
-			tt.mocks.setup(mockAddImage)
+			mockCreateImage := usecasemock.NewMockCreateRecipeImageUseCase(ctrl)
+			tt.mocks.setup(mockCreateImage)
 
 			h := handler.NewRecipeHandler(
 				usecasemock.NewMockCreateRecipeUseCase(ctrl),
@@ -863,7 +895,7 @@ func TestRecipeHandler_AddImage(t *testing.T) {
 				usecasemock.NewMockSearchRecipesUseCase(ctrl),
 				usecasemock.NewMockAddTagsUseCase(ctrl),
 				usecasemock.NewMockRemoveTagsUseCase(ctrl),
-				mockAddImage,
+				mockCreateImage,
 				usecasemock.NewMockCreateTagUseCase(ctrl),
 				usecasemock.NewMockGetAllTagsUseCase(ctrl),
 				usecasemock.NewMockDeleteTagUseCase(ctrl),

@@ -26,7 +26,7 @@ type RecipeHandler struct {
 	searchRecipesUseCase  recipe.SearchRecipesUseCase
 	addTagsUseCase        recipe_tag.AddTagsUseCase
 	removeTagsUseCase     recipe_tag.RemoveTagsUseCase
-	addImageUseCase       recipe_image.AddImageUseCase
+	createRecipeImageUseCase recipe_image.CreateRecipeImageUseCase
 	createTagUseCase      tag.CreateTagUseCase
 	getAllTagsUseCase     tag.GetAllTagsUseCase
 	deleteTagUseCase      tag.DeleteTagUseCase
@@ -41,7 +41,7 @@ func NewRecipeHandler(
 	searchRecipesUseCase recipe.SearchRecipesUseCase,
 	addTagsUseCase recipe_tag.AddTagsUseCase,
 	removeTagsUseCase recipe_tag.RemoveTagsUseCase,
-	addImageUseCase recipe_image.AddImageUseCase,
+	createRecipeImageUseCase recipe_image.CreateRecipeImageUseCase,
 	createTagUseCase tag.CreateTagUseCase,
 	getAllTagsUseCase tag.GetAllTagsUseCase,
 	deleteTagUseCase tag.DeleteTagUseCase,
@@ -55,7 +55,7 @@ func NewRecipeHandler(
 		searchRecipesUseCase:  searchRecipesUseCase,
 		addTagsUseCase:        addTagsUseCase,
 		removeTagsUseCase:     removeTagsUseCase,
-		addImageUseCase:       addImageUseCase,
+		createRecipeImageUseCase: createRecipeImageUseCase,
 		createTagUseCase:      createTagUseCase,
 		getAllTagsUseCase:     getAllTagsUseCase,
 		deleteTagUseCase:      deleteTagUseCase,
@@ -300,19 +300,48 @@ func (h *RecipeHandler) AddImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req request.AddImageRequest
+	var req request.CreateRecipeImageRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	image, err := h.addImageUseCase.Execute(r.Context(), id, userID, req.ImagePath)
+	input := recipe_image.CreateRecipeImageInput{
+		RecipeID:    id,
+		UserID:      userID,
+		Filename:    req.Filename,
+		ContentType: req.ContentType,
+		Size:        req.Size,
+	}
+
+	image, uploadURL, err := h.createRecipeImageUseCase.Execute(r.Context(), input)
 	if err != nil {
+		var validationErrors validation.ValidationErrors
+		if errors.As(err, &validationErrors) {
+			details := make(map[string][]response.ErrorDetail)
+			for _, ve := range validationErrors {
+				details[ve.Field] = append(details[ve.Field], response.ErrorDetail{
+					Code:   ve.Code,
+					Params: ve.Params,
+				})
+			}
+			respondError(w, http.StatusBadRequest, "VALIDATION_FAILED", details)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	respondJSON(w, http.StatusCreated, image)
+	resp := response.CreateRecipeImageResponse{
+		Image: response.RecipeImageResponse{
+			ID:        image.ID,
+			RecipeID:  image.RecipeID,
+			ImagePath: image.ImagePath,
+		},
+		UploadURL: uploadURL,
+	}
+
+	respondJSON(w, http.StatusCreated, resp)
 }
 
 // Tag endpoints

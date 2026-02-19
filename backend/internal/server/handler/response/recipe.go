@@ -25,6 +25,11 @@ type RecipeImageResponse struct {
 	ImagePath string `json:"image_path"`
 }
 
+type CreateRecipeImageResponse struct {
+	Image     RecipeImageResponse `json:"image"`
+	UploadURL string              `json:"upload_url"`
+}
+
 func NewRecipe(m *model.Recipe) *RecipeResponse {
 	tags := make([]TagResponse, 0, len(m.Tags))
 	for _, t := range m.Tags {

@@ -26,6 +26,8 @@ type CreateTagRequest struct {
 	Name string `json:"name"`
 }
 
-type AddImageRequest struct {
-	ImagePath string `json:"image_path"`
+type CreateRecipeImageRequest struct {
+	Filename    string `json:"filename"`
+	ContentType string `json:"content_type"`
+	Size        int64  `json:"size"`
 }

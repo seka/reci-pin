@@ -44,20 +44,6 @@ func (m *MockUseCase) EXPECT() *MockUseCaseMockRecorder {
 	return m.recorder
 }
 
-// NewAddImageUseCase mocks base method.
-func (m *MockUseCase) NewAddImageUseCase() recipe_image.AddImageUseCase {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NewAddImageUseCase")
-	ret0, _ := ret[0].(recipe_image.AddImageUseCase)
-	return ret0
-}
-
-// NewAddImageUseCase indicates an expected call of NewAddImageUseCase.
-func (mr *MockUseCaseMockRecorder) NewAddImageUseCase() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewAddImageUseCase", reflect.TypeOf((*MockUseCase)(nil).NewAddImageUseCase))
-}
-
 // NewAddTagsUseCase mocks base method.
 func (m *MockUseCase) NewAddTagsUseCase() recipe_tag.AddTagsUseCase {
 	m.ctrl.T.Helper()
@@ -84,6 +70,20 @@ func (m *MockUseCase) NewChangePasswordUseCase() auth.ChangePasswordUseCase {
 func (mr *MockUseCaseMockRecorder) NewChangePasswordUseCase() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewChangePasswordUseCase", reflect.TypeOf((*MockUseCase)(nil).NewChangePasswordUseCase))
+}
+
+// NewCreateRecipeImageUseCase mocks base method.
+func (m *MockUseCase) NewCreateRecipeImageUseCase() recipe_image.CreateRecipeImageUseCase {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewCreateRecipeImageUseCase")
+	ret0, _ := ret[0].(recipe_image.CreateRecipeImageUseCase)
+	return ret0
+}
+
+// NewCreateRecipeImageUseCase indicates an expected call of NewCreateRecipeImageUseCase.
+func (mr *MockUseCaseMockRecorder) NewCreateRecipeImageUseCase() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewCreateRecipeImageUseCase", reflect.TypeOf((*MockUseCase)(nil).NewCreateRecipeImageUseCase))
 }
 
 // NewCreateRecipeUseCase mocks base method.
