@@ -1,16 +1,24 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslatePipe } from '@ngx-translate/core';
-import { Recipe } from '../../../../core/services/recipe.service';
+import { Recipe, RecipeService } from '../../../../core/services/recipe.service';
 import { VALIDATION_RULES } from '../../../../core/constants/validation.constants';
 
 @Component({
   selector: 'app-recipe-card',
   standalone: true,
-  imports: [MatCardModule, MatButtonModule, MatIconModule, MatChipsModule, TranslatePipe],
+  imports: [
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatChipsModule,
+    MatTooltipModule,
+    TranslatePipe
+  ],
   template: `
     <mat-card class="recipe-card">
       @if (thumbnailUrl) {
@@ -32,6 +40,23 @@ import { VALIDATION_RULES } from '../../../../core/constants/validation.constant
         }
       </mat-card-content>
       <mat-card-actions align="end">
+        <button
+          mat-icon-button
+          color="primary"
+          [matTooltip]="'RECIPE.ADD_IMAGE' | translate"
+          (click)="fileInput.click()"
+          [disabled]="isUploading"
+        >
+          <mat-icon>add_a_photo</mat-icon>
+        </button>
+        <input
+          #fileInput
+          type="file"
+          [accept]="VALIDATION_RULES.IMAGE.ACCEPT"
+          (change)="onFileSelected($event)"
+          style="display: none"
+        />
+
         @if (recipe.url) {
           <a
             mat-button
@@ -84,7 +109,13 @@ import { VALIDATION_RULES } from '../../../../core/constants/validation.constant
   ],
 })
 export class RecipeCardComponent {
+  private readonly recipeService = inject(RecipeService);
+
   @Input() recipe!: Recipe;
+  @Output() imageAdded = new EventEmitter<void>();
+
+  isUploading = false;
+  protected readonly VALIDATION_RULES = VALIDATION_RULES;
 
   get thumbnailUrl(): string | null {
     if (!this.recipe.images?.length) return null;
@@ -113,6 +144,29 @@ export class RecipeCardComponent {
       return url;
     }
     return 'https://' + url;
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.[0]) {
+      this.uploadImage(input.files[0]);
+    }
+    // Reset input to allow selecting the same file again if needed
+    input.value = '';
+  }
+
+  private uploadImage(file: File): void {
+    this.isUploading = true;
+    this.recipeService.uploadImage(this.recipe.id, file).subscribe({
+      next: () => {
+        this.isUploading = false;
+        this.imageAdded.emit();
+      },
+      error: (err: Error) => {
+        console.error('Failed to upload image', err);
+        this.isUploading = false;
+      },
+    });
   }
 }
 
