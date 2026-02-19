@@ -3,6 +3,7 @@ package s3
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"strings"
 	"time"
 
@@ -16,8 +17,9 @@ type client struct {
 	client           *s3.Client
 	presignClient    *s3.PresignClient
 	bucket           string
-	publicBaseURL    string
-	internalEndpoint string // Internal endpoint for replacement logic
+	publicBaseURL    *url.URL
+	internalEndpoint *url.URL
+	internalPathPrefix string
 }
 
 // NewClient creates a new StorageService backed by S3
@@ -34,12 +36,31 @@ func NewClient(ctx context.Context, bucket string, endpoint string, publicBaseUR
 		}
 	})
 
+	parsedPublic, err := url.Parse(publicBaseURL)
+	if err != nil && publicBaseURL != "" {
+		return nil, fmt.Errorf("invalid public base URL: %w", err)
+	}
+
+	parsedInternal, err := url.Parse(endpoint)
+	if err != nil && endpoint != "" {
+		return nil, fmt.Errorf("invalid internal endpoint: %w", err)
+	}
+
+	var internalPathPrefix string
+	if parsedInternal != nil {
+		internalPathPrefix, _ = url.JoinPath(parsedInternal.Path, bucket)
+		if !strings.HasSuffix(internalPathPrefix, "/") {
+			internalPathPrefix += "/"
+		}
+	}
+
 	return &client{
-		client:           s3Client,
-		presignClient:    s3.NewPresignClient(s3Client),
-		bucket:           bucket,
-		publicBaseURL:    publicBaseURL,
-		internalEndpoint: endpoint,
+		client:             s3Client,
+		presignClient:      s3.NewPresignClient(s3Client),
+		bucket:             bucket,
+		publicBaseURL:      parsedPublic,
+		internalEndpoint:   parsedInternal,
+		internalPathPrefix: internalPathPrefix,
 	}, nil
 }
 
@@ -56,18 +77,24 @@ func (c *client) GeneratePresignedURL(ctx context.Context, key string, contentTy
 		return "", fmt.Errorf("failed to generate presigned URL: %w", err)
 	}
 
-	url := request.URL
-	if c.publicBaseURL != "" && c.internalEndpoint != "" {
-		// Replace internal endpoint + bucket with public base URL
-		// Example: http://localstack:4566/recipin-bucket/ -> https://localhost/storage/
-		internalBase := fmt.Sprintf("%s/%s/", c.internalEndpoint, c.bucket)
-		publicBase := c.publicBaseURL
-		if !strings.HasSuffix(publicBase, "/") {
-			publicBase += "/"
+	urlStr := request.URL
+	if c.publicBaseURL != nil && c.internalEndpoint != nil {
+		parsedPresigned, err := url.Parse(urlStr)
+		if err == nil {
+			if strings.HasPrefix(parsedPresigned.Path, c.internalPathPrefix) {
+				relPath := strings.TrimPrefix(parsedPresigned.Path, c.internalPathPrefix)
+
+				// Construct final public URL
+				parsedPresigned.Scheme = c.publicBaseURL.Scheme
+				parsedPresigned.Host = c.publicBaseURL.Host
+				newPath, _ := url.JoinPath(c.publicBaseURL.Path, relPath)
+				parsedPresigned.Path = newPath
+
+				urlStr = parsedPresigned.String()
+			}
 		}
-		url = strings.Replace(url, internalBase, publicBase, 1)
 	}
 
-	return url, nil
+	return urlStr, nil
 }
 

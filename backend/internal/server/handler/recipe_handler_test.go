@@ -93,7 +93,7 @@ func TestRecipeHandler_CreateRecipe(t *testing.T) {
 			mockCreateRecipe := usecasemock.NewMockCreateRecipeUseCase(ctrl)
 			tt.mocks.setup(mockCreateRecipe)
 
-			h := handler.NewRecipeHandler(
+			h, _ := handler.NewRecipeHandler(
 				mockCreateRecipe,
 				usecasemock.NewMockGetRecipeUseCase(ctrl),
 				usecasemock.NewMockGetUserRecipesUseCase(ctrl),
@@ -185,7 +185,7 @@ func TestRecipeHandler_GetRecipe(t *testing.T) {
 			mockGetRecipe := usecasemock.NewMockGetRecipeUseCase(ctrl)
 			tt.mocks.setup(mockGetRecipe)
 
-			h := handler.NewRecipeHandler(
+			h, _ := handler.NewRecipeHandler(
 				usecasemock.NewMockCreateRecipeUseCase(ctrl),
 				mockGetRecipe,
 				usecasemock.NewMockGetUserRecipesUseCase(ctrl),
@@ -287,7 +287,7 @@ func TestRecipeHandler_UpdateRecipe(t *testing.T) {
 			mockUpdate := usecasemock.NewMockUpdateRecipeUseCase(ctrl)
 			tt.mocks.setup(mockUpdate)
 
-			h := handler.NewRecipeHandler(
+			h, _ := handler.NewRecipeHandler(
 				usecasemock.NewMockCreateRecipeUseCase(ctrl),
 				usecasemock.NewMockGetRecipeUseCase(ctrl),
 				usecasemock.NewMockGetUserRecipesUseCase(ctrl),
@@ -382,7 +382,7 @@ func TestRecipeHandler_DeleteRecipe(t *testing.T) {
 			mockDelete := usecasemock.NewMockDeleteRecipeUseCase(ctrl)
 			tt.mocks.setup(mockDelete)
 
-			h := handler.NewRecipeHandler(
+			h, _ := handler.NewRecipeHandler(
 				usecasemock.NewMockCreateRecipeUseCase(ctrl),
 				usecasemock.NewMockGetRecipeUseCase(ctrl),
 				usecasemock.NewMockGetUserRecipesUseCase(ctrl),
@@ -477,7 +477,7 @@ func TestRecipeHandler_SearchRecipes(t *testing.T) {
 			mockSearch := usecasemock.NewMockSearchRecipesUseCase(ctrl)
 			tt.mocks.setup(mockSearch)
 
-			h := handler.NewRecipeHandler(
+			h, _ := handler.NewRecipeHandler(
 				usecasemock.NewMockCreateRecipeUseCase(ctrl),
 				usecasemock.NewMockGetRecipeUseCase(ctrl),
 				usecasemock.NewMockGetUserRecipesUseCase(ctrl),
@@ -569,7 +569,7 @@ func TestRecipeHandler_GetUserRecipes(t *testing.T) {
 			mockGetUserRecipes := usecasemock.NewMockGetUserRecipesUseCase(ctrl)
 			tt.mocks.setup(mockGetUserRecipes)
 
-			h := handler.NewRecipeHandler(
+			h, _ := handler.NewRecipeHandler(
 				usecasemock.NewMockCreateRecipeUseCase(ctrl),
 				usecasemock.NewMockGetRecipeUseCase(ctrl),
 				mockGetUserRecipes,
@@ -663,7 +663,7 @@ func TestRecipeHandler_AddTags(t *testing.T) {
 			mockAddTags := usecasemock.NewMockAddTagsUseCase(ctrl)
 			tt.mocks.setup(mockAddTags)
 
-			h := handler.NewRecipeHandler(
+			h, _ := handler.NewRecipeHandler(
 				usecasemock.NewMockCreateRecipeUseCase(ctrl),
 				usecasemock.NewMockGetRecipeUseCase(ctrl),
 				usecasemock.NewMockGetUserRecipesUseCase(ctrl),
@@ -763,7 +763,7 @@ func TestRecipeHandler_RemoveTags(t *testing.T) {
 			mockRemoveTags := usecasemock.NewMockRemoveTagsUseCase(ctrl)
 			tt.mocks.setup(mockRemoveTags)
 
-			h := handler.NewRecipeHandler(
+			h, _ := handler.NewRecipeHandler(
 				usecasemock.NewMockCreateRecipeUseCase(ctrl),
 				usecasemock.NewMockGetRecipeUseCase(ctrl),
 				usecasemock.NewMockGetUserRecipesUseCase(ctrl),
@@ -894,7 +894,7 @@ func TestRecipeHandler_AddImage(t *testing.T) {
 			mockCreateImage := usecasemock.NewMockCreateRecipeImageUseCase(ctrl)
 			tt.mocks.setup(mockCreateImage)
 
-			h := handler.NewRecipeHandler(
+			h, _ := handler.NewRecipeHandler(
 				usecasemock.NewMockCreateRecipeUseCase(ctrl),
 				usecasemock.NewMockGetRecipeUseCase(ctrl),
 				usecasemock.NewMockGetUserRecipesUseCase(ctrl),

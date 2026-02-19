@@ -3,7 +3,9 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
@@ -30,7 +32,7 @@ type RecipeHandler struct {
 	createTagUseCase      tag.CreateTagUseCase
 	getAllTagsUseCase     tag.GetAllTagsUseCase
 	deleteTagUseCase      tag.DeleteTagUseCase
-	publicBaseURL         string
+	publicBaseURL         *url.URL
 }
 
 func NewRecipeHandler(
@@ -47,7 +49,12 @@ func NewRecipeHandler(
 	getAllTagsUseCase tag.GetAllTagsUseCase,
 	deleteTagUseCase tag.DeleteTagUseCase,
 	publicBaseURL string,
-) *RecipeHandler {
+) (*RecipeHandler, error) {
+	parsedURL, err := url.Parse(publicBaseURL)
+	if err != nil && publicBaseURL != "" {
+		return nil, fmt.Errorf("invalid public base URL: %w", err)
+	}
+
 	return &RecipeHandler{
 		createRecipeUseCase:      createRecipeUseCase,
 		getRecipeUseCase:         getRecipeUseCase,
@@ -61,8 +68,8 @@ func NewRecipeHandler(
 		createTagUseCase:         createTagUseCase,
 		getAllTagsUseCase:        getAllTagsUseCase,
 		deleteTagUseCase:         deleteTagUseCase,
-		publicBaseURL:            publicBaseURL,
-	}
+		publicBaseURL:            parsedURL,
+	}, nil
 }
 
 func (h *RecipeHandler) CreateRecipe(w http.ResponseWriter, r *http.Request) {
