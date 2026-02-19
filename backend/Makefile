@@ -33,6 +33,10 @@ DB_PASSWORD ?= postgres
 DB_NAME ?= recipin_dev
 DB_SSLMODE ?= disable
 
+# Elasticsearch settings
+ES_HOST ?= localhost
+ES_PORT ?= 9200
+
 # JWT settings
 JWT_SECRET ?= change-me
 JWT_EXPIRATION ?= 24
@@ -92,19 +96,37 @@ app.clean: ## Clean build artifacts
 # ============================================================================
 
 .PHONY: seed.run
-seed.run: ## Run database seed
+seed.run: ## Run database seed and sync to Elasticsearch
 	@echo "Running database seed..."
 	go run ./cmd/seed/main.go
+	$(MAKE) seed.image
+	$(MAKE) sync-es.run
 
 .PHONY: seed.force
-seed.force: ## Clean database and run seed
+seed.force: ## Clean database, clear ES index and run seed
 	@echo "Cleaning and seeding database..."
 	go run ./cmd/seed/main.go -clean
+	$(MAKE) seed.image
+	$(MAKE) sync-es.clear
+	$(MAKE) sync-es.run
+
+.PHONY: seed.image
+seed.image: ## Upload seed images to LocalStack
+	@echo "Uploading seed images to LocalStack..."
+	docker cp internal/infrastructure/storage/mock/seed_placeholder.png reci-pin-localstack:/tmp/seed_placeholder.png
+	docker exec reci-pin-localstack awslocal s3 cp /tmp/seed_placeholder.png s3://recipin-bucket/recipes/1/seed_1.jpg --content-type image/png
+	docker exec reci-pin-localstack awslocal s3 cp /tmp/seed_placeholder.png s3://recipin-bucket/recipes/2/seed_1.jpg --content-type image/png
+	docker exec reci-pin-localstack awslocal s3 cp /tmp/seed_placeholder.png s3://recipin-bucket/recipes/2/seed_2.jpg --content-type image/png
 
 .PHONY: sync-es.run
 sync-es.run: ## Sync data from DB to Elasticsearch
 	@echo "Syncing data to Elasticsearch from host..."
 	go run ./cmd/sync_es/main.go
+
+.PHONY: sync-es.clear
+sync-es.clear: ## Clear Elasticsearch index
+	@echo "Clearing Elasticsearch index..."
+	curl -f -X DELETE "http://$(ES_HOST):$(ES_PORT)/recipes" || true
 
 .PHONY: sync-es.docker
 sync-es.docker: ## Sync data from DB to Elasticsearch (run inside Docker)
