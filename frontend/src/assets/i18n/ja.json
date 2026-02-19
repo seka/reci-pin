@@ -73,8 +73,7 @@
         "MY_RECIPES": "マイレシピ",
         "ADD_NEW": "新規レシピ追加",
         "IMAGE": "画像",
-        "IMAGE_DROP_HINT": "クリックまたはドラッグ＆ドロップで画像を追加",
-        "ADD_IMAGE": "画像を追加"
+        "IMAGE_DROP_HINT": "クリックまたはドラッグ＆ドロップで画像を追加"
     },
     "VALIDATION": {
         "REQUIRED": "この項目は必須です",
