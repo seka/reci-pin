@@ -30,6 +30,7 @@ type RecipeHandler struct {
 	createTagUseCase      tag.CreateTagUseCase
 	getAllTagsUseCase     tag.GetAllTagsUseCase
 	deleteTagUseCase      tag.DeleteTagUseCase
+	publicBaseURL         string
 }
 
 func NewRecipeHandler(
@@ -45,20 +46,22 @@ func NewRecipeHandler(
 	createTagUseCase tag.CreateTagUseCase,
 	getAllTagsUseCase tag.GetAllTagsUseCase,
 	deleteTagUseCase tag.DeleteTagUseCase,
+	publicBaseURL string,
 ) *RecipeHandler {
 	return &RecipeHandler{
-		createRecipeUseCase:   createRecipeUseCase,
-		getRecipeUseCase:      getRecipeUseCase,
-		getUserRecipesUseCase: getUserRecipesUseCase,
-		updateRecipeUseCase:   updateRecipeUseCase,
-		deleteRecipeUseCase:   deleteRecipeUseCase,
-		searchRecipesUseCase:  searchRecipesUseCase,
-		addTagsUseCase:        addTagsUseCase,
-		removeTagsUseCase:     removeTagsUseCase,
+		createRecipeUseCase:      createRecipeUseCase,
+		getRecipeUseCase:         getRecipeUseCase,
+		getUserRecipesUseCase:    getUserRecipesUseCase,
+		updateRecipeUseCase:      updateRecipeUseCase,
+		deleteRecipeUseCase:      deleteRecipeUseCase,
+		searchRecipesUseCase:     searchRecipesUseCase,
+		addTagsUseCase:           addTagsUseCase,
+		removeTagsUseCase:        removeTagsUseCase,
 		createRecipeImageUseCase: createRecipeImageUseCase,
-		createTagUseCase:      createTagUseCase,
-		getAllTagsUseCase:     getAllTagsUseCase,
-		deleteTagUseCase:      deleteTagUseCase,
+		createTagUseCase:         createTagUseCase,
+		getAllTagsUseCase:        getAllTagsUseCase,
+		deleteTagUseCase:         deleteTagUseCase,
+		publicBaseURL:            publicBaseURL,
 	}
 }
 
@@ -101,7 +104,7 @@ func (h *RecipeHandler) CreateRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondJSON(w, http.StatusCreated, response.NewRecipe(result))
+	respondJSON(w, http.StatusCreated, response.NewRecipe(result, h.publicBaseURL))
 }
 
 func (h *RecipeHandler) GetRecipe(w http.ResponseWriter, r *http.Request) {
@@ -124,7 +127,7 @@ func (h *RecipeHandler) GetRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondJSON(w, http.StatusOK, response.NewRecipe(result))
+	respondJSON(w, http.StatusOK, response.NewRecipe(result, h.publicBaseURL))
 }
 
 func (h *RecipeHandler) GetUserRecipes(w http.ResponseWriter, r *http.Request) {
@@ -140,7 +143,7 @@ func (h *RecipeHandler) GetUserRecipes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondJSON(w, http.StatusOK, response.NewRecipes(recipes))
+	respondJSON(w, http.StatusOK, response.NewRecipes(recipes, h.publicBaseURL))
 }
 
 func (h *RecipeHandler) SearchRecipes(w http.ResponseWriter, r *http.Request) {
@@ -168,7 +171,7 @@ func (h *RecipeHandler) SearchRecipes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondJSON(w, http.StatusOK, response.NewRecipes(recipes))
+	respondJSON(w, http.StatusOK, response.NewRecipes(recipes, h.publicBaseURL))
 }
 
 func (h *RecipeHandler) UpdateRecipe(w http.ResponseWriter, r *http.Request) {
@@ -205,7 +208,7 @@ func (h *RecipeHandler) UpdateRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondJSON(w, http.StatusOK, response.NewRecipe(result))
+	respondJSON(w, http.StatusOK, response.NewRecipe(result, h.publicBaseURL))
 }
 
 func (h *RecipeHandler) DeleteRecipe(w http.ResponseWriter, r *http.Request) {
@@ -333,11 +336,7 @@ func (h *RecipeHandler) AddImage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := response.CreateRecipeImageResponse{
-		Image: response.RecipeImageResponse{
-			ID:        image.ID,
-			RecipeID:  image.RecipeID,
-			ImagePath: image.ImagePath,
-		},
+		Image:     response.NewRecipeImage(image, h.publicBaseURL),
 		UploadURL: uploadURL,
 	}
 

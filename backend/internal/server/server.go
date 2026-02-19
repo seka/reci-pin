@@ -90,6 +90,7 @@ func (s *Server) setupRoutes() {
 			s.useCaseRegistry.NewCreateTagUseCase(),
 			s.useCaseRegistry.NewGetAllTagsUseCase(),
 			s.useCaseRegistry.NewDeleteTagUseCase(),
+			s.cfg.Storage.PublicBaseURL,
 		)
 		r.Post("/api/recipes", recipeHandler.CreateRecipe)
 		r.Get("/api/recipes", recipeHandler.GetUserRecipes)

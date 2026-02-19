@@ -106,6 +106,7 @@ func TestRecipeHandler_CreateRecipe(t *testing.T) {
 				usecasemock.NewMockCreateTagUseCase(ctrl),
 				usecasemock.NewMockGetAllTagsUseCase(ctrl),
 				usecasemock.NewMockDeleteTagUseCase(ctrl),
+				"",
 			)
 
 			var req *http.Request
@@ -197,6 +198,7 @@ func TestRecipeHandler_GetRecipe(t *testing.T) {
 				usecasemock.NewMockCreateTagUseCase(ctrl),
 				usecasemock.NewMockGetAllTagsUseCase(ctrl),
 				usecasemock.NewMockDeleteTagUseCase(ctrl),
+				"",
 			)
 
 			req := httptest.NewRequest(http.MethodGet, "/api/recipes/"+tt.args.recipeID, nil)
@@ -298,6 +300,7 @@ func TestRecipeHandler_UpdateRecipe(t *testing.T) {
 				usecasemock.NewMockCreateTagUseCase(ctrl),
 				usecasemock.NewMockGetAllTagsUseCase(ctrl),
 				usecasemock.NewMockDeleteTagUseCase(ctrl),
+				"",
 			)
 
 			var req *http.Request
@@ -392,6 +395,7 @@ func TestRecipeHandler_DeleteRecipe(t *testing.T) {
 				usecasemock.NewMockCreateTagUseCase(ctrl),
 				usecasemock.NewMockGetAllTagsUseCase(ctrl),
 				usecasemock.NewMockDeleteTagUseCase(ctrl),
+				"",
 			)
 
 			req := httptest.NewRequest(http.MethodDelete, "/api/recipes/"+tt.args.recipeID, nil)
@@ -486,6 +490,7 @@ func TestRecipeHandler_SearchRecipes(t *testing.T) {
 				usecasemock.NewMockCreateTagUseCase(ctrl),
 				usecasemock.NewMockGetAllTagsUseCase(ctrl),
 				usecasemock.NewMockDeleteTagUseCase(ctrl),
+				"",
 			)
 
 			var req *http.Request
@@ -577,6 +582,7 @@ func TestRecipeHandler_GetUserRecipes(t *testing.T) {
 				usecasemock.NewMockCreateTagUseCase(ctrl),
 				usecasemock.NewMockGetAllTagsUseCase(ctrl),
 				usecasemock.NewMockDeleteTagUseCase(ctrl),
+				"",
 			)
 
 			req := httptest.NewRequest(http.MethodGet, "/api/users/"+tt.args.requestUserID+"/recipes", nil)
@@ -670,6 +676,7 @@ func TestRecipeHandler_AddTags(t *testing.T) {
 				usecasemock.NewMockCreateTagUseCase(ctrl),
 				usecasemock.NewMockGetAllTagsUseCase(ctrl),
 				usecasemock.NewMockDeleteTagUseCase(ctrl),
+				"",
 			)
 
 			var req *http.Request
@@ -769,6 +776,7 @@ func TestRecipeHandler_RemoveTags(t *testing.T) {
 				usecasemock.NewMockCreateTagUseCase(ctrl),
 				usecasemock.NewMockGetAllTagsUseCase(ctrl),
 				usecasemock.NewMockDeleteTagUseCase(ctrl),
+				"",
 			)
 
 			var req *http.Request
@@ -899,6 +907,7 @@ func TestRecipeHandler_AddImage(t *testing.T) {
 				usecasemock.NewMockCreateTagUseCase(ctrl),
 				usecasemock.NewMockGetAllTagsUseCase(ctrl),
 				usecasemock.NewMockDeleteTagUseCase(ctrl),
+				"",
 			)
 
 			var req *http.Request

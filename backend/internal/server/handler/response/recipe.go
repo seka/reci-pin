@@ -1,6 +1,8 @@
 package response
 
 import (
+	"fmt"
+
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 )
 
@@ -23,6 +25,7 @@ type RecipeImageResponse struct {
 	ID        int64  `json:"id"`
 	RecipeID  int64  `json:"recipe_id"`
 	ImagePath string `json:"image_path"`
+	ImageURL  string `json:"image_url"`
 }
 
 type CreateRecipeImageResponse struct {
@@ -30,7 +33,21 @@ type CreateRecipeImageResponse struct {
 	UploadURL string              `json:"upload_url"`
 }
 
-func NewRecipe(m *model.Recipe) *RecipeResponse {
+func NewRecipeImage(i *model.RecipeImage, publicBaseURL string) RecipeImageResponse {
+	imageURL := ""
+	if publicBaseURL != "" && i.ImagePath != "" {
+		imageURL = fmt.Sprintf("%s/%s", publicBaseURL, i.ImagePath)
+	}
+
+	return RecipeImageResponse{
+		ID:        i.ID,
+		RecipeID:  i.RecipeID,
+		ImagePath: i.ImagePath,
+		ImageURL:  imageURL,
+	}
+}
+
+func NewRecipe(m *model.Recipe, publicBaseURL string) *RecipeResponse {
 	tags := make([]TagResponse, 0, len(m.Tags))
 	for _, t := range m.Tags {
 		tags = append(tags, TagResponse{
@@ -41,11 +58,7 @@ func NewRecipe(m *model.Recipe) *RecipeResponse {
 
 	images := make([]RecipeImageResponse, 0, len(m.Images))
 	for _, i := range m.Images {
-		images = append(images, RecipeImageResponse{
-			ID:        i.ID,
-			RecipeID:  i.RecipeID,
-			ImagePath: i.ImagePath,
-		})
+		images = append(images, NewRecipeImage(&i, publicBaseURL))
 	}
 
 	return &RecipeResponse{
@@ -59,10 +72,10 @@ func NewRecipe(m *model.Recipe) *RecipeResponse {
 	}
 }
 
-func NewRecipes(recipes []model.Recipe) []RecipeResponse {
+func NewRecipes(recipes []model.Recipe, publicBaseURL string) []RecipeResponse {
 	responses := make([]RecipeResponse, 0, len(recipes))
 	for _, r := range recipes {
-		responses = append(responses, *NewRecipe(&r))
+		responses = append(responses, *NewRecipe(&r, publicBaseURL))
 	}
 	return responses
 }
