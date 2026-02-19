@@ -12,6 +12,11 @@ import { Recipe } from '../../../../core/services/recipe.service';
   imports: [MatCardModule, MatButtonModule, MatIconModule, MatChipsModule, TranslatePipe],
   template: `
     <mat-card class="recipe-card">
+      @if (thumbnailUrl) {
+        <div class="card-image">
+          <img [src]="thumbnailUrl" [alt]="recipe.name" />
+        </div>
+      }
       <mat-card-header>
         <mat-card-title>{{ recipe.name }}</mat-card-title>
       </mat-card-header>
@@ -47,6 +52,17 @@ import { Recipe } from '../../../../core/services/recipe.service';
         display: flex;
         flex-direction: column;
       }
+      .card-image {
+        width: 100%;
+        height: 180px;
+        overflow: hidden;
+        border-radius: var(--radius-2) var(--radius-2) 0 0;
+      }
+      .card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
       mat-card-title {
         color: var(--color-primary);
         font-weight: 700;
@@ -69,6 +85,13 @@ import { Recipe } from '../../../../core/services/recipe.service';
 export class RecipeCardComponent {
   @Input() recipe!: Recipe;
 
+  get thumbnailUrl(): string | null {
+    if (this.recipe.images?.length) {
+      return `/storage/${this.recipe.images[0].image_path}`;
+    }
+    return null;
+  }
+
   getExternalUrl(url: string): string {
     if (!url) return '';
     if (/^https?:\/\//i.test(url)) {
@@ -77,3 +100,4 @@ export class RecipeCardComponent {
     return 'https://' + url;
   }
 }
+
