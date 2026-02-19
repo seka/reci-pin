@@ -13,4 +13,9 @@ export const VALIDATION_RULES = {
     TAG: {
         NAME_MAX_LENGTH: 30,
     },
+    IMAGE: {
+        MAX_FILE_SIZE: 50 * 1024 * 1024, // 50MB
+        ALLOWED_TYPES: ['image/jpeg', 'image/png', 'image/webp'],
+        ACCEPT: '.jpg,.jpeg,.png,.webp',
+    },
 } as const;

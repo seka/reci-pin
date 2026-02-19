@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, switchMap, from } from 'rxjs';
 
 export interface Recipe {
   id: number;
@@ -42,6 +42,17 @@ export interface UpdateRecipeRequest {
 export interface SearchRecipeRequest {
   query: string;
   tag_ids: number[];
+}
+
+export interface CreateRecipeImageRequest {
+  filename: string;
+  content_type: string;
+  size: number;
+}
+
+export interface CreateRecipeImageResponse {
+  image: RecipeImage;
+  upload_url: string;
 }
 
 @Injectable({
@@ -86,10 +97,29 @@ export class RecipeService {
     });
   }
 
-  addImage(recipeId: number, imagePath: string): Observable<RecipeImage> {
-    return this.http.post<RecipeImage>(`${this.API_URL}/${recipeId}/images`, {
-      image_path: imagePath,
-    });
+  uploadImage(recipeId: number, file: File): Observable<RecipeImage> {
+    const body: CreateRecipeImageRequest = {
+      filename: file.name,
+      content_type: file.type,
+      size: file.size,
+    };
+
+    return this.http
+      .post<CreateRecipeImageResponse>(`${this.API_URL}/${recipeId}/images`, body)
+      .pipe(
+        switchMap((res) =>
+          from(
+            fetch(res.upload_url, {
+              method: 'PUT',
+              headers: { 'Content-Type': file.type },
+              body: file,
+            }).then((r) => {
+              if (!r.ok) throw new Error(`S3 upload failed: ${r.status}`);
+              return res.image;
+            }),
+          ),
+        ),
+      );
   }
 
   // Tag management

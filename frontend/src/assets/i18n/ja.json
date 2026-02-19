@@ -71,7 +71,9 @@
         "SAVING": "保存中...",
         "VIEW_DETAILS": "レシピを見る",
         "MY_RECIPES": "マイレシピ",
-        "ADD_NEW": "新規レシピ追加"
+        "ADD_NEW": "新規レシピ追加",
+        "IMAGE": "画像",
+        "IMAGE_DROP_HINT": "クリックまたはドラッグ＆ドロップで画像を追加"
     },
     "VALIDATION": {
         "REQUIRED": "この項目は必須です",
