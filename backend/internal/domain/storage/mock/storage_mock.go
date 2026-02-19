@@ -11,7 +11,6 @@ package mock
 
 import (
 	context "context"
-	io "io"
 	reflect "reflect"
 	time "time"
 
@@ -55,34 +54,4 @@ func (m *MockStorage) GeneratePresignedURL(ctx context.Context, key, contentType
 func (mr *MockStorageMockRecorder) GeneratePresignedURL(ctx, key, contentType, contentLength, expires any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GeneratePresignedURL", reflect.TypeOf((*MockStorage)(nil).GeneratePresignedURL), ctx, key, contentType, contentLength, expires)
-}
-
-// GetURL mocks base method.
-func (m *MockStorage) GetURL(ctx context.Context, key string) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetURL", ctx, key)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetURL indicates an expected call of GetURL.
-func (mr *MockStorageMockRecorder) GetURL(ctx, key any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetURL", reflect.TypeOf((*MockStorage)(nil).GetURL), ctx, key)
-}
-
-// Upload mocks base method.
-func (m *MockStorage) Upload(ctx context.Context, key string, data io.Reader, contentType string) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Upload", ctx, key, data, contentType)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Upload indicates an expected call of Upload.
-func (mr *MockStorageMockRecorder) Upload(ctx, key, data, contentType any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Upload", reflect.TypeOf((*MockStorage)(nil).Upload), ctx, key, data, contentType)
 }
