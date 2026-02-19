@@ -16,6 +16,7 @@ import (
 	"github.com/seka/reci-pin/backend/config"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/storage/s3"
 	"github.com/seka/reci-pin/backend/internal/registry"
 	"github.com/seka/reci-pin/backend/internal/server"
 )
@@ -86,9 +87,16 @@ func run() error {
 		return fmt.Errorf("creating elasticsearch client: %w", err)
 	}
 
+	// Initialize Storage Service
+	// Using default settings or dummy for test
+	storageService, err := s3.NewClient(ctx, "test-bucket", "http://localhost:4566", "http://localhost:4566/test-bucket")
+	if err != nil {
+		return fmt.Errorf("creating storage service: %w", err)
+	}
+
 	// Initialize Server
 	repoReg := registry.NewRepository(db, esClient)
-	useCaseReg := registry.NewUseCase(repoReg, &testCfg)
+	useCaseReg := registry.NewUseCase(repoReg, storageService, &testCfg)
 	srv := server.New(&testCfg, useCaseReg)
 
 	// Run Server in Goroutine

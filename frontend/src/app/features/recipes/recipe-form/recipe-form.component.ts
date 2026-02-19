@@ -1,7 +1,9 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { RecipeService, Tag } from '../../../core/services/recipe.service';
 import { TagSelectComponent } from '../../../shared/components/molecules/tag-select/tag-select.component';
@@ -15,9 +17,11 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
   selector: 'app-recipe-form',
   standalone: true,
   imports: [
+    CommonModule,
     ReactiveFormsModule,
     RouterModule,
     MatCardModule,
+    MatIconModule,
     TranslatePipe,
     TagSelectComponent,
     ButtonComponent,
@@ -76,6 +80,48 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
             >
             </app-tag-select>
 
+            <!-- Image Upload -->
+            <div class="image-upload-section">
+              <label class="upload-label">{{ 'RECIPE.IMAGE' | translate }}</label>
+              <div
+                class="dropzone"
+                [class.dragover]="isDragover"
+                (dragover)="onDragOver($event)"
+                (dragleave)="onDragLeave($event)"
+                (drop)="onDrop($event)"
+                (click)="fileInput.click()"
+              >
+                @if (imagePreview) {
+                  <img
+                    [src]="imagePreview"
+                    alt="Preview"
+                    class="preview-image"
+                  />
+                  <button
+                    type="button"
+                    class="remove-btn"
+                    (click)="removeImage($event)"
+                  >
+                    <mat-icon>close</mat-icon>
+                  </button>
+                } @else {
+                  <mat-icon class="upload-icon">cloud_upload</mat-icon>
+                  <p class="upload-text">{{ 'RECIPE.IMAGE_DROP_HINT' | translate }}</p>
+                  <p class="upload-subtext">JPEG, PNG, WebP (最大 50MB)</p>
+                }
+              </div>
+              <input
+                #fileInput
+                type="file"
+                [accept]="VALIDATION_RULES.IMAGE.ACCEPT"
+                (change)="onFileSelected($event)"
+                hidden
+              />
+              @if (imageError) {
+                <p class="image-error">{{ imageError }}</p>
+              }
+            </div>
+
             <div class="actions">
               <app-button type="button" routerLink="/recipes" variant="warn" class="action-btn"
                 >{{ 'COMMON.CANCEL' | translate }}</app-button
@@ -120,7 +166,89 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
       .action-btn {
         width: auto;
         min-width: 100px;
-        }
+      }
+      .image-upload-section {
+        margin-top: var(--spacing-2);
+        margin-bottom: var(--spacing-2);
+      }
+      .upload-label {
+        display: block;
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+        margin-bottom: var(--spacing-1);
+      }
+      .dropzone {
+        position: relative;
+        border: 2px dashed var(--color-border);
+        border-radius: var(--radius-2);
+        padding: var(--spacing-3);
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.2s, background-color 0.2s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 160px;
+      }
+      .dropzone:hover,
+      .dropzone.dragover {
+        border-color: var(--color-primary);
+        background-color: rgba(var(--color-primary-rgb, 99, 102, 241), 0.05);
+      }
+      .upload-icon {
+        font-size: 40px;
+        width: 40px;
+        height: 40px;
+        color: var(--color-text-secondary);
+        margin-bottom: var(--spacing-1);
+      }
+      .upload-text {
+        color: var(--color-text-secondary);
+        margin: 0;
+        font-size: var(--font-size-sm);
+      }
+      .upload-subtext {
+        color: var(--color-text-tertiary, #999);
+        margin: var(--spacing-1) 0 0;
+        font-size: var(--font-size-xs, 12px);
+      }
+      .preview-image {
+        max-width: 100%;
+        max-height: 200px;
+        border-radius: var(--radius-1);
+        object-fit: contain;
+      }
+      .remove-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.5);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        padding: 0;
+        transition: background 0.2s;
+      }
+      .remove-btn:hover {
+        background: rgba(0, 0, 0, 0.7);
+      }
+      .remove-btn mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+      .image-error {
+        color: var(--color-error, #f44336);
+        font-size: var(--font-size-xs, 12px);
+        margin-top: var(--spacing-1);
+      }
     `,
   ],
 })
@@ -134,6 +262,11 @@ export class RecipeFormComponent implements OnInit {
   tags: Tag[] = [];
   fieldErrors: Record<string, string[]> = {};
   isSubmitting = false;
+
+  selectedFile: File | null = null;
+  imagePreview: string | null = null;
+  imageError: string | null = null;
+  isDragover = false;
 
   protected readonly VALIDATION_RULES = VALIDATION_RULES;
 
@@ -150,7 +283,6 @@ export class RecipeFormComponent implements OnInit {
     const urlControl = this.recipeForm.get('url');
     if (urlControl?.value) {
       let url = urlControl.value.trim();
-      // If no scheme is present at all (no '://'), prepend https://
       if (url && !url.includes('://')) {
         url = 'https://' + url;
         urlControl.setValue(url);
@@ -165,6 +297,63 @@ export class RecipeFormComponent implements OnInit {
     });
   }
 
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.[0]) {
+      this.handleFile(input.files[0]);
+    }
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragover = true;
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragover = false;
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragover = false;
+    if (event.dataTransfer?.files?.[0]) {
+      this.handleFile(event.dataTransfer.files[0]);
+    }
+  }
+
+  removeImage(event: Event) {
+    event.stopPropagation();
+    this.selectedFile = null;
+    this.imagePreview = null;
+    this.imageError = null;
+  }
+
+  private handleFile(file: File) {
+    this.imageError = null;
+
+    if (!(VALIDATION_RULES.IMAGE.ALLOWED_TYPES as readonly string[]).includes(file.type)) {
+      this.imageError = 'JPEG, PNG, WebP のみアップロードできます';
+      return;
+    }
+
+    if (file.size > VALIDATION_RULES.IMAGE.MAX_FILE_SIZE) {
+      this.imageError = 'ファイルサイズは50MB以下にしてください';
+      return;
+    }
+
+    this.selectedFile = file;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.imagePreview = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
   onSubmit() {
     this.fieldErrors = {};
     if (this.recipeForm.valid) {
@@ -172,14 +361,25 @@ export class RecipeFormComponent implements OnInit {
       const formData = this.recipeForm.value;
 
       this.recipeService.createRecipe(formData).subscribe({
-        next: () => {
-          this.router.navigate(['/recipes']);
+        next: (recipe) => {
+          if (this.selectedFile) {
+            this.recipeService.uploadImage(recipe.id, this.selectedFile).subscribe({
+              next: () => this.router.navigate(['/recipes']),
+              error: (err) => {
+                console.error('Failed to upload image', err);
+                // レシピは作成済みなので一覧に戻す
+                this.router.navigate(['/recipes']);
+              },
+            });
+          } else {
+            this.router.navigate(['/recipes']);
+          }
         },
         error: (err) => {
           console.error('Failed to create recipe', err);
           this.isSubmitting = false;
 
-          if (err.error && err.error.error && err.error.error.details) {
+          if (err.error?.error?.details) {
             const details = err.error.error.details;
             Object.keys(details).forEach((field) => {
               const messages = (details as any)[field].map((d: any) => {
@@ -202,3 +402,4 @@ export class RecipeFormComponent implements OnInit {
     }
   }
 }
+

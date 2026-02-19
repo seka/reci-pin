@@ -71,7 +71,9 @@
         "SAVING": "Saving...",
         "VIEW_DETAILS": "View Recipe",
         "MY_RECIPES": "My Recipes",
-        "ADD_NEW": "Add New Recipe"
+        "ADD_NEW": "Add New Recipe",
+        "IMAGE": "Image",
+        "IMAGE_DROP_HINT": "Click or drag & drop to add an image"
     },
     "VALIDATION": {
         "REQUIRED": "This field is required",

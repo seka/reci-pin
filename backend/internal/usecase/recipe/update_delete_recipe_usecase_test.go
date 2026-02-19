@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	"github.com/seka/reci-pin/backend/internal/domain/notification/mock"
+	"github.com/seka/reci-pin/backend/internal/domain/repository/mock"
 	"github.com/seka/reci-pin/backend/internal/usecase/recipe"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -19,7 +19,7 @@ func TestUpdateRecipeUseCase_Execute(t *testing.T) {
 	tests := []struct {
 		name    string
 		input   recipe.UpdateRecipeInput
-		setup   func(*mock.MockRecipeRepository)
+		setup   func(*mock.MockRecipeRepository, *mock.MockRecipeSearchRepository)
 		wantErr bool
 		errMsg  string
 	}{
@@ -32,7 +32,7 @@ func TestUpdateRecipeUseCase_Execute(t *testing.T) {
 				URL:    "https://example.com/updated",
 				Memo:   "Updated memo",
 			},
-			setup: func(m *mock.MockRecipeRepository) {
+			setup: func(m *mock.MockRecipeRepository, ms *mock.MockRecipeSearchRepository) {
 				m.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{
@@ -42,6 +42,16 @@ func TestUpdateRecipeUseCase_Execute(t *testing.T) {
 					}, nil)
 				m.EXPECT().
 					Update(gomock.Any(), gomock.Any()).
+					Return(nil)
+				
+				// GetTags for indexing
+				m.EXPECT().
+					GetTags(gomock.Any(), int64(1)).
+					Return([]model.Tag{}, nil)
+
+				// Index
+				ms.EXPECT().
+					Index(gomock.Any(), gomock.Any()).
 					Return(nil)
 			},
 			wantErr: false,
@@ -53,7 +63,7 @@ func TestUpdateRecipeUseCase_Execute(t *testing.T) {
 				UserID: 1,
 				Name:   "Updated Recipe",
 			},
-			setup: func(m *mock.MockRecipeRepository) {
+			setup: func(m *mock.MockRecipeRepository, ms *mock.MockRecipeSearchRepository) {
 				m.EXPECT().
 					GetByID(gomock.Any(), int64(999)).
 					Return(nil, errors.New("not found"))
@@ -68,7 +78,7 @@ func TestUpdateRecipeUseCase_Execute(t *testing.T) {
 				UserID: 2,
 				Name:   "Updated Recipe",
 			},
-			setup: func(m *mock.MockRecipeRepository) {
+			setup: func(m *mock.MockRecipeRepository, ms *mock.MockRecipeSearchRepository) {
 				m.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{
@@ -86,7 +96,7 @@ func TestUpdateRecipeUseCase_Execute(t *testing.T) {
 				UserID: 1,
 				Name:   "Updated Recipe",
 			},
-			setup: func(m *mock.MockRecipeRepository) {
+			setup: func(m *mock.MockRecipeRepository, ms *mock.MockRecipeSearchRepository) {
 				m.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{
@@ -105,9 +115,10 @@ func TestUpdateRecipeUseCase_Execute(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRepo := mock.NewMockRecipeRepository(ctrl)
-			tt.setup(mockRepo)
+			mockSearchRepo := mock.NewMockRecipeSearchRepository(ctrl)
+			tt.setup(mockRepo, mockSearchRepo)
 
-			uc := recipe.NewUpdateRecipeUseCase(mockRepo)
+			uc := recipe.NewUpdateRecipeUseCase(mockRepo, mockSearchRepo)
 			result, err := uc.Execute(context.Background(), tt.input)
 
 			if tt.wantErr {
@@ -131,7 +142,7 @@ func TestDeleteRecipeUseCase_Execute(t *testing.T) {
 		name    string
 		id      int64
 		userID  int64
-		setup   func(*mock.MockRecipeRepository)
+		setup   func(*mock.MockRecipeRepository, *mock.MockRecipeSearchRepository)
 		wantErr bool
 		errMsg  string
 	}{
@@ -139,7 +150,7 @@ func TestDeleteRecipeUseCase_Execute(t *testing.T) {
 			name:   "正常系_レシピ削除成功",
 			id:     1,
 			userID: 1,
-			setup: func(m *mock.MockRecipeRepository) {
+			setup: func(m *mock.MockRecipeRepository, ms *mock.MockRecipeSearchRepository) {
 				m.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{
@@ -149,6 +160,11 @@ func TestDeleteRecipeUseCase_Execute(t *testing.T) {
 				m.EXPECT().
 					Delete(gomock.Any(), int64(1)).
 					Return(nil)
+
+				// Delete from index
+				ms.EXPECT().
+					Delete(gomock.Any(), int64(1)).
+					Return(nil)
 			},
 			wantErr: false,
 		},
@@ -156,7 +172,7 @@ func TestDeleteRecipeUseCase_Execute(t *testing.T) {
 			name:   "異常系_レシピ不在",
 			id:     999,
 			userID: 1,
-			setup: func(m *mock.MockRecipeRepository) {
+			setup: func(m *mock.MockRecipeRepository, ms *mock.MockRecipeSearchRepository) {
 				m.EXPECT().
 					GetByID(gomock.Any(), int64(999)).
 					Return(nil, errors.New("not found"))
@@ -168,7 +184,7 @@ func TestDeleteRecipeUseCase_Execute(t *testing.T) {
 			name:   "異常系_権限エラー",
 			id:     1,
 			userID: 2,
-			setup: func(m *mock.MockRecipeRepository) {
+			setup: func(m *mock.MockRecipeRepository, ms *mock.MockRecipeSearchRepository) {
 				m.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{
@@ -184,9 +200,10 @@ func TestDeleteRecipeUseCase_Execute(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRepo := mock.NewMockRecipeRepository(ctrl)
-			tt.setup(mockRepo)
+			mockSearchRepo := mock.NewMockRecipeSearchRepository(ctrl)
+			tt.setup(mockRepo, mockSearchRepo)
 
-			uc := recipe.NewDeleteRecipeUseCase(mockRepo)
+			uc := recipe.NewDeleteRecipeUseCase(mockRepo, mockSearchRepo)
 			err := uc.Execute(context.Background(), tt.id, tt.userID)
 
 			if tt.wantErr {

@@ -6,6 +6,7 @@ import (
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 )
 
+//go:generate mockgen -source=$GOFILE -destination=./mock/recipe_image_repository_mock.go -package=mock
 type RecipeImageRepository interface {
 	Create(ctx context.Context, image *model.RecipeImage) error
 	GetByRecipeID(ctx context.Context, recipeID int64) ([]model.RecipeImage, error)

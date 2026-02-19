@@ -77,7 +77,7 @@ func (s *Server) setupRoutes() {
 		r.Put("/api/auth/password", authHandler.ChangePassword)
 
 		// Recipes
-		recipeHandler := handler.NewRecipeHandler(
+		recipeHandler, err := handler.NewRecipeHandler(
 			s.useCaseRegistry.NewCreateRecipeUseCase(),
 			s.useCaseRegistry.NewGetRecipeUseCase(),
 			s.useCaseRegistry.NewGetUserRecipesUseCase(),
@@ -86,11 +86,15 @@ func (s *Server) setupRoutes() {
 			s.useCaseRegistry.NewSearchRecipesUseCase(),
 			s.useCaseRegistry.NewAddTagsUseCase(),
 			s.useCaseRegistry.NewRemoveTagsUseCase(),
-			s.useCaseRegistry.NewAddImageUseCase(),
+			s.useCaseRegistry.NewCreateRecipeImageUseCase(),
 			s.useCaseRegistry.NewCreateTagUseCase(),
 			s.useCaseRegistry.NewGetAllTagsUseCase(),
 			s.useCaseRegistry.NewDeleteTagUseCase(),
+			s.cfg.Storage.PublicBaseURL,
 		)
+		if err != nil {
+			log.Fatalf("failed to create recipe handler: %v", err)
+		}
 		r.Post("/api/recipes", recipeHandler.CreateRecipe)
 		r.Get("/api/recipes", recipeHandler.GetUserRecipes)
 		r.Get("/api/recipes/{id}", recipeHandler.GetRecipe)

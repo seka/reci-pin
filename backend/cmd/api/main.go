@@ -16,6 +16,8 @@ import (
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
 	es "github.com/seka/reci-pin/backend/internal/infrastructure/database/elasticsearch"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/storage/s3"
+	"github.com/seka/reci-pin/backend/internal/domain/storage"
 	"github.com/seka/reci-pin/backend/internal/registry"
 	"github.com/seka/reci-pin/backend/internal/server"
 )
@@ -34,6 +36,11 @@ func init() {
 	flag.StringVar(&cfg.Database.SSLMode, "db-sslmode", "disable", "Database SSL mode")
 	flag.StringVar(&cfg.JWT.Secret, "jwt-secret", "change-me", "JWT secret key")
 	flag.IntVar(&cfg.JWT.ExpirationHours, "jwt-expiration", 24, "JWT expiration hours")
+
+	// Storage configuration
+	flag.StringVar(&cfg.Storage.Bucket, "storage-bucket", "recipin-bucket", "S3 bucket name")
+	flag.StringVar(&cfg.Storage.Endpoint, "storage-endpoint", "", "S3 endpoint URL (for LocalStack)")
+	flag.StringVar(&cfg.Storage.PublicBaseURL, "storage-public-url", "", "Base URL for public access")
 }
 
 func main() {
@@ -58,8 +65,19 @@ func main() {
 		log.Fatalf("elasticsearch error: %v", err)
 	}
 
+	// Start Storage Service
+	storageService, err := s3.NewClient(
+		ctx,
+		cfg.Storage.Bucket,
+		cfg.Storage.Endpoint,
+		cfg.Storage.PublicBaseURL,
+	)
+	if err != nil {
+		log.Fatalf("storage service error: %v", err)
+	}
+
 	// Start Server
-	srv := createServer(&cfg, db, esClient)
+	srv := createServer(&cfg, db, esClient, storageService)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -98,9 +116,9 @@ func connectDatabase(ctx context.Context, db database.Database) error {
 	return nil
 }
 
-func createServer(cfg *config.Config, db database.Database, esClient *elasticsearch.TypedClient) *server.Server {
+func createServer(cfg *config.Config, db database.Database, esClient *elasticsearch.TypedClient, storageService storage.Storage) *server.Server {
 	repoRegistry := registry.NewRepository(db, esClient)
-	useCaseRegistry := registry.NewUseCase(repoRegistry, cfg)
+	useCaseRegistry := registry.NewUseCase(repoRegistry, storageService, cfg)
 	return server.New(cfg, useCaseRegistry)
 }
 

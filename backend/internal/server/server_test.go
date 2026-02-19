@@ -22,6 +22,8 @@ func setupMockRegistry(ctrl *gomock.Controller, m *registrymock.MockUseCase) {
 	m.EXPECT().NewVerifyEmailUseCase().Return(usecasemock.NewMockVerifyEmailUseCase(ctrl))
 	m.EXPECT().NewWithdrawUseCase().Return(usecasemock.NewMockWithdrawUseCase(ctrl))
 	m.EXPECT().NewChangePasswordUseCase().Return(usecasemock.NewMockChangePasswordUseCase(ctrl))
+	m.EXPECT().NewRequestPasswordResetUseCase().Return(usecasemock.NewMockRequestPasswordResetUseCase(ctrl))
+	m.EXPECT().NewResetPasswordUseCase().Return(usecasemock.NewMockResetPasswordUseCase(ctrl))
 
 	// Recipe
 	m.EXPECT().NewCreateRecipeUseCase().Return(usecasemock.NewMockCreateRecipeUseCase(ctrl))
@@ -36,7 +38,7 @@ func setupMockRegistry(ctrl *gomock.Controller, m *registrymock.MockUseCase) {
 	m.EXPECT().NewRemoveTagsUseCase().Return(usecasemock.NewMockRemoveTagsUseCase(ctrl))
 
 	// Recipe Image
-	m.EXPECT().NewAddImageUseCase().Return(usecasemock.NewMockAddImageUseCase(ctrl))
+	m.EXPECT().NewCreateRecipeImageUseCase().Return(usecasemock.NewMockCreateRecipeImageUseCase(ctrl))
 
 	// Tag
 	m.EXPECT().NewCreateTagUseCase().Return(usecasemock.NewMockCreateTagUseCase(ctrl))

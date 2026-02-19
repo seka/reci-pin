@@ -71,7 +71,7 @@ func TestRecipeHandler_CreateTag(t *testing.T) {
 			mockCreateTag := usecasemock.NewMockCreateTagUseCase(ctrl)
 			tt.mocks.setup(mockCreateTag)
 
-			h := handler.NewRecipeHandler(
+			h, _ := handler.NewRecipeHandler(
 				usecasemock.NewMockCreateRecipeUseCase(ctrl),
 				usecasemock.NewMockGetRecipeUseCase(ctrl),
 				usecasemock.NewMockGetUserRecipesUseCase(ctrl),
@@ -80,10 +80,11 @@ func TestRecipeHandler_CreateTag(t *testing.T) {
 				usecasemock.NewMockSearchRecipesUseCase(ctrl),
 				usecasemock.NewMockAddTagsUseCase(ctrl),
 				usecasemock.NewMockRemoveTagsUseCase(ctrl),
-				usecasemock.NewMockAddImageUseCase(ctrl),
+				usecasemock.NewMockCreateRecipeImageUseCase(ctrl),
 				mockCreateTag,
 				usecasemock.NewMockGetAllTagsUseCase(ctrl),
 				usecasemock.NewMockDeleteTagUseCase(ctrl),
+				"",
 			)
 
 			var req *http.Request
@@ -142,7 +143,7 @@ func TestRecipeHandler_GetAllTags(t *testing.T) {
 			mockGetAll := usecasemock.NewMockGetAllTagsUseCase(ctrl)
 			tt.mocks.setup(mockGetAll)
 
-			h := handler.NewRecipeHandler(
+			h, _ := handler.NewRecipeHandler(
 				usecasemock.NewMockCreateRecipeUseCase(ctrl),
 				usecasemock.NewMockGetRecipeUseCase(ctrl),
 				usecasemock.NewMockGetUserRecipesUseCase(ctrl),
@@ -151,10 +152,11 @@ func TestRecipeHandler_GetAllTags(t *testing.T) {
 				usecasemock.NewMockSearchRecipesUseCase(ctrl),
 				usecasemock.NewMockAddTagsUseCase(ctrl),
 				usecasemock.NewMockRemoveTagsUseCase(ctrl),
-				usecasemock.NewMockAddImageUseCase(ctrl),
+				usecasemock.NewMockCreateRecipeImageUseCase(ctrl),
 				usecasemock.NewMockCreateTagUseCase(ctrl),
 				mockGetAll,
 				usecasemock.NewMockDeleteTagUseCase(ctrl),
+				"",
 			)
 
 			req := httptest.NewRequest(http.MethodGet, "/api/tags", nil)
@@ -218,7 +220,7 @@ func TestRecipeHandler_DeleteTag(t *testing.T) {
 			mockDelete := usecasemock.NewMockDeleteTagUseCase(ctrl)
 			tt.mocks.setup(mockDelete)
 
-			h := handler.NewRecipeHandler(
+			h, _ := handler.NewRecipeHandler(
 				usecasemock.NewMockCreateRecipeUseCase(ctrl),
 				usecasemock.NewMockGetRecipeUseCase(ctrl),
 				usecasemock.NewMockGetUserRecipesUseCase(ctrl),
@@ -227,10 +229,11 @@ func TestRecipeHandler_DeleteTag(t *testing.T) {
 				usecasemock.NewMockSearchRecipesUseCase(ctrl),
 				usecasemock.NewMockAddTagsUseCase(ctrl),
 				usecasemock.NewMockRemoveTagsUseCase(ctrl),
-				usecasemock.NewMockAddImageUseCase(ctrl),
+				usecasemock.NewMockCreateRecipeImageUseCase(ctrl),
 				usecasemock.NewMockCreateTagUseCase(ctrl),
 				usecasemock.NewMockGetAllTagsUseCase(ctrl),
 				mockDelete,
+				"",
 			)
 
 			req := httptest.NewRequest(http.MethodDelete, "/api/tags/"+tt.args.tagID, nil)

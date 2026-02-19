@@ -65,12 +65,12 @@ func main() {
 func cleanData(ctx context.Context, db database.Database) error {
 	// Execute raw SQL to truncate tables
 	queries := []string{
-		"TRUNCATE TABLE recipe_tags CASCADE",
-		"TRUNCATE TABLE recipe_images CASCADE",
-		"TRUNCATE TABLE recipes CASCADE",
-		"TRUNCATE TABLE tags CASCADE",
-		"TRUNCATE TABLE user_email_credentials CASCADE",
-		"TRUNCATE TABLE users CASCADE",
+		"TRUNCATE TABLE recipe_tags RESTART IDENTITY CASCADE",
+		"TRUNCATE TABLE recipe_images RESTART IDENTITY CASCADE",
+		"TRUNCATE TABLE recipes RESTART IDENTITY CASCADE",
+		"TRUNCATE TABLE tags RESTART IDENTITY CASCADE",
+		"TRUNCATE TABLE user_email_credentials RESTART IDENTITY CASCADE",
+		"TRUNCATE TABLE users RESTART IDENTITY CASCADE",
 	}
 
 	for _, query := range queries {
@@ -250,7 +250,7 @@ func createRecipeImages(ctx context.Context, repoReg registry.Repository) error 
 		for j := 0; j < numImages; j++ {
 			image := &model.RecipeImage{
 				RecipeID:  recipe.ID,
-				ImagePath: fmt.Sprintf("/images/recipe_%d_%d.jpg", recipe.ID, j+1),
+				ImagePath: fmt.Sprintf("recipes/%d/seed_%d.jpg", recipe.ID, j+1),
 			}
 			if err := imageRepo.Create(ctx, image); err != nil {
 				return fmt.Errorf("creating image for recipe %d: %w", recipe.ID, err)

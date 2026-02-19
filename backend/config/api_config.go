@@ -8,6 +8,7 @@ type Config struct {
 	Database DatabaseConfig
 	Server   ServerConfig
 	JWT      JWTConfig
+	Storage  StorageConfig
 }
 
 type DatabaseConfig struct {
@@ -21,6 +22,12 @@ type DatabaseConfig struct {
 
 type ServerConfig struct {
 	Port int
+}
+
+type StorageConfig struct {
+	Bucket        string
+	Endpoint      string // Optional, for LocalStack
+	PublicBaseURL string // Optional, for public access URL
 }
 
 type JWTConfig struct {

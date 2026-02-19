@@ -3,7 +3,9 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
@@ -26,10 +28,11 @@ type RecipeHandler struct {
 	searchRecipesUseCase  recipe.SearchRecipesUseCase
 	addTagsUseCase        recipe_tag.AddTagsUseCase
 	removeTagsUseCase     recipe_tag.RemoveTagsUseCase
-	addImageUseCase       recipe_image.AddImageUseCase
+	createRecipeImageUseCase recipe_image.CreateRecipeImageUseCase
 	createTagUseCase      tag.CreateTagUseCase
 	getAllTagsUseCase     tag.GetAllTagsUseCase
 	deleteTagUseCase      tag.DeleteTagUseCase
+	publicBaseURL         *url.URL
 }
 
 func NewRecipeHandler(
@@ -41,25 +44,32 @@ func NewRecipeHandler(
 	searchRecipesUseCase recipe.SearchRecipesUseCase,
 	addTagsUseCase recipe_tag.AddTagsUseCase,
 	removeTagsUseCase recipe_tag.RemoveTagsUseCase,
-	addImageUseCase recipe_image.AddImageUseCase,
+	createRecipeImageUseCase recipe_image.CreateRecipeImageUseCase,
 	createTagUseCase tag.CreateTagUseCase,
 	getAllTagsUseCase tag.GetAllTagsUseCase,
 	deleteTagUseCase tag.DeleteTagUseCase,
-) *RecipeHandler {
-	return &RecipeHandler{
-		createRecipeUseCase:   createRecipeUseCase,
-		getRecipeUseCase:      getRecipeUseCase,
-		getUserRecipesUseCase: getUserRecipesUseCase,
-		updateRecipeUseCase:   updateRecipeUseCase,
-		deleteRecipeUseCase:   deleteRecipeUseCase,
-		searchRecipesUseCase:  searchRecipesUseCase,
-		addTagsUseCase:        addTagsUseCase,
-		removeTagsUseCase:     removeTagsUseCase,
-		addImageUseCase:       addImageUseCase,
-		createTagUseCase:      createTagUseCase,
-		getAllTagsUseCase:     getAllTagsUseCase,
-		deleteTagUseCase:      deleteTagUseCase,
+	publicBaseURL string,
+) (*RecipeHandler, error) {
+	parsedURL, err := url.Parse(publicBaseURL)
+	if err != nil && publicBaseURL != "" {
+		return nil, fmt.Errorf("invalid public base URL: %w", err)
 	}
+
+	return &RecipeHandler{
+		createRecipeUseCase:      createRecipeUseCase,
+		getRecipeUseCase:         getRecipeUseCase,
+		getUserRecipesUseCase:    getUserRecipesUseCase,
+		updateRecipeUseCase:      updateRecipeUseCase,
+		deleteRecipeUseCase:      deleteRecipeUseCase,
+		searchRecipesUseCase:     searchRecipesUseCase,
+		addTagsUseCase:           addTagsUseCase,
+		removeTagsUseCase:        removeTagsUseCase,
+		createRecipeImageUseCase: createRecipeImageUseCase,
+		createTagUseCase:         createTagUseCase,
+		getAllTagsUseCase:        getAllTagsUseCase,
+		deleteTagUseCase:         deleteTagUseCase,
+		publicBaseURL:            parsedURL,
+	}, nil
 }
 
 func (h *RecipeHandler) CreateRecipe(w http.ResponseWriter, r *http.Request) {
@@ -101,7 +111,7 @@ func (h *RecipeHandler) CreateRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondJSON(w, http.StatusCreated, response.NewRecipe(result))
+	respondJSON(w, http.StatusCreated, response.NewRecipe(result, h.publicBaseURL))
 }
 
 func (h *RecipeHandler) GetRecipe(w http.ResponseWriter, r *http.Request) {
@@ -124,7 +134,7 @@ func (h *RecipeHandler) GetRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondJSON(w, http.StatusOK, response.NewRecipe(result))
+	respondJSON(w, http.StatusOK, response.NewRecipe(result, h.publicBaseURL))
 }
 
 func (h *RecipeHandler) GetUserRecipes(w http.ResponseWriter, r *http.Request) {
@@ -140,7 +150,7 @@ func (h *RecipeHandler) GetUserRecipes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondJSON(w, http.StatusOK, response.NewRecipes(recipes))
+	respondJSON(w, http.StatusOK, response.NewRecipes(recipes, h.publicBaseURL))
 }
 
 func (h *RecipeHandler) SearchRecipes(w http.ResponseWriter, r *http.Request) {
@@ -168,7 +178,7 @@ func (h *RecipeHandler) SearchRecipes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondJSON(w, http.StatusOK, response.NewRecipes(recipes))
+	respondJSON(w, http.StatusOK, response.NewRecipes(recipes, h.publicBaseURL))
 }
 
 func (h *RecipeHandler) UpdateRecipe(w http.ResponseWriter, r *http.Request) {
@@ -205,7 +215,7 @@ func (h *RecipeHandler) UpdateRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondJSON(w, http.StatusOK, response.NewRecipe(result))
+	respondJSON(w, http.StatusOK, response.NewRecipe(result, h.publicBaseURL))
 }
 
 func (h *RecipeHandler) DeleteRecipe(w http.ResponseWriter, r *http.Request) {
@@ -300,19 +310,44 @@ func (h *RecipeHandler) AddImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req request.AddImageRequest
+	var req request.CreateRecipeImageRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	image, err := h.addImageUseCase.Execute(r.Context(), id, userID, req.ImagePath)
+	input := recipe_image.CreateRecipeImageInput{
+		RecipeID:    id,
+		UserID:      userID,
+		Filename:    req.Filename,
+		ContentType: req.ContentType,
+		Size:        req.Size,
+	}
+
+	image, uploadURL, err := h.createRecipeImageUseCase.Execute(r.Context(), input)
 	if err != nil {
+		var validationErrors validation.ValidationErrors
+		if errors.As(err, &validationErrors) {
+			details := make(map[string][]response.ErrorDetail)
+			for _, ve := range validationErrors {
+				details[ve.Field] = append(details[ve.Field], response.ErrorDetail{
+					Code:   ve.Code,
+					Params: ve.Params,
+				})
+			}
+			respondError(w, http.StatusBadRequest, "VALIDATION_FAILED", details)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	respondJSON(w, http.StatusCreated, image)
+	resp := response.CreateRecipeImageResponse{
+		Image:     response.NewRecipeImage(image, h.publicBaseURL),
+		UploadURL: uploadURL,
+	}
+
+	respondJSON(w, http.StatusCreated, resp)
 }
 
 // Tag endpoints

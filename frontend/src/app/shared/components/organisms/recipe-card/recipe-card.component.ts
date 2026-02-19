@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Recipe } from '../../../../core/services/recipe.service';
+import { VALIDATION_RULES } from '../../../../core/constants/validation.constants';
 
 @Component({
   selector: 'app-recipe-card',
@@ -12,6 +13,11 @@ import { Recipe } from '../../../../core/services/recipe.service';
   imports: [MatCardModule, MatButtonModule, MatIconModule, MatChipsModule, TranslatePipe],
   template: `
     <mat-card class="recipe-card">
+      @if (thumbnailUrl) {
+        <div class="card-image">
+          <img [src]="thumbnailUrl" [alt]="recipe.name" />
+        </div>
+      }
       <mat-card-header>
         <mat-card-title>{{ recipe.name }}</mat-card-title>
       </mat-card-header>
@@ -47,6 +53,17 @@ import { Recipe } from '../../../../core/services/recipe.service';
         display: flex;
         flex-direction: column;
       }
+      .card-image {
+        width: 100%;
+        height: 180px;
+        overflow: hidden;
+        border-radius: var(--radius-2) var(--radius-2) 0 0;
+      }
+      .card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
       mat-card-title {
         color: var(--color-primary);
         font-weight: 700;
@@ -69,6 +86,27 @@ import { Recipe } from '../../../../core/services/recipe.service';
 export class RecipeCardComponent {
   @Input() recipe!: Recipe;
 
+  get thumbnailUrl(): string | null {
+    if (!this.recipe.images?.length) return null;
+
+    const imageUrl = this.recipe.images[0].image_url;
+    if (!imageUrl) return null;
+
+    try {
+      const url = new URL(imageUrl, window.location.origin);
+      const allowedDomains = [...VALIDATION_RULES.IMAGE.ALLOWED_DOMAINS, window.location.hostname];
+
+      if (allowedDomains.includes(url.hostname)) {
+        return imageUrl;
+      }
+      console.warn('Blocked image from untrusted domain:', url.hostname);
+      return null;
+    } catch (e) {
+      console.error('Invalid image URL:', imageUrl);
+      return null;
+    }
+  }
+
   getExternalUrl(url: string): string {
     if (!url) return '';
     if (/^https?:\/\//i.test(url)) {
@@ -77,3 +115,4 @@ export class RecipeCardComponent {
     return 'https://' + url;
   }
 }
+

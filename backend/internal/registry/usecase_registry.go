@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/seka/reci-pin/backend/config"
+	"github.com/seka/reci-pin/backend/internal/domain/storage"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/notification/mailhog"
 	"github.com/seka/reci-pin/backend/internal/usecase/auth"
 	"github.com/seka/reci-pin/backend/internal/usecase/recipe"
@@ -39,7 +40,7 @@ type UseCase interface {
 	NewRemoveTagsUseCase() recipe_tag.RemoveTagsUseCase
 
 	// Recipe Image
-	NewAddImageUseCase() recipe_image.AddImageUseCase
+	NewCreateRecipeImageUseCase() recipe_image.CreateRecipeImageUseCase
 
 	// Tag
 	NewCreateTagUseCase() tag.CreateTagUseCase
@@ -49,15 +50,17 @@ type UseCase interface {
 
 // useCaseRegistry implements the UseCase interface
 type useCaseRegistry struct {
-	repo Repository
-	cfg  *config.Config
+	repo           Repository
+	storageService storage.Storage
+	cfg            *config.Config
 }
 
 // NewUseCase creates a new UseCase registry
-func NewUseCase(repo Repository, cfg *config.Config) UseCase {
+func NewUseCase(repo Repository, storageService storage.Storage, cfg *config.Config) UseCase {
 	return &useCaseRegistry{
-		repo: repo,
-		cfg:  cfg,
+		repo:           repo,
+		storageService: storageService,
+		cfg:            cfg,
 	}
 }
 
@@ -148,8 +151,12 @@ func (u *useCaseRegistry) NewRemoveTagsUseCase() recipe_tag.RemoveTagsUseCase {
 }
 
 // Recipe Image UseCase
-func (u *useCaseRegistry) NewAddImageUseCase() recipe_image.AddImageUseCase {
-	return recipe_image.NewAddImageUseCase(u.repo.NewRecipeRepository(), u.repo.NewRecipeImageRepository())
+func (u *useCaseRegistry) NewCreateRecipeImageUseCase() recipe_image.CreateRecipeImageUseCase {
+	return recipe_image.NewCreateRecipeImageUseCase(
+		u.repo.NewRecipeRepository(),
+		u.repo.NewRecipeImageRepository(),
+		u.storageService,
+	)
 }
 
 // Tag UseCases

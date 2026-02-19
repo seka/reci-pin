@@ -6,6 +6,7 @@ import (
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 )
 
+//go:generate mockgen -source=$GOFILE -destination=./mock/search_repository_mock.go -package=mock
 // SearchCriteria defines the criteria for searching recipes
 type SearchCriteria struct {
 	UserID   int64
