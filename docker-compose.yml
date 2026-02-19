@@ -82,6 +82,21 @@ services:
       - "1025:1025" # SMTP server
       - "8025:8025" # Web UI
 
+  localstack:
+    image: localstack/localstack:3.7.2
+    container_name: reci-pin-localstack
+    ports:
+      - "4566:4566" # LocalStack Gateway
+      - "4510-4559:4510-4559" # external services port range
+    environment:
+      - SERVICES=s3
+      - DEBUG=${DEBUG:-0}
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./localstack_data}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./scripts/localstack:/etc/localstack/init/ready.d" # Initialization scripts
+    restart: unless-stopped
+
   elasticsearch:
     image: elasticsearch:8.17.2
     container_name: reci-pin-elasticsearch
