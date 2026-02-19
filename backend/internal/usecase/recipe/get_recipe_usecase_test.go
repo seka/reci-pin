@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	"github.com/seka/reci-pin/backend/internal/domain/notification/mock"
+	"github.com/seka/reci-pin/backend/internal/domain/repository/mock"
 	"github.com/seka/reci-pin/backend/internal/usecase/recipe"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"

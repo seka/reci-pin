@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	"github.com/seka/reci-pin/backend/internal/domain/notification/mock"
+	"github.com/seka/reci-pin/backend/internal/domain/repository/mock"
 	"github.com/seka/reci-pin/backend/internal/usecase/recipe"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -91,7 +91,7 @@ func TestSearchRecipesUseCase_Execute(t *testing.T) {
 	tests := []struct {
 		name    string
 		input   recipe.SearchRecipesInput
-		setup   func(*mock.MockRecipeRepository, *mock.MockRecipeImageRepository)
+		setup   func(*mock.MockRecipeRepository, *mock.MockRecipeImageRepository, *mock.MockRecipeSearchRepository)
 		wantErr bool
 		wantLen int
 	}{
@@ -102,11 +102,14 @@ func TestSearchRecipesUseCase_Execute(t *testing.T) {
 				Query:  "pasta",
 				TagIDs: []int64{},
 			},
-			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository) {
+			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository, ms *mock.MockRecipeSearchRepository) {
+				ms.EXPECT().
+					Search(gomock.Any(), gomock.Any()).
+					Return([]int64{1}, int64(1), nil)
 				mr.EXPECT().
-					Search(gomock.Any(), int64(1), "pasta", []int64{}).
-					Return([]model.Recipe{
-						{ID: 1, UserID: 1, Name: "Pasta Recipe"},
+					GetByID(gomock.Any(), int64(1)).
+					Return(&model.Recipe{
+						ID: 1, UserID: 1, Name: "Pasta Recipe",
 					}, nil)
 				mr.EXPECT().
 					GetTags(gomock.Any(), int64(1)).
@@ -125,13 +128,16 @@ func TestSearchRecipesUseCase_Execute(t *testing.T) {
 				Query:  "",
 				TagIDs: []int64{1, 2},
 			},
-			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository) {
+			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository, ms *mock.MockRecipeSearchRepository) {
+				ms.EXPECT().
+					Search(gomock.Any(), gomock.Any()).
+					Return([]int64{1, 2}, int64(2), nil)
 				mr.EXPECT().
-					Search(gomock.Any(), int64(1), "", []int64{1, 2}).
-					Return([]model.Recipe{
-						{ID: 1, UserID: 1, Name: "Recipe 1"},
-						{ID: 2, UserID: 1, Name: "Recipe 2"},
-					}, nil)
+					GetByID(gomock.Any(), int64(1)).
+					Return(&model.Recipe{ID: 1, UserID: 1, Name: "Recipe 1"}, nil)
+				mr.EXPECT().
+					GetByID(gomock.Any(), int64(2)).
+					Return(&model.Recipe{ID: 2, UserID: 1, Name: "Recipe 2"}, nil)
 				mr.EXPECT().
 					GetTags(gomock.Any(), int64(1)).
 					Return([]model.Tag{{ID: 1, Name: "Tag1"}}, nil)
@@ -155,10 +161,10 @@ func TestSearchRecipesUseCase_Execute(t *testing.T) {
 				Query:  "nonexistent",
 				TagIDs: []int64{},
 			},
-			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository) {
-				mr.EXPECT().
-					Search(gomock.Any(), int64(1), "nonexistent", []int64{}).
-					Return([]model.Recipe{}, nil)
+			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository, ms *mock.MockRecipeSearchRepository) {
+				ms.EXPECT().
+					Search(gomock.Any(), gomock.Any()).
+					Return([]int64{}, int64(0), nil)
 			},
 			wantErr: false,
 			wantLen: 0,
@@ -169,9 +175,10 @@ func TestSearchRecipesUseCase_Execute(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRecipeRepo := mock.NewMockRecipeRepository(ctrl)
 			mockImageRepo := mock.NewMockRecipeImageRepository(ctrl)
-			tt.setup(mockRecipeRepo, mockImageRepo)
+			mockSearchRepo := mock.NewMockRecipeSearchRepository(ctrl)
+			tt.setup(mockRecipeRepo, mockImageRepo, mockSearchRepo)
 
-			uc := recipe.NewSearchRecipesUseCase(mockRecipeRepo, mockImageRepo)
+			uc := recipe.NewSearchRecipesUseCase(mockRecipeRepo, mockImageRepo, mockSearchRepo)
 			result, err := uc.Execute(context.Background(), tt.input)
 
 			if tt.wantErr {

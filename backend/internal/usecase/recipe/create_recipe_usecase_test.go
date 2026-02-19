@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	"github.com/seka/reci-pin/backend/internal/domain/notification/mock"
+	"github.com/seka/reci-pin/backend/internal/domain/repository/mock"
 	"github.com/seka/reci-pin/backend/internal/usecase/recipe"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -19,7 +19,7 @@ func TestCreateRecipeUseCase_Execute(t *testing.T) {
 	tests := []struct {
 		name    string
 		input   recipe.CreateRecipeInput
-		setup   func(*mock.MockRecipeRepository)
+		setup   func(*mock.MockRecipeRepository, *mock.MockRecipeSearchRepository)
 		wantErr bool
 		errMsg  string
 	}{
@@ -32,13 +32,16 @@ func TestCreateRecipeUseCase_Execute(t *testing.T) {
 				Memo:   "Test memo",
 				TagIDs: []int64{},
 			},
-			setup: func(m *mock.MockRecipeRepository) {
+			setup: func(m *mock.MockRecipeRepository, ms *mock.MockRecipeSearchRepository) {
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, r *model.Recipe) error {
 						r.ID = 1
 						return nil
 					})
+				ms.EXPECT().
+					Index(gomock.Any(), gomock.Any()).
+					Return(nil)
 			},
 			wantErr: false,
 		},
@@ -51,7 +54,7 @@ func TestCreateRecipeUseCase_Execute(t *testing.T) {
 				Memo:   "Test memo",
 				TagIDs: []int64{1, 2},
 			},
-			setup: func(m *mock.MockRecipeRepository) {
+			setup: func(m *mock.MockRecipeRepository, ms *mock.MockRecipeSearchRepository) {
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, r *model.Recipe) error {
@@ -60,6 +63,9 @@ func TestCreateRecipeUseCase_Execute(t *testing.T) {
 					})
 				m.EXPECT().
 					AddTags(gomock.Any(), int64(1), []int64{1, 2}).
+					Return(nil)
+				ms.EXPECT().
+					Index(gomock.Any(), gomock.Any()).
 					Return(nil)
 			},
 			wantErr: false,
@@ -73,7 +79,7 @@ func TestCreateRecipeUseCase_Execute(t *testing.T) {
 				Memo:   "Test memo",
 				TagIDs: []int64{},
 			},
-			setup: func(m *mock.MockRecipeRepository) {
+			setup: func(m *mock.MockRecipeRepository, ms *mock.MockRecipeSearchRepository) {
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					Return(errors.New("database error"))
@@ -90,7 +96,7 @@ func TestCreateRecipeUseCase_Execute(t *testing.T) {
 				Memo:   "Test memo",
 				TagIDs: []int64{1},
 			},
-			setup: func(m *mock.MockRecipeRepository) {
+			setup: func(m *mock.MockRecipeRepository, ms *mock.MockRecipeSearchRepository) {
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, r *model.Recipe) error {
@@ -109,9 +115,10 @@ func TestCreateRecipeUseCase_Execute(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRepo := mock.NewMockRecipeRepository(ctrl)
-			tt.setup(mockRepo)
+			mockSearchRepo := mock.NewMockRecipeSearchRepository(ctrl)
+			tt.setup(mockRepo, mockSearchRepo)
 
-			uc := recipe.NewCreateRecipeUseCase(mockRepo)
+			uc := recipe.NewCreateRecipeUseCase(mockRepo, mockSearchRepo)
 			result, err := uc.Execute(context.Background(), tt.input)
 
 			if tt.wantErr {
