@@ -7,7 +7,25 @@ const (
 	PasswordMaxLength   = 200
 	RecipeNameMaxLength = 100
 	TagNameMaxLength    = 30
+
+	// 最近のスマホ(ProRAW/高画素モード等)では10MBを超える画像が生成されるため、余裕を持たせて50MBに設定
+	ImageMaxFileSize = 50 * 1024 * 1024 // 50MB
 )
+
+// Allowed image content types for upload
+var ImageAllowedContentTypes = map[string]bool{
+	"image/jpeg": true,
+	"image/png":  true,
+	"image/webp": true,
+}
+
+// Allowed image file extensions for upload
+var ImageAllowedExtensions = map[string]bool{
+	".jpg":  true,
+	".jpeg": true,
+	".png":  true,
+	".webp": true,
+}
 
 // Common Error Codes
 const (
