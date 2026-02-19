@@ -3,6 +3,7 @@ package s3
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -12,10 +13,11 @@ import (
 )
 
 type client struct {
-	client        *s3.Client
-	presignClient *s3.PresignClient
-	bucket        string
-	publicBaseURL string
+	client           *s3.Client
+	presignClient    *s3.PresignClient
+	bucket           string
+	publicBaseURL    string
+	internalEndpoint string // Internal endpoint for replacement logic
 }
 
 // NewClient creates a new StorageService backed by S3
@@ -33,10 +35,11 @@ func NewClient(ctx context.Context, bucket string, endpoint string, publicBaseUR
 	})
 
 	return &client{
-		client:        s3Client,
-		presignClient: s3.NewPresignClient(s3Client),
-		bucket:        bucket,
-		publicBaseURL: publicBaseURL,
+		client:           s3Client,
+		presignClient:    s3.NewPresignClient(s3Client),
+		bucket:           bucket,
+		publicBaseURL:    publicBaseURL,
+		internalEndpoint: endpoint,
 	}, nil
 }
 
@@ -52,6 +55,19 @@ func (c *client) GeneratePresignedURL(ctx context.Context, key string, contentTy
 	if err != nil {
 		return "", fmt.Errorf("failed to generate presigned URL: %w", err)
 	}
-	return request.URL, nil
+
+	url := request.URL
+	if c.publicBaseURL != "" && c.internalEndpoint != "" {
+		// Replace internal endpoint + bucket with public base URL
+		// Example: http://localstack:4566/recipin-bucket/ -> https://localhost/storage/
+		internalBase := fmt.Sprintf("%s/%s/", c.internalEndpoint, c.bucket)
+		publicBase := c.publicBaseURL
+		if !strings.HasSuffix(publicBase, "/") {
+			publicBase += "/"
+		}
+		url = strings.Replace(url, internalBase, publicBase, 1)
+	}
+
+	return url, nil
 }
 

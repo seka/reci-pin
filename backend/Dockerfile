@@ -3,11 +3,13 @@ FROM golang:1.25-alpine AS base
 WORKDIR /app
 RUN apk add --no-cache git
 COPY go.mod go.sum ./
-RUN go mod download
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
 
 # Development stage
 FROM base AS dev
-RUN go install github.com/air-verse/air@latest
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go install github.com/air-verse/air@latest
 COPY . .
 EXPOSE 8080
 CMD air -c .air.toml -- \
@@ -19,12 +21,16 @@ CMD air -c .air.toml -- \
     -db-name=${DB_NAME:-recipin_dev} \
     -db-sslmode=${DB_SSLMODE:-disable} \
     -jwt-secret=${JWT_SECRET:-change-me} \
-    -jwt-expiration=${JWT_EXPIRATION_HOURS:-24}
+    -jwt-expiration=${JWT_EXPIRATION_HOURS:-24} \
+    -storage-endpoint=${STORAGE_ENDPOINT} \
+    -storage-public-url=${STORAGE_PUBLIC_URL}
 
 # Builder stage
 FROM base AS builder
 COPY . .
-RUN go build -o main ./cmd/api
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go build -o main ./cmd/api
 
 # Production stage
 FROM alpine:latest AS prod
@@ -40,4 +46,6 @@ CMD ./main \
     -db-name=${DB_NAME} \
     -db-sslmode=${DB_SSLMODE} \
     -jwt-secret=${JWT_SECRET} \
-    -jwt-expiration=${JWT_EXPIRATION_HOURS}
+    -jwt-expiration=${JWT_EXPIRATION_HOURS} \
+    -storage-endpoint=${STORAGE_ENDPOINT} \
+    -storage-public-url=${STORAGE_PUBLIC_URL}
