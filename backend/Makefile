@@ -79,7 +79,8 @@ app.lint: ## Run linter
 	
 .PHONY: app.lint.fix
 app.lint.fix: ## Run linter and auto-fix
-	@echo "Running golangci-lint run --fix ..."
+	@echo "Running go fix and golangci-lint run --fix ..."
+	go fix ./...
 	golangci-lint run --fix ./...
 
 .PHONY: app.mock
