@@ -62,6 +62,7 @@
         "BACK_TO_RECIPES": "← Back to Recipes"
     },
     "RECIPE": {
+        "EDIT_TITLE": "Edit Recipe",
         "NEW_TITLE": "New Recipe",
         "NAME": "Recipe Name",
         "NAME_PLACEHOLDER": "e.g. Omelette",

@@ -62,6 +62,7 @@
         "BACK_TO_RECIPES": "← レシピ一覧に戻る"
     },
     "RECIPE": {
+        "EDIT_TITLE": "レシピの編集",
         "NEW_TITLE": "新規レシピ作成",
         "NAME": "レシピ名",
         "NAME_PLACEHOLDER": "例: オムライス",
