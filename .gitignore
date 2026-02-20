@@ -83,4 +83,7 @@ proxy/certs/*.pem
 
 *storybook.log
 storybook-static
+# LocalStack
+localstack_data/
+
 /worktrees
