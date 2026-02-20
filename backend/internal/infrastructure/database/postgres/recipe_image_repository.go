@@ -49,7 +49,7 @@ func (r *RecipeImageRepository) GetByRecipeID(ctx context.Context, recipeID int6
 		SELECT id, recipe_id, image_path, created_at
 		FROM recipe_images
 		WHERE recipe_id = $1
-		ORDER BY created_at
+		ORDER BY created_at DESC
 	`
 	rows, err := r.db.Query(ctx, query, recipeID)
 	if err != nil {
