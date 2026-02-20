@@ -98,8 +98,6 @@ func main() {
 			if err := searchRepo.Index(ctx, &r); err != nil {
 				log.Printf("Error indexing recipe %d: %v", r.ID, err)
 				// mu.Lock(); errCount++; mu.Unlock()
-			} else {
-				// mu.Lock(); successCount++; mu.Unlock()
 			}
 		}(recipe)
 	}

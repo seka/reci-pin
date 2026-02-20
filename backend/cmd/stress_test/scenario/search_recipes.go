@@ -28,7 +28,7 @@ func SearchRecipes(ctx context.Context, client *http.Client, baseURL string) err
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("login status %d", resp.StatusCode)
@@ -65,7 +65,7 @@ func SearchRecipes(ctx context.Context, client *http.Client, baseURL string) err
 	if err != nil {
 		return err
 	}
-	defer sResp.Body.Close()
+	defer func() { _ = sResp.Body.Close() }()
 
 	if sResp.StatusCode != http.StatusOK {
 		return fmt.Errorf("search status %d", sResp.StatusCode)

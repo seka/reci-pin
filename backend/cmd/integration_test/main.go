@@ -114,7 +114,7 @@ func run() error {
 	if err := waitForServer(healthURL); err != nil {
 		return fmt.Errorf("server failed to start: %w", err)
 	}
-	
+
 	baseURL := fmt.Sprintf("http://localhost:%d/api", testCfg.Server.Port)
 
 	// 3. Run Scenarios
@@ -297,7 +297,7 @@ func runScenario(ctx context.Context, client *http.Client, baseURL string, db da
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("login failed status: %d", resp.StatusCode)
 	}
-	
+
 	// Extract token
 	var loginResp struct {
 		Token string `json:"token"`
@@ -312,7 +312,7 @@ func runScenario(ctx context.Context, client *http.Client, baseURL string, db da
 
 	// 3. Create Recipe
 	log.Println("3. Creating recipe...")
-	recipePayload := map[string]interface{}{
+	recipePayload := map[string]any{
 		"name":    "Integration Recipe",
 		"url":     "http://example.com/integration",
 		"memo":    "Created by integration test",
@@ -333,22 +333,22 @@ func runScenario(ctx context.Context, client *http.Client, baseURL string, db da
 	searchPayload := map[string]string{
 		"query": "Integration",
 	}
-	
-	for i := 0; i < 20; i++ { // Increased retries
+
+	for range 20 { // Increased retries
 		time.Sleep(500 * time.Millisecond) // Wait a bit
-		
+
 		// Search is POST /api/recipes/search
 		resp, err := postJSONWithAuth(client, baseURL+"/recipes/search", searchPayload, token)
 		if err != nil {
 			log.Printf("Search request failed: %v", err)
 			continue
 		}
-		defer resp.Body.Close()
-		
+		defer func() { _ = resp.Body.Close() }()
+
 		if resp.StatusCode == http.StatusOK {
-			// Note: Response structure might differ. 
+			// Note: Response structure might differ.
 			// Check handler response: respondJSON(w, http.StatusOK, response.NewRecipes(recipes))
-			// NewRecipes returns []RecipeResponse. 
+			// NewRecipes returns []RecipeResponse.
 			// If it's a list directly, `var recipes []map...` works.
 			// If it's wrapped in object, we need that.
 			// response.NewRecipes returns definition in response package.
@@ -357,40 +357,40 @@ func runScenario(ctx context.Context, client *http.Client, baseURL string, db da
 			// But looking at code `respondJSON(w, http.StatusOK, response.NewRecipes(recipes))`
 			// I should check `response.NewRecipes`.
 			// Failing that, decode interface{} and inspect.
-			
-			var body interface{}
+
+			var body any
 			if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
 				log.Printf("Failed to decode search response: %v", err)
 				continue
 			}
-			
+
 			// Assuming it returns a JSON array of recipes or object with "recipes" key
 			// internal/server/handler/response/recipe.go likely defines it.
 			// If I look at `GetRecipe` -> `response.NewRecipe(result)`.
 			// `GetUserRecipes` -> `response.NewRecipes(recipes)`.
 			// Standard is usually object `{"recipes": [...]}` or just `[...]`.
-			
+
 			// Let's try to handle both or inspect.
-			// For simplicity in test, verify simply by looking for the name in the whole JSON string dump 
+			// For simplicity in test, verify simply by looking for the name in the whole JSON string dump
 			// if strict typing is hard without seeing response package.
 			// But clean way is better.
-			// I'll assume array []map[string]interface{} first. 
+			// I'll assume array []map[string]interface{} first.
 			// Wait, if I Decode to interface{}, I can assert type.
-			
-			if recipesList, ok := body.([]interface{}); ok {
+
+			if recipesList, ok := body.([]any); ok {
 				for _, r := range recipesList {
-					if rMap, ok := r.(map[string]interface{}); ok {
+					if rMap, ok := r.(map[string]any); ok {
 						if name, ok := rMap["name"].(string); ok && name == "Integration Recipe" {
 							found = true
 							break
 						}
 					}
 				}
-			} else if recipesObj, ok := body.(map[string]interface{}); ok {
+			} else if recipesObj, ok := body.(map[string]any); ok {
 				// Maybe wrapped in {"recipes": [...]}
-				if list, ok := recipesObj["recipes"].([]interface{}); ok {
+				if list, ok := recipesObj["recipes"].([]any); ok {
 					for _, r := range list {
-						if rMap, ok := r.(map[string]interface{}); ok {
+						if rMap, ok := r.(map[string]any); ok {
 							if name, ok := rMap["name"].(string); ok && name == "Integration Recipe" {
 								found = true
 								break
@@ -404,7 +404,7 @@ func runScenario(ctx context.Context, client *http.Client, baseURL string, db da
 			break
 		}
 	}
-	
+
 	if !found {
 		return fmt.Errorf("search failed: recipe not found after retries")
 	}
@@ -413,11 +413,11 @@ func runScenario(ctx context.Context, client *http.Client, baseURL string, db da
 	return nil
 }
 
-func postJSON(client *http.Client, url string, data interface{}) (*http.Response, error) {
+func postJSON(client *http.Client, url string, data any) (*http.Response, error) {
 	return postJSONWithAuth(client, url, data, "")
 }
 
-func postJSONWithAuth(client *http.Client, url string, data interface{}, token string) (*http.Response, error) {
+func postJSONWithAuth(client *http.Client, url string, data any, token string) (*http.Response, error) {
 	b, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
