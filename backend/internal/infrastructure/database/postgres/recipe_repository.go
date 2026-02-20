@@ -1,10 +1,11 @@
 package postgres
 
 import (
-	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
 	"context"
 	"fmt"
 	"strings"
+
+	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/entity"
@@ -131,7 +132,7 @@ func (r *RecipeRepository) Search(ctx context.Context, userID int64, query strin
 		SELECT DISTINCT r.id, r.user_id, r.name, r.url, r.memo, r.created_at, r.updated_at
 		FROM recipes r
 	`
-	args := []interface{}{userID}
+	args := []any{userID}
 	whereConditions := []string{"r.user_id = $1"}
 	paramIndex := 2
 

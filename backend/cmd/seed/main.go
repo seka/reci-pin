@@ -247,7 +247,7 @@ func createRecipeImages(ctx context.Context, repoReg registry.Repository) error 
 	// Add 1-2 images per recipe
 	for i, recipe := range recipes {
 		numImages := (i % 2) + 1 // 1 or 2 images
-		for j := 0; j < numImages; j++ {
+		for j := range numImages {
 			image := &model.RecipeImage{
 				RecipeID:  recipe.ID,
 				ImagePath: fmt.Sprintf("recipes/%d/seed_%d.jpg", recipe.ID, j+1),

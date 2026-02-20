@@ -21,7 +21,7 @@ import (
 
 func TestRecipeHandler_CreateRecipe(t *testing.T) {
 	type args struct {
-		body   map[string]interface{}
+		body   map[string]any
 		userID int64
 	}
 	type mocks struct {
@@ -36,7 +36,7 @@ func TestRecipeHandler_CreateRecipe(t *testing.T) {
 		{
 			name: "Success",
 			args: args{
-				body:   map[string]interface{}{"name": "Pancakes", "url": "http://example.com"},
+				body:   map[string]any{"name": "Pancakes", "url": "http://example.com"},
 				userID: 1,
 			},
 			mocks: mocks{
@@ -50,7 +50,7 @@ func TestRecipeHandler_CreateRecipe(t *testing.T) {
 		{
 			name: "Unauthorized",
 			args: args{
-				body:   map[string]interface{}{"name": "Pancakes"},
+				body:   map[string]any{"name": "Pancakes"},
 				userID: 0,
 			},
 			mocks: mocks{
@@ -72,7 +72,7 @@ func TestRecipeHandler_CreateRecipe(t *testing.T) {
 		{
 			name: "UseCase Error",
 			args: args{
-				body:   map[string]interface{}{"name": "Pancakes"},
+				body:   map[string]any{"name": "Pancakes"},
 				userID: 1,
 			},
 			mocks: mocks{
@@ -223,7 +223,7 @@ func TestRecipeHandler_GetRecipe(t *testing.T) {
 func TestRecipeHandler_UpdateRecipe(t *testing.T) {
 	type args struct {
 		recipeID string
-		body     map[string]interface{}
+		body     map[string]any
 		userID   int64
 	}
 	type mocks struct {
@@ -239,7 +239,7 @@ func TestRecipeHandler_UpdateRecipe(t *testing.T) {
 			name: "Success",
 			args: args{
 				recipeID: "100",
-				body:     map[string]interface{}{"name": "Updated"},
+				body:     map[string]any{"name": "Updated"},
 				userID:   1,
 			},
 			mocks: mocks{
@@ -268,7 +268,7 @@ func TestRecipeHandler_UpdateRecipe(t *testing.T) {
 		},
 		{
 			name: "Not Found",
-			args: args{recipeID: "999", userID: 1, body: map[string]interface{}{"name": "Updated"}},
+			args: args{recipeID: "999", userID: 1, body: map[string]any{"name": "Updated"}},
 			mocks: mocks{
 				setup: func(m *usecasemock.MockUpdateRecipeUseCase) {
 					m.EXPECT().Execute(gomock.Any(), gomock.Any()).
@@ -419,7 +419,7 @@ func TestRecipeHandler_DeleteRecipe(t *testing.T) {
 
 func TestRecipeHandler_SearchRecipes(t *testing.T) {
 	type args struct {
-		body   map[string]interface{}
+		body   map[string]any
 		userID int64
 	}
 	type mocks struct {
@@ -434,7 +434,7 @@ func TestRecipeHandler_SearchRecipes(t *testing.T) {
 		{
 			name: "Success",
 			args: args{
-				body:   map[string]interface{}{"query": "test"},
+				body:   map[string]any{"query": "test"},
 				userID: 1,
 			},
 			mocks: mocks{
@@ -456,7 +456,7 @@ func TestRecipeHandler_SearchRecipes(t *testing.T) {
 		{
 			name: "Error",
 			args: args{
-				body:   map[string]interface{}{"query": "test"},
+				body:   map[string]any{"query": "test"},
 				userID: 1,
 			},
 			mocks: mocks{
@@ -607,7 +607,7 @@ func TestRecipeHandler_GetUserRecipes(t *testing.T) {
 func TestRecipeHandler_AddTags(t *testing.T) {
 	type args struct {
 		recipeID string
-		body     map[string]interface{}
+		body     map[string]any
 		userID   int64
 	}
 	type mocks struct {
@@ -621,7 +621,7 @@ func TestRecipeHandler_AddTags(t *testing.T) {
 	}{
 		{
 			name: "Success",
-			args: args{recipeID: "100", body: map[string]interface{}{"tag_ids": []int64{10}}, userID: 1},
+			args: args{recipeID: "100", body: map[string]any{"tag_ids": []int64{10}}, userID: 1},
 			mocks: mocks{
 				setup: func(m *usecasemock.MockAddTagsUseCase) {
 					m.EXPECT().Execute(gomock.Any(), int64(100), int64(1), []int64{10}).
@@ -644,7 +644,7 @@ func TestRecipeHandler_AddTags(t *testing.T) {
 		},
 		{
 			name: "Error",
-			args: args{recipeID: "100", body: map[string]interface{}{"tag_ids": []int64{10}}, userID: 1},
+			args: args{recipeID: "100", body: map[string]any{"tag_ids": []int64{10}}, userID: 1},
 			mocks: mocks{
 				setup: func(m *usecasemock.MockAddTagsUseCase) {
 					m.EXPECT().Execute(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
@@ -707,7 +707,7 @@ func TestRecipeHandler_AddTags(t *testing.T) {
 func TestRecipeHandler_RemoveTags(t *testing.T) {
 	type args struct {
 		recipeID string
-		body     map[string]interface{}
+		body     map[string]any
 		userID   int64
 	}
 	type mocks struct {
@@ -721,7 +721,7 @@ func TestRecipeHandler_RemoveTags(t *testing.T) {
 	}{
 		{
 			name: "Success",
-			args: args{recipeID: "100", body: map[string]interface{}{"tag_ids": []int64{10}}, userID: 1},
+			args: args{recipeID: "100", body: map[string]any{"tag_ids": []int64{10}}, userID: 1},
 			mocks: mocks{
 				setup: func(m *usecasemock.MockRemoveTagsUseCase) {
 					m.EXPECT().Execute(gomock.Any(), int64(100), int64(1), []int64{10}).
@@ -744,7 +744,7 @@ func TestRecipeHandler_RemoveTags(t *testing.T) {
 		},
 		{
 			name: "Error",
-			args: args{recipeID: "100", body: map[string]interface{}{"tag_ids": []int64{10}}, userID: 1},
+			args: args{recipeID: "100", body: map[string]any{"tag_ids": []int64{10}}, userID: 1},
 			mocks: mocks{
 				setup: func(m *usecasemock.MockRemoveTagsUseCase) {
 					m.EXPECT().Execute(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
@@ -807,7 +807,7 @@ func TestRecipeHandler_RemoveTags(t *testing.T) {
 func TestRecipeHandler_AddImage(t *testing.T) {
 	type args struct {
 		recipeID string
-		body     map[string]interface{}
+		body     map[string]any
 		userID   int64
 	}
 	type mocks struct {
@@ -823,7 +823,7 @@ func TestRecipeHandler_AddImage(t *testing.T) {
 			name: "Success",
 			args: args{
 				recipeID: "100",
-				body: map[string]interface{}{
+				body: map[string]any{
 					"filename":     "test.jpg",
 					"content_type": "image/jpeg",
 					"size":         int64(10240),
@@ -869,7 +869,7 @@ func TestRecipeHandler_AddImage(t *testing.T) {
 			name: "UseCase Error",
 			args: args{
 				recipeID: "100",
-				body: map[string]interface{}{
+				body: map[string]any{
 					"filename":     "test.jpg",
 					"content_type": "image/jpeg",
 					"size":         int64(10240),

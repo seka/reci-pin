@@ -13,7 +13,7 @@ func ValidatePassword(password string) error {
 		errs = append(errs, validation.ValidationError{
 			Field:  "password",
 			Code:   validation.ErrCodePasswordTooShort,
-			Params: map[string]interface{}{"min": 8},
+			Params: map[string]any{"min": 8},
 		})
 	}
 

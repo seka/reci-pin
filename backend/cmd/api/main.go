@@ -11,13 +11,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/seka/reci-pin/backend/config"
 	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/seka/reci-pin/backend/config"
+	"github.com/seka/reci-pin/backend/internal/domain/storage"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
 	es "github.com/seka/reci-pin/backend/internal/infrastructure/database/elasticsearch"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/storage/s3"
-	"github.com/seka/reci-pin/backend/internal/domain/storage"
 	"github.com/seka/reci-pin/backend/internal/registry"
 	"github.com/seka/reci-pin/backend/internal/server"
 )
@@ -78,14 +78,12 @@ func main() {
 
 	// Start Server
 	srv := createServer(&cfg, db, esClient, storageService)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		if err := runServer(ctx, srv); err != nil {
 			errCh <- fmt.Errorf("server error: %w", err)
 			cancel()
 		}
-	}()
+	})
 
 	// Wait for signal
 	quit := make(chan os.Signal, 1)

@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 	mock_postgres "github.com/seka/reci-pin/backend/internal/infrastructure/database/mock"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
@@ -98,7 +98,7 @@ func TestUserEmailCredentialRepository_GetByEmail(t *testing.T) {
 					r.EXPECT().Next().Return(true)
 					parsedTime := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 					r.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
-						func(dest ...interface{}) error {
+						func(dest ...any) error {
 							*dest[0].(*int64) = 1
 							*dest[1].(*string) = "test@example.com"
 							*dest[2].(*string) = "hash"

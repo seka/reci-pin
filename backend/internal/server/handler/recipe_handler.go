@@ -20,19 +20,19 @@ import (
 )
 
 type RecipeHandler struct {
-	createRecipeUseCase   recipe.CreateRecipeUseCase
-	getRecipeUseCase      recipe.GetRecipeUseCase
-	getUserRecipesUseCase recipe.GetUserRecipesUseCase
-	updateRecipeUseCase   recipe.UpdateRecipeUseCase
-	deleteRecipeUseCase   recipe.DeleteRecipeUseCase
-	searchRecipesUseCase  recipe.SearchRecipesUseCase
-	addTagsUseCase        recipe_tag.AddTagsUseCase
-	removeTagsUseCase     recipe_tag.RemoveTagsUseCase
+	createRecipeUseCase      recipe.CreateRecipeUseCase
+	getRecipeUseCase         recipe.GetRecipeUseCase
+	getUserRecipesUseCase    recipe.GetUserRecipesUseCase
+	updateRecipeUseCase      recipe.UpdateRecipeUseCase
+	deleteRecipeUseCase      recipe.DeleteRecipeUseCase
+	searchRecipesUseCase     recipe.SearchRecipesUseCase
+	addTagsUseCase           recipe_tag.AddTagsUseCase
+	removeTagsUseCase        recipe_tag.RemoveTagsUseCase
 	createRecipeImageUseCase recipe_image.CreateRecipeImageUseCase
-	createTagUseCase      tag.CreateTagUseCase
-	getAllTagsUseCase     tag.GetAllTagsUseCase
-	deleteTagUseCase      tag.DeleteTagUseCase
-	publicBaseURL         *url.URL
+	createTagUseCase         tag.CreateTagUseCase
+	getAllTagsUseCase        tag.GetAllTagsUseCase
+	deleteTagUseCase         tag.DeleteTagUseCase
+	publicBaseURL            *url.URL
 }
 
 func NewRecipeHandler(

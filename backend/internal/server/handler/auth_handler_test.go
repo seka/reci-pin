@@ -19,7 +19,7 @@ import (
 
 func TestAuthHandler_Signup(t *testing.T) {
 	type args struct {
-		body map[string]interface{}
+		body map[string]any
 	}
 	type mocks struct {
 		setup func(m *usecasemock.MockSignupUseCase)
@@ -33,7 +33,7 @@ func TestAuthHandler_Signup(t *testing.T) {
 		{
 			name: "Success",
 			args: args{
-				body: map[string]interface{}{
+				body: map[string]any{
 					"email":    "test@example.com",
 					"password": "password",
 					"name":     "Test",
@@ -57,7 +57,7 @@ func TestAuthHandler_Signup(t *testing.T) {
 		{
 			name: "UseCase Error",
 			args: args{
-				body: map[string]interface{}{
+				body: map[string]any{
 					"email":    "exists@example.com",
 					"password": "password",
 				},
@@ -117,13 +117,13 @@ func TestAuthHandler_Login(t *testing.T) {
 	}
 	tests := []struct {
 		name       string
-		body       map[string]interface{}
+		body       map[string]any
 		mocks      mocks
 		wantStatus int
 	}{
 		{
 			name: "Success",
-			body: map[string]interface{}{"email": "a@b.com", "password": "p"},
+			body: map[string]any{"email": "a@b.com", "password": "p"},
 			mocks: mocks{
 				login: func(m *usecasemock.MockLoginUseCase) {
 					m.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(int64(1), nil)
@@ -139,7 +139,7 @@ func TestAuthHandler_Login(t *testing.T) {
 		},
 		{
 			name: "Login Failed",
-			body: map[string]interface{}{"email": "a@b.com", "password": "p"},
+			body: map[string]any{"email": "a@b.com", "password": "p"},
 			mocks: mocks{
 				login: func(m *usecasemock.MockLoginUseCase) {
 					m.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("auth failed"))
@@ -151,7 +151,7 @@ func TestAuthHandler_Login(t *testing.T) {
 		},
 		{
 			name: "GetUser Error",
-			body: map[string]interface{}{"email": "a@b.com", "password": "p"},
+			body: map[string]any{"email": "a@b.com", "password": "p"},
 			mocks: mocks{
 				login: func(m *usecasemock.MockLoginUseCase) {
 					m.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(int64(1), nil)
@@ -165,7 +165,7 @@ func TestAuthHandler_Login(t *testing.T) {
 		},
 		{
 			name: "GenToken Error",
-			body: map[string]interface{}{"email": "a@b.com", "password": "p"},
+			body: map[string]any{"email": "a@b.com", "password": "p"},
 			mocks: mocks{
 				login: func(m *usecasemock.MockLoginUseCase) {
 					m.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(int64(1), nil)
@@ -276,13 +276,13 @@ func TestAuthHandler_Verify(t *testing.T) {
 func TestAuthHandler_ChangePassword(t *testing.T) {
 	tests := []struct {
 		name       string
-		body       map[string]interface{}
+		body       map[string]any
 		setupMock  func(m *usecasemock.MockChangePasswordUseCase)
 		wantStatus int
 	}{
 		{
 			name: "Success",
-			body: map[string]interface{}{
+			body: map[string]any{
 				"current_password": "old",
 				"new_password":     "new",
 			},
@@ -301,7 +301,7 @@ func TestAuthHandler_ChangePassword(t *testing.T) {
 		},
 		{
 			name: "UseCase Error",
-			body: map[string]interface{}{
+			body: map[string]any{
 				"current_password": "old",
 				"new_password":     "new",
 			},

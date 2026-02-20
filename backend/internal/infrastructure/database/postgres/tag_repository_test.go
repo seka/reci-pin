@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 	mock_postgres "github.com/seka/reci-pin/backend/internal/infrastructure/database/mock"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
@@ -32,7 +32,7 @@ func TestTagRepository_Create(t *testing.T) {
 				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
 					r.EXPECT().Next().Return(true)
 					r.EXPECT().Scan(gomock.Any()).DoAndReturn(
-						func(dest ...interface{}) error {
+						func(dest ...any) error {
 							*dest[0].(*int64) = 1
 							return nil
 						},
@@ -93,7 +93,7 @@ func TestTagRepository_GetAll(t *testing.T) {
 				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
 					r.EXPECT().Next().Return(true)
 					r.EXPECT().Scan(gomock.Any(), gomock.Any()).DoAndReturn(
-						func(dest ...interface{}) error {
+						func(dest ...any) error {
 							*dest[0].(*int64) = 1
 							*dest[1].(*string) = "Vegan"
 							return nil

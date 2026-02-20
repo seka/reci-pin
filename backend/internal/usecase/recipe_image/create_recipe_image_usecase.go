@@ -87,4 +87,3 @@ func (uc *createRecipeImageInteractor) Execute(ctx context.Context, input Create
 
 	return image, url, nil
 }
-

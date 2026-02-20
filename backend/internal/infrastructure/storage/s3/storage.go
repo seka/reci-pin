@@ -14,11 +14,11 @@ import (
 )
 
 type client struct {
-	client           *s3.Client
-	presignClient    *s3.PresignClient
-	bucket           string
-	publicBaseURL    *url.URL
-	internalEndpoint *url.URL
+	client             *s3.Client
+	presignClient      *s3.PresignClient
+	bucket             string
+	publicBaseURL      *url.URL
+	internalEndpoint   *url.URL
 	internalPathPrefix string
 }
 
@@ -81,8 +81,8 @@ func (c *client) GeneratePresignedURL(ctx context.Context, key string, contentTy
 	if c.publicBaseURL != nil && c.internalEndpoint != nil {
 		parsedPresigned, err := url.Parse(urlStr)
 		if err == nil {
-			if strings.HasPrefix(parsedPresigned.Path, c.internalPathPrefix) {
-				relPath := strings.TrimPrefix(parsedPresigned.Path, c.internalPathPrefix)
+			if after, ok := strings.CutPrefix(parsedPresigned.Path, c.internalPathPrefix); ok {
+				relPath := after
 
 				// Construct final public URL
 				parsedPresigned.Scheme = c.publicBaseURL.Scheme
@@ -96,4 +96,3 @@ func (c *client) GeneratePresignedURL(ctx context.Context, key string, contentTy
 
 	return urlStr, nil
 }
-

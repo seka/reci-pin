@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func postJSON(client *http.Client, url string, data interface{}) error {
+func postJSON(client *http.Client, url string, data any) error {
 	b, err := json.Marshal(data)
 	if err != nil {
 		return err

@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 	mock_postgres "github.com/seka/reci-pin/backend/internal/infrastructure/database/mock"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
@@ -40,7 +40,7 @@ func TestRecipeRepository_Create(t *testing.T) {
 				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
 					r.EXPECT().Next().Return(true)
 					r.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
-						func(dest ...interface{}) error {
+						func(dest ...any) error {
 							*dest[0].(*int64) = 100
 							*dest[1].(*time.Time) = time.Now()
 							*dest[2].(*time.Time) = time.Now()
@@ -113,7 +113,7 @@ func TestRecipeRepository_GetByID(t *testing.T) {
 					// Mock GetByID Query
 					r.EXPECT().Next().Return(true)
 					r.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
-						func(dest ...interface{}) error {
+						func(dest ...any) error {
 							*dest[0].(*int64) = 100
 							*dest[1].(*int64) = 1
 							*dest[2].(*string) = "Pancakes"
@@ -200,7 +200,7 @@ func TestRecipeRepository_Search(t *testing.T) {
 				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
 					r.EXPECT().Next().Return(true)
 					r.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
-						func(dest ...interface{}) error {
+						func(dest ...any) error {
 							*dest[0].(*int64) = 1
 							*dest[1].(*int64) = 1
 							*dest[2].(*string) = "Pancakes"

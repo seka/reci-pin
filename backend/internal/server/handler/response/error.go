@@ -1,8 +1,8 @@
 package response
 
 type ErrorDetail struct {
-	Code   string                 `json:"code"`
-	Params map[string]interface{} `json:"params,omitempty"`
+	Code   string         `json:"code"`
+	Params map[string]any `json:"params,omitempty"`
 }
 
 type ErrorContent struct {

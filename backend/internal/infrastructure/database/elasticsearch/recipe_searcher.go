@@ -25,12 +25,12 @@ func NewRecipeSearcher(client *elasticsearch.TypedClient) repository.RecipeSearc
 }
 
 type recipeDocument struct {
-	ID        int64    `json:"id"`
-	UserID    int64    `json:"user_id"`
-	Name      string   `json:"name"`
-	Memo      string   `json:"memo"`
-	TagIDs    []int64  `json:"tag_ids"`
-	CreatedAt string   `json:"created_at"` // ISO8601 string
+	ID        int64   `json:"id"`
+	UserID    int64   `json:"user_id"`
+	Name      string  `json:"name"`
+	Memo      string  `json:"memo"`
+	TagIDs    []int64 `json:"tag_ids"`
+	CreatedAt string  `json:"created_at"` // ISO8601 string
 }
 
 func (r *RecipeSearcher) Index(ctx context.Context, recipe *model.Recipe) error {

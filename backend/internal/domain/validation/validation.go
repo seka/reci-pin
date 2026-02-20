@@ -10,7 +10,7 @@ import (
 type ValidationError struct {
 	Field  string
 	Code   string
-	Params map[string]interface{}
+	Params map[string]any
 }
 
 func (e ValidationError) Error() string {
@@ -36,7 +36,7 @@ func ValidateEmail(email string) error {
 		errs = append(errs, ValidationError{
 			Field:  "email",
 			Code:   ErrCodeEmailTooLong,
-			Params: map[string]interface{}{"max": EmailMaxLength},
+			Params: map[string]any{"max": EmailMaxLength},
 		})
 	}
 
@@ -64,14 +64,14 @@ func ValidatePassword(password string) error {
 		errs = append(errs, ValidationError{
 			Field:  "password",
 			Code:   ErrCodePasswordTooShort,
-			Params: map[string]interface{}{"min": PasswordMinLength},
+			Params: map[string]any{"min": PasswordMinLength},
 		})
 	}
 	if len(password) > PasswordMaxLength {
 		errs = append(errs, ValidationError{
 			Field:  "password",
 			Code:   ErrCodePasswordTooLong,
-			Params: map[string]interface{}{"max": PasswordMaxLength},
+			Params: map[string]any{"max": PasswordMaxLength},
 		})
 	}
 
@@ -107,7 +107,7 @@ func ValidateRecipe(name, link string) error {
 		errs = append(errs, ValidationError{
 			Field:  "name",
 			Code:   ErrCodeTextTooLong,
-			Params: map[string]interface{}{"max": RecipeNameMaxLength},
+			Params: map[string]any{"max": RecipeNameMaxLength},
 		})
 	}
 
@@ -137,7 +137,7 @@ func ValidateTag(name string) error {
 		errs = append(errs, ValidationError{
 			Field:  "name",
 			Code:   ErrCodeTextTooLong,
-			Params: map[string]interface{}{"max": TagNameMaxLength},
+			Params: map[string]any{"max": TagNameMaxLength},
 		})
 	}
 
