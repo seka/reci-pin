@@ -194,13 +194,13 @@ func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *AuthHandler) setAuthCookies(w http.ResponseWriter, tokens *auth.TokenResult) {
+func (h *AuthHandler) setAuthCookies(w http.ResponseWriter, tokens *model.TokenResult) {
 	// Access Token
 	http.SetCookie(w, &http.Cookie{
 		Name:     "auth_token",
-		Value:    tokens.AccessToken,
+		Value:    tokens.AccessToken.Token,
 		Path:     "/",
-		Expires:  tokens.AccessTokenExpiresAt,
+		Expires:  tokens.AccessToken.ExpiresAt,
 		HttpOnly: true,
 		Secure:   true,
 		SameSite: http.SameSiteLaxMode,
@@ -209,9 +209,9 @@ func (h *AuthHandler) setAuthCookies(w http.ResponseWriter, tokens *auth.TokenRe
 	// Refresh Token
 	http.SetCookie(w, &http.Cookie{
 		Name:     "refresh_token",
-		Value:    tokens.RefreshToken,
+		Value:    tokens.RefreshToken.Token,
 		Path:     "/",
-		Expires:  tokens.RefreshTokenExpiresAt,
+		Expires:  tokens.RefreshToken.ExpiresAt,
 		HttpOnly: true,
 		Secure:   true,
 		SameSite: http.SameSiteLaxMode,

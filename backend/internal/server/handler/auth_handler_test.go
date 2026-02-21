@@ -13,7 +13,6 @@ import (
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/server/handler"
 	"github.com/seka/reci-pin/backend/internal/server/middleware"
-	"github.com/seka/reci-pin/backend/internal/usecase/auth"
 	usecasemock "github.com/seka/reci-pin/backend/internal/usecase/mock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -136,11 +135,15 @@ func TestAuthHandler_Login(t *testing.T) {
 					m.EXPECT().Execute(gomock.Any(), int64(1)).Return(&model.User{ID: 1}, nil)
 				},
 				genToken: func(m *usecasemock.MockGenerateTokenUseCase) {
-					m.EXPECT().Execute(gomock.Any(), int64(1), gomock.Any(), gomock.Any()).Return(&auth.TokenResult{
-						AccessToken:           "access_token",
-						AccessTokenExpiresAt:  time.Now().Add(time.Hour),
-						RefreshToken:          "refresh_token",
-						RefreshTokenExpiresAt: time.Now().Add(24 * time.Hour),
+					m.EXPECT().Execute(gomock.Any(), int64(1), gomock.Any(), gomock.Any()).Return(&model.TokenResult{
+						AccessToken: model.AuthToken{
+							Token:     "access_token",
+							ExpiresAt: time.Now().Add(time.Hour),
+						},
+						RefreshToken: model.AuthToken{
+							Token:     "refresh_token",
+							ExpiresAt: time.Now().Add(24 * time.Hour),
+						},
 					}, nil)
 				},
 			},

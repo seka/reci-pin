@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	auth "github.com/seka/reci-pin/backend/internal/usecase/auth"
+	model "github.com/seka/reci-pin/backend/internal/domain/model"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -81,10 +81,10 @@ func (m *MockGenerateTokenUseCase) EXPECT() *MockGenerateTokenUseCaseMockRecorde
 }
 
 // Execute mocks base method.
-func (m *MockGenerateTokenUseCase) Execute(ctx context.Context, userID int64, userAgent, ipAddress string) (*auth.TokenResult, error) {
+func (m *MockGenerateTokenUseCase) Execute(ctx context.Context, userID int64, userAgent, ipAddress string) (*model.TokenResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Execute", ctx, userID, userAgent, ipAddress)
-	ret0, _ := ret[0].(*auth.TokenResult)
+	ret0, _ := ret[0].(*model.TokenResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -120,10 +120,10 @@ func (m *MockRefreshTokenUseCase) EXPECT() *MockRefreshTokenUseCaseMockRecorder 
 }
 
 // Execute mocks base method.
-func (m *MockRefreshTokenUseCase) Execute(ctx context.Context, refreshToken, userAgent, ipAddress string) (*auth.TokenResult, error) {
+func (m *MockRefreshTokenUseCase) Execute(ctx context.Context, refreshToken, userAgent, ipAddress string) (*model.TokenResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Execute", ctx, refreshToken, userAgent, ipAddress)
-	ret0, _ := ret[0].(*auth.TokenResult)
+	ret0, _ := ret[0].(*model.TokenResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

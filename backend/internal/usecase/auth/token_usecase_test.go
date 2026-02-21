@@ -61,9 +61,9 @@ func TestGenerateTokenUseCase_Execute(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.NotNil(t, result)
-				assert.NotEmpty(t, result.AccessToken)
-				assert.NotEmpty(t, result.RefreshToken)
-				assert.WithinDuration(t, time.Now().Add(time.Duration(tt.expirationHours)*time.Hour), result.AccessTokenExpiresAt, time.Minute)
+				assert.NotEmpty(t, result.AccessToken.Token)
+				assert.NotEmpty(t, result.RefreshToken.Token)
+				assert.WithinDuration(t, time.Now().Add(time.Duration(tt.expirationHours)*time.Hour), result.AccessToken.ExpiresAt, time.Minute)
 			}
 		})
 	}
@@ -83,7 +83,7 @@ func TestValidateTokenUseCase_Execute(t *testing.T) {
 	genUC := auth.NewGenerateTokenUseCase(jwtSecret, time.Duration(expirationHours)*time.Hour, mockRepo, 7*24*time.Hour)
 	result, err := genUC.Execute(context.Background(), 1, "test-agent", "127.0.0.1")
 	assert.NoError(t, err)
-	validToken := result.AccessToken
+	validToken := result.AccessToken.Token
 
 	tests := []struct {
 		name       string
@@ -147,7 +147,7 @@ func TestTokenExpiration(t *testing.T) {
 	genUC := auth.NewGenerateTokenUseCase(jwtSecret, -1*time.Hour, mockRepo, 7*24*time.Hour) // -1時間 = 既に期限切れ
 	result, err := genUC.Execute(context.Background(), 1, "test-agent", "127.0.0.1")
 	assert.NoError(t, err)
-	expiredToken := result.AccessToken
+	expiredToken := result.AccessToken.Token
 
 	// 少し待機
 	time.Sleep(100 * time.Millisecond)
@@ -178,8 +178,10 @@ func TestRefreshTokenUseCase_Execute(t *testing.T) {
 					ExpiresAt: time.Now().Add(24 * time.Hour),
 				}, nil)
 				m.EXPECT().Revoke(gomock.Any(), int64(1)).Return(nil)
-				mg.EXPECT().Execute(gomock.Any(), userID, gomock.Any(), gomock.Any()).Return(&auth.TokenResult{
-					AccessToken: "new-access",
+				mg.EXPECT().Execute(gomock.Any(), userID, gomock.Any(), gomock.Any()).Return(&model.TokenResult{
+					AccessToken: model.AuthToken{
+						Token: "new-access",
+					},
 				}, nil)
 			},
 			wantErr: false,

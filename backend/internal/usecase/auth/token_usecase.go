@@ -17,12 +17,7 @@ import (
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
 )
 
-type TokenResult struct {
-	AccessToken           string
-	AccessTokenExpiresAt  time.Time
-	RefreshToken          string
-	RefreshTokenExpiresAt time.Time
-}
+// TokenResult is now defined in domain/model as model.TokenResult
 
 type ValidateTokenUseCase interface {
 	Execute(tokenString string) (int64, error)
@@ -57,7 +52,7 @@ func (uc *validateTokenInteractor) Execute(tokenString string) (int64, error) {
 }
 
 type GenerateTokenUseCase interface {
-	Execute(ctx context.Context, userID int64, userAgent, ipAddress string) (*TokenResult, error)
+	Execute(ctx context.Context, userID int64, userAgent, ipAddress string) (*model.TokenResult, error)
 }
 
 type generateTokenInteractor struct {
@@ -81,7 +76,7 @@ func NewGenerateTokenUseCase(
 	}
 }
 
-func (uc *generateTokenInteractor) Execute(ctx context.Context, userID int64, userAgent, ipAddress string) (*TokenResult, error) {
+func (uc *generateTokenInteractor) Execute(ctx context.Context, userID int64, userAgent, ipAddress string) (*model.TokenResult, error) {
 	// Generate Access Token
 	accessTokenExpiresAt := time.Now().Add(uc.jwtExpiration)
 	claims := jwt.MapClaims{
@@ -113,16 +108,20 @@ func (uc *generateTokenInteractor) Execute(ctx context.Context, userID int64, us
 		return nil, fmt.Errorf("failed to save refresh token: %w", err)
 	}
 
-	return &TokenResult{
-		AccessToken:           signedAccessToken,
-		AccessTokenExpiresAt:  accessTokenExpiresAt,
-		RefreshToken:          refreshTokenString,
-		RefreshTokenExpiresAt: refreshTokenExpiresAt,
+	return &model.TokenResult{
+		AccessToken: model.AuthToken{
+			Token:     signedAccessToken,
+			ExpiresAt: accessTokenExpiresAt,
+		},
+		RefreshToken: model.AuthToken{
+			Token:     refreshTokenString,
+			ExpiresAt: refreshTokenExpiresAt,
+		},
 	}, nil
 }
 
 type RefreshTokenUseCase interface {
-	Execute(ctx context.Context, refreshToken string, userAgent, ipAddress string) (*TokenResult, error)
+	Execute(ctx context.Context, refreshToken string, userAgent, ipAddress string) (*model.TokenResult, error)
 }
 
 type refreshTokenInteractor struct {
@@ -137,7 +136,7 @@ func NewRefreshTokenUseCase(genTokenUC GenerateTokenUseCase, repo repository.Ref
 	}
 }
 
-func (uc *refreshTokenInteractor) Execute(ctx context.Context, refreshToken string, userAgent, ipAddress string) (*TokenResult, error) {
+func (uc *refreshTokenInteractor) Execute(ctx context.Context, refreshToken string, userAgent, ipAddress string) (*model.TokenResult, error) {
 	hash := HashToken(refreshToken)
 	rt, err := uc.repo.GetByHash(ctx, hash)
 	if err != nil {
