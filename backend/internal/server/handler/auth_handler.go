@@ -25,6 +25,8 @@ type AuthHandler struct {
 	changePasswordUseCase       auth.ChangePasswordUseCase
 	requestPasswordResetUseCase auth.RequestPasswordResetUseCase
 	resetPasswordUseCase        auth.ResetPasswordUseCase
+	refreshTokenUseCase         auth.RefreshTokenUseCase
+	logoutUseCase               auth.LogoutUseCase
 }
 
 func NewAuthHandler(
@@ -37,6 +39,8 @@ func NewAuthHandler(
 	changePasswordUseCase auth.ChangePasswordUseCase,
 	requestPasswordResetUseCase auth.RequestPasswordResetUseCase,
 	resetPasswordUseCase auth.ResetPasswordUseCase,
+	refreshTokenUseCase auth.RefreshTokenUseCase,
+	logoutUseCase auth.LogoutUseCase,
 ) *AuthHandler {
 	return &AuthHandler{
 		signupUseCase:               signupUseCase,
@@ -48,6 +52,8 @@ func NewAuthHandler(
 		changePasswordUseCase:       changePasswordUseCase,
 		requestPasswordResetUseCase: requestPasswordResetUseCase,
 		resetPasswordUseCase:        resetPasswordUseCase,
+		refreshTokenUseCase:         refreshTokenUseCase,
+		logoutUseCase:               logoutUseCase,
 	}
 }
 
@@ -140,23 +146,18 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 認証トークン生成
-	token, expiresAt, err := h.generateTokenUseCase.Execute(userID)
+	// 認証トークン生成 (Access + Refresh)
+	userAgent := r.UserAgent()
+	ipAddress := r.RemoteAddr
+
+	tokenResult, err := h.generateTokenUseCase.Execute(userID, userAgent, ipAddress)
 	if err != nil {
 		http.Error(w, "failed to generate token", http.StatusInternalServerError)
 		return
 	}
 
 	// HttpOnly Cookie 設定
-	http.SetCookie(w, &http.Cookie{
-		Name:     "auth_token",
-		Value:    token,
-		Path:     "/",
-		Expires:  expiresAt,
-		HttpOnly: true,
-		Secure:   true, // プロキシ(Nginx/localstack)でHTTPS化されている想定
-		SameSite: http.SameSiteLaxMode,
-	})
+	h.setAuthCookies(w, tokenResult)
 
 	userResp := toUserResponse(user)
 	// UserモデルにEmailがないため、リクエストの値を使用
@@ -168,6 +169,53 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJSON(w, http.StatusOK, res)
+}
+
+func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("refresh_token")
+	if err != nil {
+		http.Error(w, "refresh token not found", http.StatusUnauthorized)
+		return
+	}
+
+	userAgent := r.UserAgent()
+	ipAddress := r.RemoteAddr
+
+	tokenResult, err := h.refreshTokenUseCase.Execute(cookie.Value, userAgent, ipAddress)
+	if err != nil {
+		log.Printf("RefreshTokenUseCase error: %v", err)
+		http.Error(w, "invalid refresh token", http.StatusUnauthorized)
+		return
+	}
+
+	// 新しいトークンペアを Cookie に設定 (Rotation)
+	h.setAuthCookies(w, tokenResult)
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *AuthHandler) setAuthCookies(w http.ResponseWriter, tokens *auth.TokenResult) {
+	// Access Token
+	http.SetCookie(w, &http.Cookie{
+		Name:     "auth_token",
+		Value:    tokens.AccessToken,
+		Path:     "/",
+		Expires:  tokens.AccessTokenExpiresAt,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	// Refresh Token
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refresh_token",
+		Value:    tokens.RefreshToken,
+		Path:     "/",
+		Expires:  tokens.RefreshTokenExpiresAt,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
 }
 
 func (h *AuthHandler) Verify(w http.ResponseWriter, r *http.Request) {
@@ -190,18 +238,32 @@ func (h *AuthHandler) Verify(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	// DB側のリフレッシュトークンを無効化（もしあれば）
+	if cookie, err := r.Cookie("refresh_token"); err == nil {
+		if err := h.logoutUseCase.Execute(cookie.Value); err != nil {
+			log.Printf("LogoutUseCase error: %v", err)
+			// 失敗してもクライアント側は消したいので続行
+		}
+	}
+
 	// Cookieを削除（有効期限を過去に設定）
-	http.SetCookie(w, &http.Cookie{
-		Name:     "auth_token",
-		Value:    "",
-		Path:     "/",
-		Expires:  time.Unix(0, 0),
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
-		MaxAge:   -1,
-	})
+	h.clearAuthCookies(w)
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *AuthHandler) clearAuthCookies(w http.ResponseWriter) {
+	for _, name := range []string{"auth_token", "refresh_token"} {
+		http.SetCookie(w, &http.Cookie{
+			Name:     name,
+			Value:    "",
+			Path:     "/",
+			Expires:  time.Unix(0, 0),
+			HttpOnly: true,
+			Secure:   true,
+			SameSite: http.SameSiteLaxMode,
+			MaxAge:   -1,
+		})
+	}
 }
 
 func (h *AuthHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
