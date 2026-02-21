@@ -30,11 +30,12 @@ const handleUnauthorizedError = (authService: AuthService, req: HttpRequest<any>
         return authService.refresh().pipe(
             switchMap(() => {
                 authService.isRefreshing = false;
-                authService.refreshTokenSubject.next('refreshed'); // 値は何でも良い。null以外ならOK
+                authService.refreshTokenSubject.next('refreshed'); // 成功を通知
                 return next(req);
             }),
             catchError((err) => {
                 authService.isRefreshing = false;
+                authService.refreshTokenSubject.next('error'); // 待機中の他リクエストに失敗を通知
                 authService.clearAuth();
                 return throwError(() => err);
             })
@@ -44,7 +45,12 @@ const handleUnauthorizedError = (authService: AuthService, req: HttpRequest<any>
         return authService.refreshTokenSubject.pipe(
             filter(token => token !== null),
             take(1),
-            switchMap(() => next(req))
+            switchMap((token) => {
+                if (token === 'error') {
+                    return throwError(() => new HttpErrorResponse({ status: 401, statusText: 'Unauthorized' }));
+                }
+                return next(req);
+            })
         );
     }
 };
