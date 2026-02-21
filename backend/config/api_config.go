@@ -31,8 +31,9 @@ type StorageConfig struct {
 }
 
 type JWTConfig struct {
-	Secret          string
-	ExpirationHours int
+	Secret                     string
+	ExpirationHours            int
+	RefreshTokenExpirationDays int
 }
 
 func (c *DatabaseConfig) DSN() string {
