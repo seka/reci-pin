@@ -17,6 +17,7 @@ type Repository interface {
 	NewUserEmailCredentialRepository() repository.UserEmailCredentialRepository
 	NewPasswordResetTokenRepository() repository.PasswordResetTokenRepository
 	NewRecipeSearchRepository() repository.RecipeSearchRepository
+	NewRefreshTokenRepository() repository.RefreshTokenRepository
 }
 
 // repositoryRegistry implements the Repository interface
@@ -59,4 +60,8 @@ func (r *repositoryRegistry) NewPasswordResetTokenRepository() repository.Passwo
 
 func (r *repositoryRegistry) NewRecipeSearchRepository() repository.RecipeSearchRepository {
 	return es.NewRecipeSearcher(r.esClient)
+}
+
+func (r *repositoryRegistry) NewRefreshTokenRepository() repository.RefreshTokenRepository {
+	return postgres.NewRefreshTokenRepository(r.db)
 }
