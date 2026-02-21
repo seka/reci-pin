@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -148,8 +149,11 @@ func (uc *refreshTokenInteractor) Execute(ctx context.Context, refreshToken stri
 	}
 
 	if rt.IsRevoked() {
-		// 盗難検知: 使用済みのトークンが再利用された場合、該当ユーザーの全セッションを無効化する事も検討
-		// 今回は一旦このトークンチェーンのみ失効とする（既に失効済み）
+		// 盗難検知: 使用済みのトークンが再利用された場合、該当ユーザーの全セッションを無効化する
+		log.Printf("[SECURITY] Revoked refresh token reused: userID=%d, ip=%s. Revoking all sessions.", rt.UserID, ipAddress)
+		if err := uc.repo.RevokeAllByUserID(ctx, rt.UserID); err != nil {
+			log.Printf("[ERROR] Failed to revoke all sessions for userID=%d: %v", rt.UserID, err)
+		}
 		return nil, errors.New("refresh token has been revoked")
 	}
 

@@ -5,8 +5,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/seka/reci-pin/backend/internal/domain/model"
 	repo "github.com/seka/reci-pin/backend/internal/domain/repository/mock"
 	"github.com/seka/reci-pin/backend/internal/usecase/auth"
+	usecasemock "github.com/seka/reci-pin/backend/internal/usecase/mock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
@@ -155,4 +157,69 @@ func TestTokenExpiration(t *testing.T) {
 
 	// 期限切れトークンはエラーになるはず
 	assert.Error(t, err)
+}
+
+func TestRefreshTokenUseCase_Execute(t *testing.T) {
+	userID := int64(1)
+
+	tests := []struct {
+		name      string
+		token     string
+		setupMock func(m *repo.MockRefreshTokenRepository, mg *usecasemock.MockGenerateTokenUseCase)
+		wantErr   bool
+	}{
+		{
+			name:  "正常系_有効なトークンでリフレッシュ成功",
+			token: "valid-token",
+			setupMock: func(m *repo.MockRefreshTokenRepository, mg *usecasemock.MockGenerateTokenUseCase) {
+				m.EXPECT().GetByHash(gomock.Any(), gomock.Any()).Return(&model.RefreshToken{
+					ID:        1,
+					UserID:    userID,
+					ExpiresAt: time.Now().Add(24 * time.Hour),
+				}, nil)
+				m.EXPECT().Revoke(gomock.Any(), int64(1)).Return(nil)
+				mg.EXPECT().Execute(gomock.Any(), userID, gomock.Any(), gomock.Any()).Return(&auth.TokenResult{
+					AccessToken: "new-access",
+				}, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name:  "異常系_失効済みトークン使用で盗難検知",
+			token: "revoked-token",
+			setupMock: func(m *repo.MockRefreshTokenRepository, mg *usecasemock.MockGenerateTokenUseCase) {
+				now := time.Now()
+				m.EXPECT().GetByHash(gomock.Any(), gomock.Any()).Return(&model.RefreshToken{
+					ID:        2,
+					UserID:    userID,
+					ExpiresAt: now.Add(24 * time.Hour),
+					RevokedAt: &now, // 失効済み
+				}, nil)
+				// 全セッション失効が呼ばれるはず
+				m.EXPECT().RevokeAllByUserID(gomock.Any(), userID).Return(nil)
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockRepo := repo.NewMockRefreshTokenRepository(ctrl)
+			mockGenUC := usecasemock.NewMockGenerateTokenUseCase(ctrl)
+			tt.setupMock(mockRepo, mockGenUC)
+
+			uc := auth.NewRefreshTokenUseCase(mockGenUC, mockRepo)
+			result, err := uc.Execute(context.Background(), tt.token, "agent", "1.1.1.1")
+
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, result)
+			}
+		})
+	}
 }
