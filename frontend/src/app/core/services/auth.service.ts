@@ -153,7 +153,8 @@ export class AuthService {
 
   clearAuth(): void {
     if (isPlatformBrowser(this.platformId)) {
-      // USER_KEY Cookie を削除
+      // HttpOnly 属性ではないものを削除する
+      // (auth_token などの HttpOnly Cookie は JS から削除できないため、サーバー側でクリアする必要がある)
       this.setCookie(this.USER_KEY, '', -1);
     }
     this.currentUserSubject.next(null);
