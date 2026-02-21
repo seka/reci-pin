@@ -4,15 +4,24 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { TranslatePipe } from '@ngx-translate/core';
+import { RouterModule } from '@angular/router';
 import { Recipe } from '../../../../core/services/recipe.service';
 import { VALIDATION_RULES } from '../../../../core/constants/validation.constants';
 
 @Component({
   selector: 'app-recipe-card',
   standalone: true,
-  imports: [MatCardModule, MatButtonModule, MatIconModule, MatChipsModule, TranslatePipe],
+  imports: [MatCardModule, MatButtonModule, MatIconModule, MatChipsModule, TranslatePipe, RouterModule],
   template: `
     <mat-card class="recipe-card">
+      <a
+        mat-icon-button
+        class="edit-button"
+        [routerLink]="['/recipes', recipe.id, 'edit']"
+        [attr.aria-label]="'COMMON.EDIT' | translate"
+      >
+        <mat-icon>edit</mat-icon>
+      </a>
       @if (thumbnailUrl) {
         <div class="card-image">
           <img [src]="thumbnailUrl" [alt]="recipe.name" />
@@ -79,6 +88,23 @@ import { VALIDATION_RULES } from '../../../../core/constants/validation.constant
       }
       mat-chip-set {
         margin-top: var(--spacing-1_5);
+      }
+      .edit-button {
+        position: absolute;
+        top: var(--spacing-1);
+        right: var(--spacing-1);
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(4px);
+        color: var(--color-primary);
+        transition: all 0.2s ease;
+      }
+      .edit-button:hover {
+        background: rgba(255, 255, 255, 0.9);
+        transform: scale(1.1);
       }
     `,
   ],

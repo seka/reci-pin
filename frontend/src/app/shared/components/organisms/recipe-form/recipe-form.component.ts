@@ -1,17 +1,29 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, EventEmitter, inject, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { RecipeService, Tag } from '../../../core/services/recipe.service';
-import { TagSelectComponent } from '../../../shared/components/molecules/tag-select/tag-select.component';
-import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
-import { HeadlineComponent } from '../../../shared/components/atoms/headline/headline.component';
-import { InputComponent } from '../../../shared/components/atoms/input/input.component';
-import { TextareaComponent } from '../../../shared/components/atoms/textarea/textarea.component';
-import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
+import { RecipeService, Tag } from '../../../../core/services/recipe.service';
+import { TagSelectComponent } from '../../molecules/tag-select/tag-select.component';
+import { ButtonComponent } from '../../atoms/button/button.component';
+import { HeadlineComponent } from '../../atoms/headline/headline.component';
+import { InputComponent } from '../../atoms/input/input.component';
+import { TextareaComponent } from '../../atoms/textarea/textarea.component';
+import { VALIDATION_RULES } from '../../../../core/constants/validation.constants';
+
+export interface RecipeFormData {
+  name: string;
+  url: string;
+  memo: string;
+  tagIds: number[];
+}
+
+export interface RecipeFormSubmitEvent {
+  formData: RecipeFormData;
+  file: File | null;
+}
 
 @Component({
   selector: 'app-recipe-form',
@@ -34,7 +46,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
       <mat-card>
         <mat-card-header>
           <mat-card-title>
-            <app-headline variant="h2">{{ 'RECIPE.NEW_TITLE' | translate }}</app-headline>
+            <app-headline variant="h2">{{ titleKey | translate }}</app-headline>
           </mat-card-title>
         </mat-card-header>
         <mat-card-content>
@@ -76,7 +88,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
 
             <app-tag-select
               [tags]="tags"
-              formControlName="tag_ids"
+              formControlName="tagIds"
             >
             </app-tag-select>
 
@@ -132,7 +144,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
                 [disabled]="recipeForm.invalid || isSubmitting"
                 class="action-btn"
               >
-                {{ isSubmitting ? ('RECIPE.SAVING' | translate) : ('RECIPE.SAVE' | translate) }}
+                {{ isSubmitting ? (submittingLabelKey | translate) : (submitLabelKey | translate) }}
               </app-button>
             </div>
           </form>
@@ -252,17 +264,24 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
     `,
   ],
 })
-export class RecipeFormComponent implements OnInit {
+export class RecipeFormComponent implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
   private readonly recipeService = inject(RecipeService);
-  private readonly router = inject(Router);
   private readonly translate = inject(TranslateService);
+
+  @Input() titleKey: string = 'RECIPE.NEW_TITLE';
+  @Input() submitLabelKey: string = 'RECIPE.SAVE';
+  @Input() submittingLabelKey: string = 'RECIPE.SAVING';
+
+  @Input() isSubmitting = false;
+  @Input() initialData: Partial<RecipeFormData> = {};
+  @Input() initialImagePreview: string | null = null;
+
+  @Output() save = new EventEmitter<RecipeFormSubmitEvent>();
 
   recipeForm: FormGroup;
   tags: Tag[] = [];
   fieldErrors: Record<string, string[]> = {};
-  isSubmitting = false;
-
   selectedFile: File | null = null;
   imagePreview: string | null = null;
   imageError: string | null = null;
@@ -275,8 +294,22 @@ export class RecipeFormComponent implements OnInit {
       name: ['', [Validators.required, Validators.maxLength(VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH)]],
       url: ['', [Validators.required, Validators.pattern(/^https?:\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}.*|^https?:\/\/localhost.*/)]],
       memo: ['', Validators.maxLength(VALIDATION_RULES.RECIPE.MEMO_MAX_LENGTH)],
-      tag_ids: [[]],
+      tagIds: [[]],
     });
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['initialData'] && this.initialData) {
+      this.recipeForm.patchValue({
+        name: this.initialData.name || '',
+        url: this.initialData.url || '',
+        memo: this.initialData.memo || '',
+        tagIds: this.initialData.tagIds || [],
+      });
+    }
+    if (changes['initialImagePreview'] && this.initialImagePreview) {
+      this.imagePreview = this.initialImagePreview;
+    }
   }
 
   onUrlBlur() {
@@ -357,49 +390,34 @@ export class RecipeFormComponent implements OnInit {
   onSubmit() {
     this.fieldErrors = {};
     if (this.recipeForm.valid) {
-      this.isSubmitting = true;
-      const formData = this.recipeForm.value;
-
-      this.recipeService.createRecipe(formData).subscribe({
-        next: (recipe) => {
-          if (this.selectedFile) {
-            this.recipeService.uploadImage(recipe.id, this.selectedFile).subscribe({
-              next: () => this.router.navigate(['/recipes']),
-              error: (err) => {
-                console.error('Failed to upload image', err);
-                // レシピは作成済みなので一覧に戻す
-                this.router.navigate(['/recipes']);
-              },
-            });
-          } else {
-            this.router.navigate(['/recipes']);
-          }
-        },
-        error: (err) => {
-          console.error('Failed to create recipe', err);
-          this.isSubmitting = false;
-
-          if (err.error?.error?.details) {
-            const details = err.error.error.details;
-            Object.keys(details).forEach((field) => {
-              const messages = (details as any)[field].map((d: any) => {
-                switch (d.code) {
-                  case 'REQUIRED':
-                    return this.translate.instant('VALIDATION.REQUIRED');
-                  case 'TEXT_TOO_LONG':
-                    return this.translate.instant('VALIDATION.MAX_LENGTH', { max: d.params?.max });
-                  case 'URL_INVALID_FORMAT':
-                    return this.translate.instant('VALIDATION.INVALID_URL');
-                  default:
-                    return this.translate.instant('VALIDATION.INVALID_INPUT');
-                }
-              });
-              this.fieldErrors[field] = messages;
-            });
-          }
-        },
+      this.save.emit({
+        formData: this.recipeForm.value as RecipeFormData,
+        file: this.selectedFile
       });
     }
   }
-}
 
+  handleServerErrors(err: any): boolean {
+    let hasValidationErrors = false;
+    if (err.error?.error?.details) {
+      const details = err.error.error.details;
+      Object.keys(details).forEach((field) => {
+        hasValidationErrors = true;
+        const messages = (details as any)[field].map((d: any) => {
+          switch (d.code) {
+            case 'REQUIRED':
+              return this.translate.instant('VALIDATION.REQUIRED');
+            case 'TEXT_TOO_LONG':
+              return this.translate.instant('VALIDATION.MAX_LENGTH', { max: d.params?.max });
+            case 'URL_INVALID_FORMAT':
+              return this.translate.instant('VALIDATION.INVALID_URL');
+            default:
+              return this.translate.instant('VALIDATION.INVALID_INPUT');
+          }
+        });
+        this.fieldErrors[field] = messages;
+      });
+    }
+    return hasValidationErrors;
+  }
+}

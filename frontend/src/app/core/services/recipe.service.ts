@@ -108,9 +108,10 @@ export class RecipeService {
     return this.http
       .post<CreateRecipeImageResponse>(`${this.API_URL}/${recipeId}/images`, body)
       .pipe(
-        switchMap((res) =>
-          from(
-            fetch(res.upload_url, {
+        switchMap((res) => {
+          let uploadUrl = res.upload_url;
+          return from(
+            fetch(uploadUrl, {
               method: 'PUT',
               headers: { 'Content-Type': file.type },
               body: file,
@@ -118,8 +119,8 @@ export class RecipeService {
               if (!r.ok) throw new Error(`S3 upload failed: ${r.status}`);
               return res.image;
             }),
-          ),
-        ),
+          );
+        }),
       );
   }
 
