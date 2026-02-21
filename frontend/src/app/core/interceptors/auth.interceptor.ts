@@ -1,14 +1,7 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const token = localStorage.getItem('auth_token');
-
-  if (token) {
-    const cloned = req.clone({
-      headers: req.headers.set('Authorization', `Bearer ${token}`),
-    });
-    return next(cloned);
-  }
-
+  // ブラウザが Cookie (auth_token) を自動的に送信するため、
+  // 手動での Authorization ヘッダー付与は不要になりました。
   return next(req);
 };
