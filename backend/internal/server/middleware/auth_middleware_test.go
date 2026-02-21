@@ -40,7 +40,7 @@ func TestAuthMiddleware_Authenticate_MissingToken(t *testing.T) {
 	handler.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
-	assert.Contains(t, w.Body.String(), "missing authorization header")
+	assert.Contains(t, w.Body.String(), "missing authentication")
 }
 
 func TestAuthMiddleware_Authenticate_ValidToken(t *testing.T) {
@@ -62,6 +62,34 @@ func TestAuthMiddleware_Authenticate_ValidToken(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/protected", nil)
 	req.Header.Set("Authorization", "Bearer valid-token")
+	w := httptest.NewRecorder()
+
+	handler := authMW.Authenticate(nextHandler)
+	handler.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, "protected", w.Body.String())
+}
+
+func TestAuthMiddleware_Authenticate_ValidCookie(t *testing.T) {
+	validateUC := &mockValidateTokenUseCase{
+		ExecuteFunc: func(tokenString string) (int64, error) {
+			assert.Equal(t, "valid-cookie-token", tokenString)
+			return 42, nil
+		},
+	}
+	authMW := middleware.NewAuthMiddleware(validateUC)
+
+	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		userID, ok := middleware.GetUserIDFromContext(r.Context())
+		assert.True(t, ok)
+		assert.Equal(t, int64(42), userID)
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("protected"))
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/protected", nil)
+	req.AddCookie(&http.Cookie{Name: "auth_token", Value: "valid-cookie-token"})
 	w := httptest.NewRecorder()
 
 	handler := authMW.Authenticate(nextHandler)
