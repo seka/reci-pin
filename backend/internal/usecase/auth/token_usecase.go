@@ -1,5 +1,7 @@
 package auth
 
+//go:generate mockgen -source=$GOFILE -destination=../mock/token_usecase_mock.go -package=mock
+
 import (
 	"errors"
 	"fmt"
@@ -41,7 +43,7 @@ func (uc *validateTokenInteractor) Execute(tokenString string) (int64, error) {
 }
 
 type GenerateTokenUseCase interface {
-	Execute(userID int64) (string, error)
+	Execute(userID int64) (string, time.Time, error)
 }
 
 type generateTokenInteractor struct {
@@ -56,12 +58,17 @@ func NewGenerateTokenUseCase(jwtSecret string, expiration time.Duration) Generat
 	}
 }
 
-func (uc *generateTokenInteractor) Execute(userID int64) (string, error) {
+func (uc *generateTokenInteractor) Execute(userID int64) (string, time.Time, error) {
+	expiresAt := time.Now().Add(uc.jwtExpiration)
 	claims := jwt.MapClaims{
 		"user_id": userID,
-		"exp":     time.Now().Add(uc.jwtExpiration).Unix(),
+		"exp":     expiresAt.Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(uc.jwtSecret))
+	signedToken, err := token.SignedString([]byte(uc.jwtSecret))
+	if err != nil {
+		return "", time.Time{}, err
+	}
+	return signedToken, expiresAt, nil
 }
