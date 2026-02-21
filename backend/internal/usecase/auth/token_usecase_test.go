@@ -4,8 +4,10 @@ import (
 	"testing"
 	"time"
 
+	repo "github.com/seka/reci-pin/backend/internal/domain/repository/mock"
 	"github.com/seka/reci-pin/backend/internal/usecase/auth"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
 func TestGenerateTokenUseCase_Execute(t *testing.T) {
@@ -34,15 +36,31 @@ func TestGenerateTokenUseCase_Execute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			uc := auth.NewGenerateTokenUseCase(tt.jwtSecret, time.Duration(tt.expirationHours)*time.Hour)
-			token, expiresAt, err := uc.Execute(tt.userID)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockRepo := repo.NewMockRefreshTokenRepository(ctrl)
+			if !tt.wantErr {
+				mockRepo.EXPECT().Save(gomock.Any(), gomock.Any()).Return(nil)
+			}
+
+			uc := auth.NewGenerateTokenUseCase(
+				tt.jwtSecret,
+				time.Duration(tt.expirationHours)*time.Hour,
+				mockRepo,
+				7*24*time.Hour,
+			)
+
+			result, err := uc.Execute(tt.userID, "test-agent", "127.0.0.1")
 
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
-				assert.NotEmpty(t, token)
-				assert.WithinDuration(t, time.Now().Add(time.Duration(tt.expirationHours)*time.Hour), expiresAt, time.Minute)
+				assert.NotNil(t, result)
+				assert.NotEmpty(t, result.AccessToken)
+				assert.NotEmpty(t, result.RefreshToken)
+				assert.WithinDuration(t, time.Now().Add(time.Duration(tt.expirationHours)*time.Hour), result.AccessTokenExpiresAt, time.Minute)
 			}
 		})
 	}
@@ -52,10 +70,17 @@ func TestValidateTokenUseCase_Execute(t *testing.T) {
 	jwtSecret := "test-secret-key"
 	expirationHours := 24
 
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := repo.NewMockRefreshTokenRepository(ctrl)
+	mockRepo.EXPECT().Save(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
 	// 有効なトークンを生成
-	genUC := auth.NewGenerateTokenUseCase(jwtSecret, time.Duration(expirationHours)*time.Hour)
-	validToken, _, err := genUC.Execute(1)
+	genUC := auth.NewGenerateTokenUseCase(jwtSecret, time.Duration(expirationHours)*time.Hour, mockRepo, 7*24*time.Hour)
+	result, err := genUC.Execute(1, "test-agent", "127.0.0.1")
 	assert.NoError(t, err)
+	validToken := result.AccessToken
 
 	tests := []struct {
 		name       string
@@ -109,10 +134,17 @@ func TestValidateTokenUseCase_Execute(t *testing.T) {
 func TestTokenExpiration(t *testing.T) {
 	jwtSecret := "test-secret-key"
 
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := repo.NewMockRefreshTokenRepository(ctrl)
+	mockRepo.EXPECT().Save(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
 	// 有効期限が極めて短いトークンを生成（テスト用）
-	genUC := auth.NewGenerateTokenUseCase(jwtSecret, -1*time.Hour) // -1時間 = 既に期限切れ
-	expiredToken, _, err := genUC.Execute(1)
+	genUC := auth.NewGenerateTokenUseCase(jwtSecret, -1*time.Hour, mockRepo, 7*24*time.Hour) // -1時間 = 既に期限切れ
+	result, err := genUC.Execute(1, "test-agent", "127.0.0.1")
 	assert.NoError(t, err)
+	expiredToken := result.AccessToken
 
 	// 少し待機
 	time.Sleep(100 * time.Millisecond)
