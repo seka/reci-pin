@@ -53,6 +53,15 @@ frontend/testem.log
 frontend/typings
 frontend/__screenshots__/
 
+# Yarn Berry
+frontend/.yarn/*
+!frontend/.yarn/patches
+!frontend/.yarn/plugins
+!frontend/.yarn/releases
+!frontend/.yarn/sdks
+!frontend/.yarn/versions
+frontend/.pnp.*
+
 # Environment variables
 .env
 .env.local
