@@ -23,7 +23,39 @@
 -   **[テスト](.agent/guidelines/003_testing.md)**: カバレッジ目標、モック、実行方法。
 
 ### 🛠 ワークフロー
--   **[機能開発](.agent/workflows/001_feature_development.md)**: Git Worktree を使用した標準フロー。
+-   **[機能開発](.agent/workflows/001_feature_development.md)**: Git Worktree (`git gtr`) を使用した標準フロー。
+
+#### Git Worktree Runner (`gtr`) の導入と利用
+並行して作業を行う際は `git gtr` を利用してください。
+
+##### インストール (macOS)
+```bash
+brew tap coderabbitai/tap
+brew install git-gtr
+```
+
+##### リポジトリ初期設定
+新しい環境で作業を開始する際は、以下の設定を実行してください。
+```bash
+git gtr config add gtr.copy.include ".env*"
+git gtr config add gtr.copy.include "proxy/certs/*.pem"
+git gtr config add gtr.copy.include "backend/vendor"
+git gtr config add gtr.copy.include "frontend/node_modules"
+```
+
+##### 基本的な使い方
+
+```bash
+# ワークツリーを作成 (新しいブランチで)
+git gtr new my-feature
+
+# ワークツリー内でコマンドを実行 (適切なディレクトリを指定)
+git gtr run my-feature npm --prefix frontend test
+git gtr run my-feature make -C backend build
+
+# マージ済みのワークツリーを一括削除 (gh CLIが必要)
+git gtr clean --merged
+```
 
 ---
 **注記**: タスクを開始する前に必ずこれらのドキュメントを参照し、プロジェクトの標準に準拠してください。
