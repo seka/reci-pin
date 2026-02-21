@@ -49,6 +49,9 @@ func NewClient(ctx context.Context, bucket string, endpoint string, publicBaseUR
 	var internalPathPrefix string
 	if parsedInternal != nil {
 		internalPathPrefix = parsedInternal.JoinPath(bucket).Path
+		if !strings.HasPrefix(internalPathPrefix, "/") {
+			internalPathPrefix = "/" + internalPathPrefix
+		}
 		if !strings.HasSuffix(internalPathPrefix, "/") {
 			internalPathPrefix += "/"
 		}
