@@ -110,10 +110,6 @@ export class RecipeService {
       .pipe(
         switchMap((res) => {
           let uploadUrl = res.upload_url;
-          // Workaround for local docker environment where browser cannot resolve docker's 'localstack' host
-          if (uploadUrl.startsWith('http://localstack:4566/recipin-bucket/')) {
-            uploadUrl = uploadUrl.replace('http://localstack:4566/recipin-bucket/', '/storage/');
-          }
           return from(
             fetch(uploadUrl, {
               method: 'PUT',
