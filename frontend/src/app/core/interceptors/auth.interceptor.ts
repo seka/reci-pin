@@ -4,8 +4,10 @@ import { catchError, filter, switchMap, take, throwError, Observable } from 'rxj
 import { AuthService } from '../services/auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-    const authService = inject(AuthService);
+    return authInterceptorInternal(req, next, inject(AuthService));
+};
 
+export const authInterceptorInternal = (req: HttpRequest<any>, next: HttpHandlerFn, authService: AuthService): Observable<HttpEvent<any>> => {
     return next(req).pipe(
         catchError((error) => {
             if (error instanceof HttpErrorResponse && error.status === 401) {
