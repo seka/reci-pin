@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/server/handler"
@@ -132,7 +133,7 @@ func TestAuthHandler_Login(t *testing.T) {
 					m.EXPECT().Execute(gomock.Any(), int64(1)).Return(&model.User{ID: 1}, nil)
 				},
 				genToken: func(m *usecasemock.MockGenerateTokenUseCase) {
-					m.EXPECT().Execute(int64(1)).Return("token", nil)
+					m.EXPECT().Execute(int64(1)).Return("token", time.Now().Add(24*time.Hour), nil)
 				},
 			},
 			wantStatus: http.StatusOK,
@@ -174,7 +175,7 @@ func TestAuthHandler_Login(t *testing.T) {
 					m.EXPECT().Execute(gomock.Any(), int64(1)).Return(&model.User{ID: 1}, nil)
 				},
 				genToken: func(m *usecasemock.MockGenerateTokenUseCase) {
-					m.EXPECT().Execute(int64(1)).Return("", errors.New("token error"))
+					m.EXPECT().Execute(int64(1)).Return("", time.Time{}, errors.New("token error"))
 				},
 			},
 			wantStatus: http.StatusInternalServerError,

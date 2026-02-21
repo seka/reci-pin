@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/validation"
@@ -140,18 +141,29 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 認証トークン生成
-	token, err := h.generateTokenUseCase.Execute(userID)
+	token, expiresAt, err := h.generateTokenUseCase.Execute(userID)
 	if err != nil {
 		http.Error(w, "failed to generate token", http.StatusInternalServerError)
 		return
 	}
+
+	// HttpOnly Cookie 設定
+	http.SetCookie(w, &http.Cookie{
+		Name:     "auth_token",
+		Value:    token,
+		Path:     "/",
+		Expires:  expiresAt,
+		HttpOnly: true,
+		Secure:   true, // プロキシ(Nginx/localstack)でHTTPS化されている想定
+		SameSite: http.SameSiteLaxMode,
+	})
 
 	userResp := toUserResponse(user)
 	// UserモデルにEmailがないため、リクエストの値を使用
 	userResp.Email = req.Email
 
 	res := response.AuthResponse{
-		Token: token,
+		Token: "", // トークンはCookieに隠蔽するため、ボディには含めない
 		User:  userResp,
 	}
 
@@ -178,6 +190,17 @@ func (h *AuthHandler) Verify(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	// Cookieを削除（有効期限を過去に設定）
+	http.SetCookie(w, &http.Cookie{
+		Name:     "auth_token",
+		Value:    "",
+		Path:     "/",
+		Expires:  time.Unix(0, 0),
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   -1,
+	})
 	w.WriteHeader(http.StatusNoContent)
 }
 
