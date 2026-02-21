@@ -24,6 +24,8 @@ func setupMockRegistry(ctrl *gomock.Controller, m *registrymock.MockUseCase) {
 	m.EXPECT().NewChangePasswordUseCase().Return(usecasemock.NewMockChangePasswordUseCase(ctrl))
 	m.EXPECT().NewRequestPasswordResetUseCase().Return(usecasemock.NewMockRequestPasswordResetUseCase(ctrl))
 	m.EXPECT().NewResetPasswordUseCase().Return(usecasemock.NewMockResetPasswordUseCase(ctrl))
+	m.EXPECT().NewRefreshTokenUseCase().Return(usecasemock.NewMockRefreshTokenUseCase(ctrl))
+	m.EXPECT().NewLogoutUseCase().Return(usecasemock.NewMockLogoutUseCase(ctrl))
 
 	// Recipe
 	m.EXPECT().NewCreateRecipeUseCase().Return(usecasemock.NewMockCreateRecipeUseCase(ctrl))

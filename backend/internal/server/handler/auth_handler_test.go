@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/server/handler"
@@ -90,6 +91,8 @@ func TestAuthHandler_Signup(t *testing.T) {
 				usecasemock.NewMockChangePasswordUseCase(ctrl),
 				usecasemock.NewMockRequestPasswordResetUseCase(ctrl),
 				usecasemock.NewMockResetPasswordUseCase(ctrl),
+				usecasemock.NewMockRefreshTokenUseCase(ctrl),
+				usecasemock.NewMockLogoutUseCase(ctrl),
 			)
 
 			var req *http.Request
@@ -132,7 +135,16 @@ func TestAuthHandler_Login(t *testing.T) {
 					m.EXPECT().Execute(gomock.Any(), int64(1)).Return(&model.User{ID: 1}, nil)
 				},
 				genToken: func(m *usecasemock.MockGenerateTokenUseCase) {
-					m.EXPECT().Execute(int64(1)).Return("token", nil)
+					m.EXPECT().Execute(gomock.Any(), int64(1), gomock.Any(), gomock.Any()).Return(&model.TokenResult{
+						AccessToken: model.AuthToken{
+							Token:     "access_token",
+							ExpiresAt: time.Now().Add(time.Hour),
+						},
+						RefreshToken: model.AuthToken{
+							Token:     "refresh_token",
+							ExpiresAt: time.Now().Add(24 * time.Hour),
+						},
+					}, nil)
 				},
 			},
 			wantStatus: http.StatusOK,
@@ -174,7 +186,7 @@ func TestAuthHandler_Login(t *testing.T) {
 					m.EXPECT().Execute(gomock.Any(), int64(1)).Return(&model.User{ID: 1}, nil)
 				},
 				genToken: func(m *usecasemock.MockGenerateTokenUseCase) {
-					m.EXPECT().Execute(int64(1)).Return("", errors.New("token error"))
+					m.EXPECT().Execute(gomock.Any(), int64(1), gomock.Any(), gomock.Any()).Return(nil, errors.New("token error"))
 				},
 			},
 			wantStatus: http.StatusInternalServerError,
@@ -204,6 +216,8 @@ func TestAuthHandler_Login(t *testing.T) {
 				usecasemock.NewMockChangePasswordUseCase(ctrl),
 				usecasemock.NewMockRequestPasswordResetUseCase(ctrl),
 				usecasemock.NewMockResetPasswordUseCase(ctrl),
+				usecasemock.NewMockRefreshTokenUseCase(ctrl),
+				usecasemock.NewMockLogoutUseCase(ctrl),
 			)
 
 			body, _ := json.Marshal(tt.body)
@@ -260,6 +274,8 @@ func TestAuthHandler_Verify(t *testing.T) {
 				usecasemock.NewMockChangePasswordUseCase(ctrl),
 				usecasemock.NewMockRequestPasswordResetUseCase(ctrl),
 				usecasemock.NewMockResetPasswordUseCase(ctrl),
+				usecasemock.NewMockRefreshTokenUseCase(ctrl),
+				usecasemock.NewMockLogoutUseCase(ctrl),
 			)
 
 			body, _ := json.Marshal(tt.body)
@@ -330,6 +346,8 @@ func TestAuthHandler_ChangePassword(t *testing.T) {
 				mockChangePassword,
 				usecasemock.NewMockRequestPasswordResetUseCase(ctrl),
 				usecasemock.NewMockResetPasswordUseCase(ctrl),
+				usecasemock.NewMockRefreshTokenUseCase(ctrl),
+				usecasemock.NewMockLogoutUseCase(ctrl),
 			)
 
 			var req *http.Request
@@ -378,6 +396,8 @@ func TestAuthHandler_Logout(t *testing.T) {
 				usecasemock.NewMockChangePasswordUseCase(ctrl),
 				usecasemock.NewMockRequestPasswordResetUseCase(ctrl),
 				usecasemock.NewMockResetPasswordUseCase(ctrl),
+				usecasemock.NewMockRefreshTokenUseCase(ctrl),
+				usecasemock.NewMockLogoutUseCase(ctrl),
 			)
 
 			req := httptest.NewRequest(http.MethodPost, "/auth/logout", nil)
@@ -432,6 +452,8 @@ func TestAuthHandler_RequestPasswordReset(t *testing.T) {
 				usecasemock.NewMockChangePasswordUseCase(ctrl),
 				mockRequest,
 				usecasemock.NewMockResetPasswordUseCase(ctrl),
+				usecasemock.NewMockRefreshTokenUseCase(ctrl),
+				usecasemock.NewMockLogoutUseCase(ctrl),
 			)
 
 			body, _ := json.Marshal(tt.body)
@@ -494,6 +516,8 @@ func TestAuthHandler_ResetPassword(t *testing.T) {
 				usecasemock.NewMockChangePasswordUseCase(ctrl),
 				usecasemock.NewMockRequestPasswordResetUseCase(ctrl),
 				mockReset,
+				usecasemock.NewMockRefreshTokenUseCase(ctrl),
+				usecasemock.NewMockLogoutUseCase(ctrl),
 			)
 
 			body, _ := json.Marshal(tt.body)

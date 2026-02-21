@@ -29,34 +29,48 @@ export interface LoginRequest {
   password: string;
 }
 
+export type RefreshState = 'success' | 'error' | null;
+
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private readonly API_URL = '/api';
-  private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'auth_user';
 
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
+  // SSR Context
+  private readonly request = inject('REQUEST' as any, { optional: true });
 
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
+
+  public isRefreshing = false;
+  public refreshTokenSubject = new BehaviorSubject<RefreshState>(null);
 
   constructor() {
     this.restoreSession();
   }
 
   private restoreSession() {
-    if (!isPlatformBrowser(this.platformId)) {
-      return;
-    }
     try {
-      const storedUser = localStorage.getItem(this.USER_KEY);
-      const token = localStorage.getItem(this.TOKEN_KEY);
-      if (storedUser && storedUser !== 'undefined' && token && token !== 'undefined') {
-        this.currentUserSubject.next(JSON.parse(storedUser));
+      let storedUser: string | null = null;
+
+      if (isPlatformBrowser(this.platformId)) {
+        storedUser = this.getCookie(this.USER_KEY);
+      } else if (this.request) {
+        // SSR context: read from request headers
+        const req = this.request as any;
+        const cookieHeader = req.headers?.get?.('cookie') || req.headers?.cookie;
+        if (cookieHeader) {
+          storedUser = this.parseCookieHeader(cookieHeader, this.USER_KEY);
+        }
+      }
+
+      if (storedUser && storedUser !== 'undefined') {
+        this.currentUserSubject.next(JSON.parse(decodeURIComponent(storedUser)));
       } else {
         this.clearAuth();
       }
@@ -79,48 +93,75 @@ export class AuthService {
   }
 
   logout(): void {
-    // Optimistic logout
+    // サーバーサイドの Cookie (HttpOnly) も削除するために必要
+    this.http.post(`${this.API_URL}/auth/logout`, {}).subscribe({
+      next: () => this.handleLogoutSuccess(),
+      error: () => this.handleLogoutSuccess(), // エラーでもフロント側はクリアする
+    });
+  }
+
+  private handleLogoutSuccess(): void {
     this.clearAuth();
     this.router.navigate(['/login']);
-    // Optional: Call backend to invalidate token if needed
-    // this.http.post(`${this.API_URL}/auth/logout`, {}).subscribe();
   }
 
   private handleAuthResponse(response: AuthResponse) {
-    this.saveToken(response.token);
+    // auth_token は HttpOnly Cookie としてサーバーから設定されるため、
+    // ここで保存する必要はなくなりました。
     this.saveUser(response.user);
     this.currentUserSubject.next(response.user);
   }
 
-  private saveToken(token: string): void {
-    if (isPlatformBrowser(this.platformId) && token) {
-      localStorage.setItem(this.TOKEN_KEY, token);
-    }
-  }
-
   private saveUser(user: User): void {
     if (isPlatformBrowser(this.platformId) && user) {
-      localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+      this.setCookie(this.USER_KEY, JSON.stringify(user), 7);
     }
   }
 
-  getToken(): string | null {
+  private setCookie(name: string, value: string, days: number): void {
     if (isPlatformBrowser(this.platformId)) {
-      return localStorage.getItem(this.TOKEN_KEY);
+      const date = new Date();
+      date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+      const expires = '; expires=' + date.toUTCString();
+      document.cookie = name + '=' + encodeURIComponent(value) + expires + '; path=/; SameSite=Lax';
+    }
+  }
+
+  private getCookie(name: string): string | null {
+    if (isPlatformBrowser(this.platformId)) {
+      const nameEQ = name + '=';
+      const ca = document.cookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+      }
+    }
+    return null;
+  }
+
+  private parseCookieHeader(header: string, name: string): string | null {
+    const nameEQ = name + '=';
+    const ca = header.split(';');
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+      if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
     }
     return null;
   }
 
   clearAuth(): void {
     if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem(this.TOKEN_KEY);
-      localStorage.removeItem(this.USER_KEY);
+      // HttpOnly 属性ではないものを削除する
+      // (auth_token などの HttpOnly Cookie は JS から削除できないため、サーバー側でクリアする必要がある)
+      this.setCookie(this.USER_KEY, '', -1);
     }
     this.currentUserSubject.next(null);
   }
 
   isLoggedIn(): boolean {
-    return !!this.getToken();
+    return !!this.currentUserValue;
   }
 
   get currentUserValue(): User | null {
@@ -149,6 +190,12 @@ export class AuthService {
       token,
       new_password: newPassword,
     });
+  }
+
+  refresh(): Observable<AuthResponse> {
+    return this.http
+      .post<AuthResponse>(`${this.API_URL}/auth/refresh`, {})
+      .pipe(tap((response) => this.handleAuthResponse(response)));
   }
 }
 

@@ -1,5 +1,7 @@
 package registry
 
+//go:generate mockgen -source=$GOFILE -destination=mock/usecase_registry_mock.go -package=mock
+
 import (
 	"time"
 
@@ -20,12 +22,14 @@ type UseCase interface {
 	NewLoginUseCase() auth.LoginUseCase
 	NewGenerateTokenUseCase() auth.GenerateTokenUseCase
 	NewValidateTokenUseCase() auth.ValidateTokenUseCase
+	NewRefreshTokenUseCase() auth.RefreshTokenUseCase
 	NewGetUserUseCase() auth.GetUserUseCase
 	NewVerifyEmailUseCase() auth.VerifyEmailUseCase
 	NewWithdrawUseCase() auth.WithdrawUseCase
 	NewChangePasswordUseCase() auth.ChangePasswordUseCase
 	NewRequestPasswordResetUseCase() auth.RequestPasswordResetUseCase
 	NewResetPasswordUseCase() auth.ResetPasswordUseCase
+	NewLogoutUseCase() auth.LogoutUseCase
 
 	// Recipe
 	NewCreateRecipeUseCase() recipe.CreateRecipeUseCase
@@ -77,7 +81,17 @@ func (u *useCaseRegistry) NewGenerateTokenUseCase() auth.GenerateTokenUseCase {
 	return auth.NewGenerateTokenUseCase(
 		u.cfg.JWT.Secret,
 		time.Duration(u.cfg.JWT.ExpirationHours)*time.Hour,
+		u.repo.NewRefreshTokenRepository(),
+		time.Duration(u.cfg.JWT.RefreshTokenExpirationDays)*24*time.Hour,
 	)
+}
+
+func (u *useCaseRegistry) NewRefreshTokenUseCase() auth.RefreshTokenUseCase {
+	return auth.NewRefreshTokenUseCase(u.NewGenerateTokenUseCase(), u.repo.NewRefreshTokenRepository())
+}
+
+func (u *useCaseRegistry) NewLogoutUseCase() auth.LogoutUseCase {
+	return auth.NewLogoutUseCase(u.repo.NewRefreshTokenRepository())
 }
 
 func (u *useCaseRegistry) NewValidateTokenUseCase() auth.ValidateTokenUseCase {
