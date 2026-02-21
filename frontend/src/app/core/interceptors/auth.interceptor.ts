@@ -30,7 +30,7 @@ const handleUnauthorizedError = (authService: AuthService, req: HttpRequest<any>
         return authService.refresh().pipe(
             switchMap(() => {
                 authService.isRefreshing = false;
-                authService.refreshTokenSubject.next('refreshed'); // 成功を通知
+                authService.refreshTokenSubject.next('success'); // 成功を通知
                 return next(req);
             }),
             catchError((err) => {

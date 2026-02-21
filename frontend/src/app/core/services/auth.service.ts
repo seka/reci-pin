@@ -29,6 +29,8 @@ export interface LoginRequest {
   password: string;
 }
 
+export type RefreshState = 'success' | 'error' | null;
+
 @Injectable({
   providedIn: 'root',
 })
@@ -46,7 +48,7 @@ export class AuthService {
   public currentUser$ = this.currentUserSubject.asObservable();
 
   public isRefreshing = false;
-  public refreshTokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
+  public refreshTokenSubject = new BehaviorSubject<RefreshState>(null);
 
   constructor() {
     this.restoreSession();
