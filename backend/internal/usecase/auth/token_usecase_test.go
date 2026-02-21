@@ -1,6 +1,7 @@
 package auth_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -51,7 +52,7 @@ func TestGenerateTokenUseCase_Execute(t *testing.T) {
 				7*24*time.Hour,
 			)
 
-			result, err := uc.Execute(tt.userID, "test-agent", "127.0.0.1")
+			result, err := uc.Execute(context.Background(), tt.userID, "test-agent", "127.0.0.1")
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -78,7 +79,7 @@ func TestValidateTokenUseCase_Execute(t *testing.T) {
 
 	// 有効なトークンを生成
 	genUC := auth.NewGenerateTokenUseCase(jwtSecret, time.Duration(expirationHours)*time.Hour, mockRepo, 7*24*time.Hour)
-	result, err := genUC.Execute(1, "test-agent", "127.0.0.1")
+	result, err := genUC.Execute(context.Background(), 1, "test-agent", "127.0.0.1")
 	assert.NoError(t, err)
 	validToken := result.AccessToken
 
@@ -142,7 +143,7 @@ func TestTokenExpiration(t *testing.T) {
 
 	// 有効期限が極めて短いトークンを生成（テスト用）
 	genUC := auth.NewGenerateTokenUseCase(jwtSecret, -1*time.Hour, mockRepo, 7*24*time.Hour) // -1時間 = 既に期限切れ
-	result, err := genUC.Execute(1, "test-agent", "127.0.0.1")
+	result, err := genUC.Execute(context.Background(), 1, "test-agent", "127.0.0.1")
 	assert.NoError(t, err)
 	expiredToken := result.AccessToken
 

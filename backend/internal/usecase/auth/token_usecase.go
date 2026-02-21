@@ -56,7 +56,7 @@ func (uc *validateTokenInteractor) Execute(tokenString string) (int64, error) {
 }
 
 type GenerateTokenUseCase interface {
-	Execute(userID int64, userAgent, ipAddress string) (*TokenResult, error)
+	Execute(ctx context.Context, userID int64, userAgent, ipAddress string) (*TokenResult, error)
 }
 
 type generateTokenInteractor struct {
@@ -80,7 +80,7 @@ func NewGenerateTokenUseCase(
 	}
 }
 
-func (uc *generateTokenInteractor) Execute(userID int64, userAgent, ipAddress string) (*TokenResult, error) {
+func (uc *generateTokenInteractor) Execute(ctx context.Context, userID int64, userAgent, ipAddress string) (*TokenResult, error) {
 	// Generate Access Token
 	accessTokenExpiresAt := time.Now().Add(uc.jwtExpiration)
 	claims := jwt.MapClaims{
@@ -108,7 +108,7 @@ func (uc *generateTokenInteractor) Execute(userID int64, userAgent, ipAddress st
 		IPAddress: ipAddress,
 	}
 
-	if err := uc.refreshTokenRepo.Save(context.TODO(), rtModel); err != nil {
+	if err := uc.refreshTokenRepo.Save(ctx, rtModel); err != nil {
 		return nil, fmt.Errorf("failed to save refresh token: %w", err)
 	}
 
@@ -121,7 +121,7 @@ func (uc *generateTokenInteractor) Execute(userID int64, userAgent, ipAddress st
 }
 
 type RefreshTokenUseCase interface {
-	Execute(refreshToken string, userAgent, ipAddress string) (*TokenResult, error)
+	Execute(ctx context.Context, refreshToken string, userAgent, ipAddress string) (*TokenResult, error)
 }
 
 type refreshTokenInteractor struct {
@@ -136,9 +136,9 @@ func NewRefreshTokenUseCase(genTokenUC GenerateTokenUseCase, repo repository.Ref
 	}
 }
 
-func (uc *refreshTokenInteractor) Execute(refreshToken string, userAgent, ipAddress string) (*TokenResult, error) {
+func (uc *refreshTokenInteractor) Execute(ctx context.Context, refreshToken string, userAgent, ipAddress string) (*TokenResult, error) {
 	hash := HashToken(refreshToken)
-	rt, err := uc.repo.GetByHash(context.TODO(), hash)
+	rt, err := uc.repo.GetByHash(ctx, hash)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find refresh token: %w", err)
 	}
@@ -158,16 +158,16 @@ func (uc *refreshTokenInteractor) Execute(refreshToken string, userAgent, ipAddr
 	}
 
 	// トークンの回転 (Rotation): 現在のトークンを失効させる
-	if err := uc.repo.Revoke(context.TODO(), rt.ID); err != nil {
+	if err := uc.repo.Revoke(ctx, rt.ID); err != nil {
 		return nil, fmt.Errorf("failed to revoke old refresh token: %w", err)
 	}
 
 	// 新しいトークンペアを発行
-	return uc.genTokenUC.Execute(rt.UserID, userAgent, ipAddress)
+	return uc.genTokenUC.Execute(ctx, rt.UserID, userAgent, ipAddress)
 }
 
 type LogoutUseCase interface {
-	Execute(refreshToken string) error
+	Execute(ctx context.Context, refreshToken string) error
 }
 
 type logoutInteractor struct {
@@ -178,14 +178,14 @@ func NewLogoutUseCase(repo repository.RefreshTokenRepository) LogoutUseCase {
 	return &logoutInteractor{repo: repo}
 }
 
-func (uc *logoutInteractor) Execute(refreshToken string) error {
+func (uc *logoutInteractor) Execute(ctx context.Context, refreshToken string) error {
 	hash := HashToken(refreshToken)
-	rt, err := uc.repo.GetByHash(context.TODO(), hash)
+	rt, err := uc.repo.GetByHash(ctx, hash)
 	if err != nil {
 		return fmt.Errorf("failed to find refresh token: %w", err)
 	}
 	if rt != nil {
-		return uc.repo.Revoke(context.TODO(), rt.ID)
+		return uc.repo.Revoke(ctx, rt.ID)
 	}
 	return nil
 }

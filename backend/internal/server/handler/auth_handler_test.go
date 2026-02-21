@@ -136,7 +136,7 @@ func TestAuthHandler_Login(t *testing.T) {
 					m.EXPECT().Execute(gomock.Any(), int64(1)).Return(&model.User{ID: 1}, nil)
 				},
 				genToken: func(m *usecasemock.MockGenerateTokenUseCase) {
-					m.EXPECT().Execute(int64(1), gomock.Any(), gomock.Any()).Return(&auth.TokenResult{
+					m.EXPECT().Execute(gomock.Any(), int64(1), gomock.Any(), gomock.Any()).Return(&auth.TokenResult{
 						AccessToken:           "access_token",
 						AccessTokenExpiresAt:  time.Now().Add(time.Hour),
 						RefreshToken:          "refresh_token",
@@ -183,7 +183,7 @@ func TestAuthHandler_Login(t *testing.T) {
 					m.EXPECT().Execute(gomock.Any(), int64(1)).Return(&model.User{ID: 1}, nil)
 				},
 				genToken: func(m *usecasemock.MockGenerateTokenUseCase) {
-					m.EXPECT().Execute(int64(1), gomock.Any(), gomock.Any()).Return(nil, errors.New("token error"))
+					m.EXPECT().Execute(gomock.Any(), int64(1), gomock.Any(), gomock.Any()).Return(nil, errors.New("token error"))
 				},
 			},
 			wantStatus: http.StatusInternalServerError,

@@ -150,7 +150,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	userAgent := r.UserAgent()
 	ipAddress := r.RemoteAddr
 
-	tokenResult, err := h.generateTokenUseCase.Execute(userID, userAgent, ipAddress)
+	tokenResult, err := h.generateTokenUseCase.Execute(r.Context(), userID, userAgent, ipAddress)
 	if err != nil {
 		http.Error(w, "failed to generate token", http.StatusInternalServerError)
 		return
@@ -181,7 +181,7 @@ func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 	userAgent := r.UserAgent()
 	ipAddress := r.RemoteAddr
 
-	tokenResult, err := h.refreshTokenUseCase.Execute(cookie.Value, userAgent, ipAddress)
+	tokenResult, err := h.refreshTokenUseCase.Execute(r.Context(), cookie.Value, userAgent, ipAddress)
 	if err != nil {
 		log.Printf("RefreshTokenUseCase error: %v", err)
 		http.Error(w, "invalid refresh token", http.StatusUnauthorized)
@@ -240,7 +240,7 @@ func (h *AuthHandler) Verify(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	// DB側のリフレッシュトークンを無効化（もしあれば）
 	if cookie, err := r.Cookie("refresh_token"); err == nil {
-		if err := h.logoutUseCase.Execute(cookie.Value); err != nil {
+		if err := h.logoutUseCase.Execute(r.Context(), cookie.Value); err != nil {
 			log.Printf("LogoutUseCase error: %v", err)
 			// 失敗してもクライアント側は消したいので続行
 		}
