@@ -11,8 +11,8 @@ package mock
 
 import (
 	reflect "reflect"
-	time "time"
 
+	auth "github.com/seka/reci-pin/backend/internal/usecase/auth"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -80,17 +80,93 @@ func (m *MockGenerateTokenUseCase) EXPECT() *MockGenerateTokenUseCaseMockRecorde
 }
 
 // Execute mocks base method.
-func (m *MockGenerateTokenUseCase) Execute(userID int64) (string, time.Time, error) {
+func (m *MockGenerateTokenUseCase) Execute(userID int64, userAgent, ipAddress string) (*auth.TokenResult, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Execute", userID)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(time.Time)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret := m.ctrl.Call(m, "Execute", userID, userAgent, ipAddress)
+	ret0, _ := ret[0].(*auth.TokenResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Execute indicates an expected call of Execute.
-func (mr *MockGenerateTokenUseCaseMockRecorder) Execute(userID any) *gomock.Call {
+func (mr *MockGenerateTokenUseCaseMockRecorder) Execute(userID, userAgent, ipAddress any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockGenerateTokenUseCase)(nil).Execute), userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockGenerateTokenUseCase)(nil).Execute), userID, userAgent, ipAddress)
+}
+
+// MockRefreshTokenUseCase is a mock of RefreshTokenUseCase interface.
+type MockRefreshTokenUseCase struct {
+	ctrl     *gomock.Controller
+	recorder *MockRefreshTokenUseCaseMockRecorder
+	isgomock struct{}
+}
+
+// MockRefreshTokenUseCaseMockRecorder is the mock recorder for MockRefreshTokenUseCase.
+type MockRefreshTokenUseCaseMockRecorder struct {
+	mock *MockRefreshTokenUseCase
+}
+
+// NewMockRefreshTokenUseCase creates a new mock instance.
+func NewMockRefreshTokenUseCase(ctrl *gomock.Controller) *MockRefreshTokenUseCase {
+	mock := &MockRefreshTokenUseCase{ctrl: ctrl}
+	mock.recorder = &MockRefreshTokenUseCaseMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockRefreshTokenUseCase) EXPECT() *MockRefreshTokenUseCaseMockRecorder {
+	return m.recorder
+}
+
+// Execute mocks base method.
+func (m *MockRefreshTokenUseCase) Execute(refreshToken, userAgent, ipAddress string) (*auth.TokenResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Execute", refreshToken, userAgent, ipAddress)
+	ret0, _ := ret[0].(*auth.TokenResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Execute indicates an expected call of Execute.
+func (mr *MockRefreshTokenUseCaseMockRecorder) Execute(refreshToken, userAgent, ipAddress any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockRefreshTokenUseCase)(nil).Execute), refreshToken, userAgent, ipAddress)
+}
+
+// MockLogoutUseCase is a mock of LogoutUseCase interface.
+type MockLogoutUseCase struct {
+	ctrl     *gomock.Controller
+	recorder *MockLogoutUseCaseMockRecorder
+	isgomock struct{}
+}
+
+// MockLogoutUseCaseMockRecorder is the mock recorder for MockLogoutUseCase.
+type MockLogoutUseCaseMockRecorder struct {
+	mock *MockLogoutUseCase
+}
+
+// NewMockLogoutUseCase creates a new mock instance.
+func NewMockLogoutUseCase(ctrl *gomock.Controller) *MockLogoutUseCase {
+	mock := &MockLogoutUseCase{ctrl: ctrl}
+	mock.recorder = &MockLogoutUseCaseMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockLogoutUseCase) EXPECT() *MockLogoutUseCaseMockRecorder {
+	return m.recorder
+}
+
+// Execute mocks base method.
+func (m *MockLogoutUseCase) Execute(refreshToken string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Execute", refreshToken)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Execute indicates an expected call of Execute.
+func (mr *MockLogoutUseCaseMockRecorder) Execute(refreshToken any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockLogoutUseCase)(nil).Execute), refreshToken)
 }
