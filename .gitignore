@@ -96,3 +96,5 @@ storybook-static
 localstack_data/
 
 /worktrees
+localstack_data/
+cookies.txt
