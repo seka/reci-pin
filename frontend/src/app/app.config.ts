@@ -17,11 +17,13 @@ export function httpLoaderFactory() {
   return new TranslateHttpLoader();
 }
 
+import { authInterceptor } from './core/interceptors/auth.interceptor';
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(withFetch()),
+    provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     provideClientHydration(withEventReplay()),
     {
       provide: TRANSLATE_HTTP_LOADER_CONFIG,

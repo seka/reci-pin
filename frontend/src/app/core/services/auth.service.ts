@@ -45,6 +45,9 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
+  public isRefreshing = false;
+  public refreshTokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
+
   constructor() {
     this.restoreSession();
   }
@@ -184,6 +187,12 @@ export class AuthService {
       token,
       new_password: newPassword,
     });
+  }
+
+  refresh(): Observable<AuthResponse> {
+    return this.http
+      .post<AuthResponse>(`${this.API_URL}/auth/refresh`, {})
+      .pipe(tap((response) => this.handleAuthResponse(response)));
   }
 }
 

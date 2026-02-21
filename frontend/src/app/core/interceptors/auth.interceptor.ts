@@ -1,0 +1,50 @@
+import { HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpRequest, HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { catchError, filter, switchMap, take, throwError, Observable } from 'rxjs';
+import { AuthService } from '../services/auth.service';
+
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+    const authService = inject(AuthService);
+
+    return next(req).pipe(
+        catchError((error) => {
+            if (error instanceof HttpErrorResponse && error.status === 401) {
+                // ログインやリフレッシュ自体の失敗はそのままエラーとして流す
+                if (req.url.includes('/auth/login') || req.url.includes('/auth/refresh')) {
+                    authService.clearAuth();
+                    return throwError(() => error);
+                }
+
+                return handle401Error(authService, req, next);
+            }
+            return throwError(() => error);
+        })
+    );
+};
+
+const handle401Error = (authService: AuthService, req: HttpRequest<any>, next: HttpHandlerFn): Observable<HttpEvent<any>> => {
+    if (!authService.isRefreshing) {
+        authService.isRefreshing = true;
+        authService.refreshTokenSubject.next(null);
+
+        return authService.refresh().pipe(
+            switchMap(() => {
+                authService.isRefreshing = false;
+                authService.refreshTokenSubject.next('refreshed'); // 値は何でも良い。null以外ならOK
+                return next(req);
+            }),
+            catchError((err) => {
+                authService.isRefreshing = false;
+                authService.clearAuth();
+                return throwError(() => err);
+            })
+        );
+    } else {
+        // すでにリフレッシュ中の場合は、信号を待ってから再試行
+        return authService.refreshTokenSubject.pipe(
+            filter(token => token !== null),
+            take(1),
+            switchMap(() => next(req))
+        );
+    }
+};
