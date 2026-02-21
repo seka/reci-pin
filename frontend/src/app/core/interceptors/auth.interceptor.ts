@@ -15,14 +15,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
                     return throwError(() => error);
                 }
 
-                return handle401Error(authService, req, next);
+                return handleUnauthorizedError(authService, req, next);
             }
             return throwError(() => error);
         })
     );
 };
 
-const handle401Error = (authService: AuthService, req: HttpRequest<any>, next: HttpHandlerFn): Observable<HttpEvent<any>> => {
+const handleUnauthorizedError = (authService: AuthService, req: HttpRequest<any>, next: HttpHandlerFn): Observable<HttpEvent<any>> => {
     if (!authService.isRefreshing) {
         authService.isRefreshing = true;
         authService.refreshTokenSubject.next(null);
