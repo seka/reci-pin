@@ -61,11 +61,15 @@ func (s *Server) setupRoutes() {
 		s.useCaseRegistry.NewChangePasswordUseCase(),
 		s.useCaseRegistry.NewRequestPasswordResetUseCase(),
 		s.useCaseRegistry.NewResetPasswordUseCase(),
+		s.useCaseRegistry.NewRefreshTokenUseCase(),
+		s.useCaseRegistry.NewLogoutUseCase(),
 	)
 
 	s.router.Post("/api/auth/signup", authHandler.Signup)
 	s.router.Post("/api/auth/login", authHandler.Login)
 	s.router.Post("/api/auth/verify", authHandler.Verify)
+	s.router.Post("/api/auth/refresh", authHandler.Refresh)
+	s.router.Post("/api/auth/logout", authHandler.Logout)
 	s.router.Post("/api/auth/password-reset/request", authHandler.RequestPasswordReset)
 	s.router.Post("/api/auth/password-reset", authHandler.ResetPassword)
 
