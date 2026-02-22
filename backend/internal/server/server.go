@@ -20,14 +20,16 @@ type Server struct {
 	httpServer      *http.Server
 	useCaseRegistry registry.UseCase
 	cfg             *config.ApiServer
+	storageCfg      *config.Storage
 }
 
 // New creates a new server instance with the given dependencies
-func New(cfg *config.ApiServer, useCase registry.UseCase) *Server {
+func New(cfg *config.ApiServer, storageCfg *config.Storage, useCase registry.UseCase) *Server {
 	s := &Server{
 		router:          chi.NewRouter(),
 		useCaseRegistry: useCase,
 		cfg:             cfg,
+		storageCfg:      storageCfg,
 	}
 
 	s.setupMiddleware()
@@ -95,7 +97,7 @@ func (s *Server) setupRoutes() {
 			s.useCaseRegistry.NewCreateTagUseCase(),
 			s.useCaseRegistry.NewGetAllTagsUseCase(),
 			s.useCaseRegistry.NewDeleteTagUseCase(),
-			s.cfg.Storage.PublicBaseURL,
+			s.storageCfg.PublicBaseURL,
 		)
 		if err != nil {
 			log.Fatalf("failed to create recipe handler: %v", err)

@@ -92,7 +92,7 @@ func main() {
 	mailClient := mailhog.NewClient(cfg.Email)
 
 	// Start Server
-	srv := createServer(&cfg.ApiServer, db, searchEngine, storage, mailClient)
+	srv := createServer(&cfg.ApiServer, &cfg.Storage, db, searchEngine, storage, mailClient)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -133,6 +133,7 @@ func connectDatabase(ctx context.Context, db database.Database) error {
 
 func createServer(
 	cfg *config.ApiServer,
+	storageCfg *config.Storage,
 	db database.Database,
 	searchEngine *elasticsearch.TypedClient,
 	storage storage.Client,
@@ -140,7 +141,7 @@ func createServer(
 ) *server.Server {
 	repoRegistry := registry.NewRepository(db, searchEngine)
 	useCaseRegistry := registry.NewUseCase(cfg, repoRegistry, storage, emailClient)
-	return server.New(cfg, useCaseRegistry)
+	return server.New(cfg, storageCfg, useCaseRegistry)
 }
 
 func runServer(ctx context.Context, srv *server.Server) error {
