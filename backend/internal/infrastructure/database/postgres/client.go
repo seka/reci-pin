@@ -4,20 +4,21 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/seka/reci-pin/backend/config"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
 )
 
 type Client struct {
-	dsn  string
+	cfg  config.Database
 	pool *pgxpool.Pool
 }
 
-func New(dsn string) database.Database {
-	return &Client{dsn: dsn}
+func NewClient(cfg config.Database) database.Database {
+	return &Client{cfg: cfg}
 }
 
 func (p *Client) Connect(ctx context.Context) error {
-	pool, err := pgxpool.New(ctx, p.dsn)
+	pool, err := pgxpool.New(ctx, p.cfg.DSN())
 	if err != nil {
 		return err
 	}
