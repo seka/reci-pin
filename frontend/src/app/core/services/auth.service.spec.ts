@@ -14,7 +14,7 @@ describe('AuthService', () => {
     let routerMock: any;
 
     const mockUser: User = {
-        id: 1, email: 'test@example.com', name: 'Test User', created_at: '', updated_at: ''
+        id: 1, email: 'test@example.com', name: 'Test User', createdAt: '', updatedAt: ''
     };
 
     function initTestBed() {

@@ -6,6 +6,8 @@ import { isPlatformBrowser } from '@angular/common';
 import { Observable, of } from 'rxjs';
 
 import { routes } from './app.routes';
+import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { caseConverterInterceptor } from './core/interceptors/case-converter.interceptor';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 
 import { TranslateHttpLoader, TRANSLATE_HTTP_LOADER_CONFIG } from '@ngx-translate/http-loader';
@@ -17,13 +19,11 @@ export function httpLoaderFactory() {
   return new TranslateHttpLoader();
 }
 
-import { authInterceptor } from './core/interceptors/auth.interceptor';
-
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([caseConverterInterceptor, authInterceptor])),
     provideClientHydration(withEventReplay()),
     {
       provide: TRANSLATE_HTTP_LOADER_CONFIG,

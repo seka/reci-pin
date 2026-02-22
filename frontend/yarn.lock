@@ -6210,6 +6210,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"camelcase-keys@npm:^10.0.2":
+  version: 10.0.2
+  resolution: "camelcase-keys@npm:10.0.2"
+  dependencies:
+    camelcase: "npm:^9.0.0"
+    map-obj: "npm:6.0.0"
+    quick-lru: "npm:^7.3.0"
+    type-fest: "npm:^5.4.1"
+  checksum: 10c0/62489bf09baee295eb7afd60cb732dd9774483a877613091480173cca6c83d72daeef1daa6d08e680477628138e2657233520b157d2799877992b9be74e0b6b4
+  languageName: node
+  linkType: hard
+
+"camelcase@npm:^9.0.0":
+  version: 9.0.0
+  resolution: "camelcase@npm:9.0.0"
+  checksum: 10c0/7171e1540b9b227cab9d59b7afa05174d14c10268171c18bdf2240eb1485ad6851592f1253ddc291f7ae34caad42c18206d339538965c67fb17fc995c0bb509b
+  languageName: node
+  linkType: hard
+
 "caniuse-lite@npm:^1.0.30001759":
   version: 1.0.30001767
   resolution: "caniuse-lite@npm:1.0.30001767"
@@ -6883,6 +6902,25 @@ __metadata:
   dependencies:
     callsite: "npm:^1.0.0"
   checksum: 10c0/7a27260a0bfc51b913db4956e8fe596d72151c0d4cb437daa30787950c274b3fa5c81235a334742b1e32f87ee55d7eb2a0d960ecdadf3583ef23b8f796aebad3
+  languageName: node
+  linkType: hard
+
+"decamelize-keys@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "decamelize-keys@npm:2.0.1"
+  dependencies:
+    decamelize: "npm:^6.0.0"
+    map-obj: "npm:^4.3.0"
+    quick-lru: "npm:^6.1.1"
+    type-fest: "npm:^3.1.0"
+  checksum: 10c0/054c76131cfb81b59914667bd6b7902baf71b4f7ef4461fa16764fbd5ead025aebf8efba579029ba7a9fe85cd8cf7b989326a7106cdbb0155157a0a58503ddd5
+  languageName: node
+  linkType: hard
+
+"decamelize@npm:^6.0.0":
+  version: 6.0.1
+  resolution: "decamelize@npm:6.0.1"
+  checksum: 10c0/c0a3a529591ebab1d1a9458b60684194e91d904e9b0a56367d3d507b2c8ab89dfd40c61423ca6a1eb2f70e2d44d2efe78f3342326395d3738d1d42592b1a6224
   languageName: node
   linkType: hard
 
@@ -8145,6 +8183,8 @@ __metadata:
     "@types/express": "npm:^5.0.1"
     "@types/node": "npm:^20.17.19"
     angular-eslint: "npm:^21.2.0"
+    camelcase-keys: "npm:^10.0.2"
+    decamelize-keys: "npm:^2.0.1"
     eslint: "npm:^9.0.0"
     eslint-config-prettier: "npm:^10.1.8"
     express: "npm:^5.1.0"
@@ -9551,6 +9591,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"map-obj@npm:6.0.0":
+  version: 6.0.0
+  resolution: "map-obj@npm:6.0.0"
+  checksum: 10c0/c6f867873f72f8aaa4962ec70895fa95cd3e0fdcae95e1c240581fe6891fd5cd31ae16d61a6a7b867982a4344679fe5b3763e62e91580652d7d7696a84c97330
+  languageName: node
+  linkType: hard
+
+"map-obj@npm:^4.3.0":
+  version: 4.3.0
+  resolution: "map-obj@npm:4.3.0"
+  checksum: 10c0/1c19e1c88513c8abdab25c316367154c6a0a6a0f77e3e8c391bb7c0e093aefed293f539d026dc013d86219e5e4c25f23b0003ea588be2101ccd757bacc12d43b
+  languageName: node
+  linkType: hard
+
 "map-stream@npm:0.0.7":
   version: 0.0.7
   resolution: "map-stream@npm:0.0.7"
@@ -10942,6 +10996,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"quick-lru@npm:^6.1.1":
+  version: 6.1.2
+  resolution: "quick-lru@npm:6.1.2"
+  checksum: 10c0/f499f07bd276eec460c4d7d2ee286c519f3bd189cbbb5ddf3eb929e2182e4997f66b951ea8d24b3f3cee8ed5ac9f0006bf40636f082acd1b38c050a4cbf07ed3
+  languageName: node
+  linkType: hard
+
+"quick-lru@npm:^7.3.0":
+  version: 7.3.0
+  resolution: "quick-lru@npm:7.3.0"
+  checksum: 10c0/28dc8eaadcd489d26917f238ad27a6b09f8fe3a609152b0a4f399d5805094e07b56fe1e8c0d7ade0c11463c31bef329803672effc559601daf160a85f578fd05
+  languageName: node
+  linkType: hard
+
 "randombytes@npm:^2.1.0":
   version: 2.1.0
   resolution: "randombytes@npm:2.1.0"
@@ -12212,6 +12280,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tagged-tag@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "tagged-tag@npm:1.0.0"
+  checksum: 10c0/91d25c9ffb86a91f20522cefb2cbec9b64caa1febe27ad0df52f08993ff60888022d771e868e6416cf2e72dab68449d2139e8709ba009b74c6c7ecd4000048d1
+  languageName: node
+  linkType: hard
+
 "tapable@npm:^2.0.0, tapable@npm:^2.2.1, tapable@npm:^2.3.0":
   version: 2.3.0
   resolution: "tapable@npm:2.3.0"
@@ -12523,6 +12598,22 @@ __metadata:
   dependencies:
     prelude-ls: "npm:^1.2.1"
   checksum: 10c0/7b3fd0ed43891e2080bf0c5c504b418fbb3e5c7b9708d3d015037ba2e6323a28152ec163bcb65212741fa5d2022e3075ac3c76440dbd344c9035f818e8ecee58
+  languageName: node
+  linkType: hard
+
+"type-fest@npm:^3.1.0":
+  version: 3.13.1
+  resolution: "type-fest@npm:3.13.1"
+  checksum: 10c0/547d22186f73a8c04590b70dcf63baff390078c75ea8acd366bbd510fd0646e348bd1970e47ecf795b7cff0b41d26e9c475c1fedd6ef5c45c82075fbf916b629
+  languageName: node
+  linkType: hard
+
+"type-fest@npm:^5.4.1":
+  version: 5.4.4
+  resolution: "type-fest@npm:5.4.4"
+  dependencies:
+    tagged-tag: "npm:^1.0.0"
+  checksum: 10c0/bf9c6d7df5383fd720aac71da8ce8690ff1c554459d19cf3c72d61eac98255dba57abe20c628f91f4116f66211791462fdafa90b2be2d7405a5a4c295e4d849d
   languageName: node
   linkType: hard
 

@@ -22,12 +22,21 @@ type Story = StoryObj<RecipeCardComponent>;
 
 const mockRecipe: Recipe = {
   id: 1,
-  user_id: 1,
+  userId: 1,
   name: '手作りハンバーグ',
   url: 'https://example.com/hamburg',
   memo: 'ふっくらジューシーなハンバーグ。玉ねぎはしっかり炒めるのがコツです。',
-  created_at: '2024-02-07T00:00:00Z',
-  updated_at: '2024-02-07T00:00:00Z',
+  images: [
+    {
+      id: 1,
+      recipeId: 1,
+      imagePath: '/images/recipe1.jpg',
+      imageUrl: 'https://example.com/images/recipe1.jpg',
+      createdAt: new Date().toISOString(),
+    },
+  ],
+  createdAt: '2024-02-07T00:00:00Z',
+  updatedAt: '2024-02-07T00:00:00Z',
   tags: [
     { id: 1, name: '洋食' },
     { id: 2, name: '夕食' },
