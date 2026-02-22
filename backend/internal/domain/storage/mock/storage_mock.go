@@ -17,32 +17,32 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-// MockStorage is a mock of Storage interface.
-type MockStorage struct {
+// MockClient is a mock of Client interface.
+type MockClient struct {
 	ctrl     *gomock.Controller
-	recorder *MockStorageMockRecorder
+	recorder *MockClientMockRecorder
 	isgomock struct{}
 }
 
-// MockStorageMockRecorder is the mock recorder for MockStorage.
-type MockStorageMockRecorder struct {
-	mock *MockStorage
+// MockClientMockRecorder is the mock recorder for MockClient.
+type MockClientMockRecorder struct {
+	mock *MockClient
 }
 
-// NewMockStorage creates a new mock instance.
-func NewMockStorage(ctrl *gomock.Controller) *MockStorage {
-	mock := &MockStorage{ctrl: ctrl}
-	mock.recorder = &MockStorageMockRecorder{mock}
+// NewMockClient creates a new mock instance.
+func NewMockClient(ctrl *gomock.Controller) *MockClient {
+	mock := &MockClient{ctrl: ctrl}
+	mock.recorder = &MockClientMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockStorage) EXPECT() *MockStorageMockRecorder {
+func (m *MockClient) EXPECT() *MockClientMockRecorder {
 	return m.recorder
 }
 
 // GeneratePresignedURL mocks base method.
-func (m *MockStorage) GeneratePresignedURL(ctx context.Context, key, contentType string, contentLength int64, expires time.Duration) (string, error) {
+func (m *MockClient) GeneratePresignedURL(ctx context.Context, key, contentType string, contentLength int64, expires time.Duration) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GeneratePresignedURL", ctx, key, contentType, contentLength, expires)
 	ret0, _ := ret[0].(string)
@@ -51,7 +51,7 @@ func (m *MockStorage) GeneratePresignedURL(ctx context.Context, key, contentType
 }
 
 // GeneratePresignedURL indicates an expected call of GeneratePresignedURL.
-func (mr *MockStorageMockRecorder) GeneratePresignedURL(ctx, key, contentType, contentLength, expires any) *gomock.Call {
+func (mr *MockClientMockRecorder) GeneratePresignedURL(ctx, key, contentType, contentLength, expires any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GeneratePresignedURL", reflect.TypeOf((*MockStorage)(nil).GeneratePresignedURL), ctx, key, contentType, contentLength, expires)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GeneratePresignedURL", reflect.TypeOf((*MockClient)(nil).GeneratePresignedURL), ctx, key, contentType, contentLength, expires)
 }

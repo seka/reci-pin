@@ -52,9 +52,7 @@ func TestNew(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	cfg := &config.Config{
-		ApiServer: config.ApiServer{Port: "8080"},
-	}
+	cfg := &config.ApiServer{Port: "8080"}
 	mockRegistry := registrymock.NewMockUseCase(ctrl)
 	setupMockRegistry(ctrl, mockRegistry)
 
@@ -69,7 +67,7 @@ func TestServer_HealthEndpoint(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	cfg := &config.Config{}
+	cfg := &config.ApiServer{}
 	mockRegistry := registrymock.NewMockUseCase(ctrl)
 	setupMockRegistry(ctrl, mockRegistry)
 
@@ -88,7 +86,7 @@ func TestServer_CORSHeaders(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	cfg := &config.Config{}
+	cfg := &config.ApiServer{}
 	mockRegistry := registrymock.NewMockUseCase(ctrl)
 	setupMockRegistry(ctrl, mockRegistry)
 
@@ -121,7 +119,7 @@ func TestServer_RoutingExists(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			cfg := &config.Config{}
+			cfg := &config.ApiServer{}
 			mockRegistry := registrymock.NewMockUseCase(ctrl)
 			setupMockRegistry(ctrl, mockRegistry)
 
