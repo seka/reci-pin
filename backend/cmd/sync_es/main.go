@@ -5,6 +5,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -26,6 +27,19 @@ func getEnv(key, fallback string) string {
 	return fallback
 }
 
+func parseAddresses(raw string) []string {
+	parts := strings.Split(raw, ",")
+	addresses := make([]string, 0, len(parts))
+	for _, part := range parts {
+		addr := strings.TrimSpace(part)
+		if addr == "" {
+			continue
+		}
+		addresses = append(addresses, addr)
+	}
+	return addresses
+}
+
 func init() {
 	flag.StringVar(&cfg.Database.Host, "db-host", getEnv("DB_HOST", "localhost"), "Database host")
 	flag.StringVar(&cfg.Database.Port, "db-port", "5432", "Database port")
@@ -33,6 +47,18 @@ func init() {
 	flag.StringVar(&cfg.Database.Password, "db-password", getEnv("DB_PASSWORD", "postgres"), "Database password")
 	flag.StringVar(&cfg.Database.DBName, "db-name", getEnv("DB_NAME", "recipin_dev"), "Database name")
 	flag.StringVar(&cfg.Database.SSLMode, "db-sslmode", getEnv("DB_SSLMODE", "disable"), "Database SSL mode")
+
+	defaultAddresses := []string{getEnv("ELASTICSEARCH_ADDRESS", "http://localhost:9200")}
+	if multi, ok := os.LookupEnv("ELASTICSEARCH_ADDRESSES"); ok {
+		if addresses := parseAddresses(multi); len(addresses) > 0 {
+			defaultAddresses = addresses
+		}
+	}
+	cfg.SearchEngine.Addresses = defaultAddresses
+	flag.Func("es-addresses", "Elasticsearch addresses (comma separated)", func(v string) error {
+		cfg.SearchEngine.Addresses = parseAddresses(v)
+		return nil
+	})
 }
 
 func main() {
@@ -41,7 +67,7 @@ func main() {
 	ctx := context.Background()
 
 	// Connect to Database
-	db := postgres.New(cfg.Database.DSN())
+	db := postgres.NewClient(cfg.Database)
 	if err := db.Connect(ctx); err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
@@ -49,7 +75,7 @@ func main() {
 	log.Println("Connected to database")
 
 	// Connect to Elasticsearch
-	esClient, err := es.NewClient()
+	esClient, err := es.NewClient(cfg.SearchEngine)
 	if err != nil {
 		log.Fatalf("Failed to connect to elasticsearch: %v", err)
 	}

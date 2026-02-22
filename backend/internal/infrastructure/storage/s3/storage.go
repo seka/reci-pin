@@ -8,8 +8,9 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
+	sdkconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/seka/reci-pin/backend/config"
 	"github.com/seka/reci-pin/backend/internal/domain/storage"
 )
 
@@ -23,22 +24,38 @@ type client struct {
 }
 
 // NewClient creates a new StorageService backed by S3
-func NewClient(ctx context.Context, bucket string, endpoint *url.URL, publicBaseURL *url.URL) (storage.Storage, error) {
-	cfg, err := config.LoadDefaultConfig(ctx)
+func NewClient(ctx context.Context, cfg config.Storage) (storage.Client, error) {
+	awsCfg, err := sdkconfig.LoadDefaultConfig(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load SDK config: %w", err)
 	}
 
-	s3Client := s3.NewFromConfig(cfg, func(o *s3.Options) {
-		if endpoint != nil {
-			o.BaseEndpoint = aws.String(endpoint.String())
+	s3Client := s3.NewFromConfig(awsCfg, func(o *s3.Options) {
+		if cfg.Endpoint != "" {
+			o.BaseEndpoint = aws.String(cfg.Endpoint)
 			o.UsePathStyle = true // Required for LocalStack
 		}
 	})
 
+	var parsedPublic *url.URL
+	if cfg.PublicBaseURL != "" {
+		parsedPublic, err = url.Parse(cfg.PublicBaseURL)
+		if err != nil {
+			return nil, fmt.Errorf("invalid public base URL: %w", err)
+		}
+	}
+
+	var parsedInternal *url.URL
+	if cfg.Endpoint != "" {
+		parsedInternal, err = url.Parse(cfg.Endpoint)
+		if err != nil {
+			return nil, fmt.Errorf("invalid internal endpoint: %w", err)
+		}
+	}
+
 	var internalPathPrefix string
-	if endpoint != nil {
-		internalPathPrefix = endpoint.JoinPath(bucket).Path
+	if parsedInternal != nil {
+		internalPathPrefix = parsedInternal.JoinPath(cfg.Bucket).Path
 		if !strings.HasPrefix(internalPathPrefix, "/") {
 			internalPathPrefix = "/" + internalPathPrefix
 		}
@@ -50,9 +67,9 @@ func NewClient(ctx context.Context, bucket string, endpoint *url.URL, publicBase
 	return &client{
 		client:             s3Client,
 		presignClient:      s3.NewPresignClient(s3Client),
-		bucket:             bucket,
-		publicBaseURL:      publicBaseURL,
-		internalEndpoint:   endpoint,
+		bucket:             cfg.Bucket,
+		publicBaseURL:      parsedPublic,
+		internalEndpoint:   parsedInternal,
 		internalPathPrefix: internalPathPrefix,
 	}, nil
 }

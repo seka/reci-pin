@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/seka/reci-pin/backend/config"
+	"github.com/seka/reci-pin/backend/internal/domain/notification"
 	"github.com/seka/reci-pin/backend/internal/domain/storage"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/notification/mailhog"
 	"github.com/seka/reci-pin/backend/internal/usecase/auth"
 	"github.com/seka/reci-pin/backend/internal/usecase/recipe"
 	"github.com/seka/reci-pin/backend/internal/usecase/recipe_image"
@@ -54,17 +54,19 @@ type UseCase interface {
 
 // useCaseRegistry implements the UseCase interface
 type useCaseRegistry struct {
-	repo           Repository
-	storageService storage.Storage
-	cfg            *config.Config
+	cfg         *config.ApiServer
+	repo        Repository
+	storage     storage.Client
+	emailClient notification.EmailClient
 }
 
 // NewUseCase creates a new UseCase registry
-func NewUseCase(repo Repository, storageService storage.Storage, cfg *config.Config) UseCase {
+func NewUseCase(cfg *config.ApiServer, repo Repository, storageService storage.Client, emailClient notification.EmailClient) UseCase {
 	return &useCaseRegistry{
-		repo:           repo,
-		storageService: storageService,
-		cfg:            cfg,
+		cfg:         cfg,
+		repo:        repo,
+		storage:     storageService,
+		emailClient: emailClient,
 	}
 }
 
@@ -111,15 +113,11 @@ func (u *useCaseRegistry) NewWithdrawUseCase() auth.WithdrawUseCase {
 }
 
 func (u *useCaseRegistry) NewChangePasswordUseCase() auth.ChangePasswordUseCase {
-	// TODO: EmailSenderの設定をConfigから読み込むようにする
-	emailSender := mailhog.New("mailhog", "1025", "no-reply@reci-pin.com")
-	return auth.NewChangePasswordUseCase(u.repo.NewUserEmailCredentialRepository(), emailSender)
+	return auth.NewChangePasswordUseCase(u.repo.NewUserEmailCredentialRepository(), u.emailClient)
 }
 
 func (u *useCaseRegistry) NewRequestPasswordResetUseCase() auth.RequestPasswordResetUseCase {
-	// TODO: EmailSenderの設定をConfigから読み込むようにする
-	emailSender := mailhog.New("mailhog", "1025", "no-reply@reci-pin.com")
-	return auth.NewRequestPasswordResetUseCase(u.repo.NewUserEmailCredentialRepository(), u.repo.NewPasswordResetTokenRepository(), emailSender)
+	return auth.NewRequestPasswordResetUseCase(u.repo.NewUserEmailCredentialRepository(), u.repo.NewPasswordResetTokenRepository(), u.emailClient)
 }
 
 func (u *useCaseRegistry) NewResetPasswordUseCase() auth.ResetPasswordUseCase {
@@ -169,7 +167,7 @@ func (u *useCaseRegistry) NewCreateRecipeImageUseCase() recipe_image.CreateRecip
 	return recipe_image.NewCreateRecipeImageUseCase(
 		u.repo.NewRecipeRepository(),
 		u.repo.NewRecipeImageRepository(),
-		u.storageService,
+		u.storage,
 	)
 }
 

@@ -5,19 +5,21 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net/url"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/seka/reci-pin/backend/config"
+	"github.com/seka/reci-pin/backend/internal/domain/notification"
 	"github.com/seka/reci-pin/backend/internal/domain/storage"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
 	es "github.com/seka/reci-pin/backend/internal/infrastructure/database/elasticsearch"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/notification/mailhog"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/storage/s3"
 	"github.com/seka/reci-pin/backend/internal/registry"
 	"github.com/seka/reci-pin/backend/internal/server"
@@ -29,19 +31,33 @@ var (
 
 func init() {
 	flag.StringVar(&cfg.ApiServer.Port, "port", "8080", "Server port")
+	flag.StringVar(&cfg.ApiServer.JWT.Secret, "jwt-secret", "change-me", "JWT secret key")
+	flag.IntVar(&cfg.ApiServer.JWT.ExpirationHours, "jwt-expiration", 24, "JWT expiration hours")
+
+	// Database configuration
 	flag.StringVar(&cfg.Database.Host, "db-host", "localhost", "Database host")
 	flag.StringVar(&cfg.Database.Port, "db-port", "5432", "Database port")
 	flag.StringVar(&cfg.Database.User, "db-user", "postgres", "Database user")
 	flag.StringVar(&cfg.Database.Password, "db-password", "postgres", "Database password")
 	flag.StringVar(&cfg.Database.DBName, "db-name", "recipin_dev", "Database name")
 	flag.StringVar(&cfg.Database.SSLMode, "db-sslmode", "disable", "Database SSL mode")
-	flag.StringVar(&cfg.ApiServer.JWT.Secret, "jwt-secret", "change-me", "JWT secret key")
-	flag.IntVar(&cfg.ApiServer.JWT.ExpirationHours, "jwt-expiration", 24, "JWT expiration hours")
 
 	// Storage configuration
 	flag.StringVar(&cfg.Storage.Bucket, "storage-bucket", "recipin-bucket", "S3 bucket name")
 	flag.StringVar(&cfg.Storage.Endpoint, "storage-endpoint", "", "S3 endpoint URL (for LocalStack)")
 	flag.StringVar(&cfg.Storage.PublicBaseURL, "storage-public-url", "", "Base URL for public access")
+
+	// Search Engine configuration
+	flag.Func("es-addresses", "Elasticsearch addresses (comma separated)", func(s string) error {
+		cfg.SearchEngine.Addresses = strings.Split(s, ",")
+		return nil
+	})
+	cfg.SearchEngine.Addresses = []string{"http://localhost:9200"}
+
+	// Mail configuration
+	flag.StringVar(&cfg.Email.Host, "mail-host", "localhost", "MailHog host")
+	flag.StringVar(&cfg.Email.Port, "mail-port", "1025", "MailHog port")
+	flag.StringVar(&cfg.Email.From, "mail-from", "no-reply@reci-pin.com", "Mail from address")
 }
 
 func main() {
@@ -54,39 +70,37 @@ func main() {
 	errCh := make(chan error, 2)
 
 	// Start Database
-	db := postgres.New(cfg.Database.DSN())
+	db := postgres.NewClient(cfg.Database)
 	if err := connectDatabase(ctx, db); err != nil {
 		log.Fatalf("database error: %v", err)
 	}
 	defer db.Close()
 
-	// Start Elasticsearch
-	esClient, err := es.NewClient()
+	// Start SearchEngine
+	searchEngine, err := es.NewClient(cfg.SearchEngine)
 	if err != nil {
-		log.Fatalf("elasticsearch error: %v", err)
+		log.Fatalf("search engine error: %v", err)
 	}
 
 	// Start Storage Service
-	storageEndpoint, _ := url.Parse(cfg.Storage.Endpoint)
-	storagePublicURL, _ := url.Parse(cfg.Storage.PublicBaseURL)
-	storageService, err := s3.NewClient(
-		ctx,
-		cfg.Storage.Bucket,
-		storageEndpoint,
-		storagePublicURL,
-	)
+	storage, err := s3.NewClient(ctx, cfg.Storage)
 	if err != nil {
 		log.Fatalf("storage service error: %v", err)
 	}
 
+	// Start Mail Service
+	mailClient := mailhog.NewClient(cfg.Email)
+
 	// Start Server
-	srv := createServer(&cfg, db, esClient, storageService)
-	wg.Go(func() {
+	srv := createServer(&cfg.ApiServer, db, searchEngine, storage, mailClient)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 		if err := runServer(ctx, srv); err != nil {
 			errCh <- fmt.Errorf("server error: %w", err)
 			cancel()
 		}
-	})
+	}()
 
 	// Wait for signal
 	quit := make(chan os.Signal, 1)
@@ -117,9 +131,15 @@ func connectDatabase(ctx context.Context, db database.Database) error {
 	return nil
 }
 
-func createServer(cfg *config.Config, db database.Database, esClient *elasticsearch.TypedClient, storageService storage.Storage) *server.Server {
-	repoRegistry := registry.NewRepository(db, esClient)
-	useCaseRegistry := registry.NewUseCase(repoRegistry, storageService, cfg)
+func createServer(
+	cfg *config.ApiServer,
+	db database.Database,
+	searchEngine *elasticsearch.TypedClient,
+	storage storage.Client,
+	emailClient notification.EmailClient,
+) *server.Server {
+	repoRegistry := registry.NewRepository(db, searchEngine)
+	useCaseRegistry := registry.NewUseCase(cfg, repoRegistry, storage, emailClient)
 	return server.New(cfg, useCaseRegistry)
 }
 

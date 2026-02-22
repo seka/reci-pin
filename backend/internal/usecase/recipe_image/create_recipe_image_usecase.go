@@ -32,13 +32,13 @@ type CreateRecipeImageInput struct {
 type createRecipeImageInteractor struct {
 	recipeRepo      repository.RecipeRepository
 	recipeImageRepo repository.RecipeImageRepository
-	storageService  storage.Storage
+	storageService  storage.Client
 }
 
 func NewCreateRecipeImageUseCase(
 	recipeRepo repository.RecipeRepository,
 	recipeImageRepo repository.RecipeImageRepository,
-	storageService storage.Storage,
+	storageService storage.Client,
 ) CreateRecipeImageUseCase {
 	return &createRecipeImageInteractor{
 		recipeRepo:      recipeRepo,
