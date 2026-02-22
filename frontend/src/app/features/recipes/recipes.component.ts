@@ -215,7 +215,7 @@ export class RecipesComponent implements OnInit {
       map((tag: string | null | Tag) => {
         // Handle both string input and Tag object selection
         const filterValue = typeof tag === 'string' ? tag : (tag?.name || '');
-        return filterValue ? this._filter(filterValue) : this.getUnselectedTags();
+        return filterValue ? this.filterTags(filterValue) : this.getUnselectedTags();
       })
     );
   }
@@ -297,7 +297,7 @@ export class RecipesComponent implements OnInit {
     return this.availableTags.find((t) => t.id === id)?.name || '';
   }
 
-  private _filter(value: string): Tag[] {
+  private filterTags(value: string): Tag[] {
     const filterValue = value.toLowerCase();
     return this.availableTags.filter((tag) =>
       tag.name.toLowerCase().includes(filterValue) &&
