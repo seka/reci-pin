@@ -7,7 +7,7 @@ import (
 )
 
 func TestDatabaseConfig_DSN(t *testing.T) {
-	c := DatabaseConfig{
+	c := Database{
 		Host:     "localhost",
 		Port:     "5432",
 		User:     "user",

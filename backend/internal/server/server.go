@@ -124,7 +124,7 @@ func (s *Server) setupRoutes() {
 
 // Run starts the HTTP server (blocking)
 func (s *Server) Run() error {
-	addr := net.JoinHostPort("", s.cfg.Server.Port)
+	addr := net.JoinHostPort("", s.cfg.ApiServer.Port)
 	s.httpServer = &http.Server{
 		Addr:    addr,
 		Handler: s.router,

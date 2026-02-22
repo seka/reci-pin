@@ -6,13 +6,17 @@ import (
 )
 
 type Config struct {
-	Database DatabaseConfig
-	Server   ServerConfig
-	JWT      JWTConfig
-	Storage  StorageConfig
+	Database  Database
+	ApiServer ApiServer
+	Storage   Storage
 }
 
-type DatabaseConfig struct {
+type ApiServer struct {
+	Port string
+	JWT  JWT
+}
+
+type Database struct {
 	Host     string
 	Port     string
 	User     string
@@ -21,23 +25,19 @@ type DatabaseConfig struct {
 	SSLMode  string
 }
 
-type ServerConfig struct {
-	Port string
-}
-
-type StorageConfig struct {
+type Storage struct {
 	Bucket        string
 	Endpoint      string // Optional, for LocalStack
 	PublicBaseURL string // Optional, for public access URL
 }
 
-type JWTConfig struct {
+type JWT struct {
 	Secret                     string
 	ExpirationHours            int
 	RefreshTokenExpirationDays int
 }
 
-func (c *DatabaseConfig) DSN() string {
+func (c *Database) DSN() string {
 	u := &url.URL{
 		Scheme: "postgres",
 		User:   url.UserPassword(c.User, c.Password),

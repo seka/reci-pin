@@ -8,8 +8,9 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
+	awsConfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	appConfig "github.com/seka/reci-pin/backend/config"
 	"github.com/seka/reci-pin/backend/internal/domain/storage"
 )
 
@@ -23,13 +24,31 @@ type client struct {
 }
 
 // NewClient creates a new StorageService backed by S3
-func NewClient(ctx context.Context, bucket string, endpoint *url.URL, publicBaseURL *url.URL) (storage.Storage, error) {
-	cfg, err := config.LoadDefaultConfig(ctx)
+func NewClient(ctx context.Context, cfg appConfig.Storage) (storage.Storage, error) {
+	awsCfg, err := awsConfig.LoadDefaultConfig(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load SDK config: %w", err)
 	}
 
-	s3Client := s3.NewFromConfig(cfg, func(o *s3.Options) {
+	var endpoint *url.URL
+	if cfg.Endpoint != "" {
+		u, err := url.Parse(cfg.Endpoint)
+		if err != nil {
+			return nil, fmt.Errorf("invalid storage endpoint: %w", err)
+		}
+		endpoint = u
+	}
+
+	var publicBaseURL *url.URL
+	if cfg.PublicBaseURL != "" {
+		u, err := url.Parse(cfg.PublicBaseURL)
+		if err != nil {
+			return nil, fmt.Errorf("invalid public base URL: %w", err)
+		}
+		publicBaseURL = u
+	}
+
+	s3Client := s3.NewFromConfig(awsCfg, func(o *s3.Options) {
 		if endpoint != nil {
 			o.BaseEndpoint = aws.String(endpoint.String())
 			o.UsePathStyle = true // Required for LocalStack
@@ -38,7 +57,7 @@ func NewClient(ctx context.Context, bucket string, endpoint *url.URL, publicBase
 
 	var internalPathPrefix string
 	if endpoint != nil {
-		internalPathPrefix = endpoint.JoinPath(bucket).Path
+		internalPathPrefix = endpoint.JoinPath(cfg.Bucket).Path
 		if !strings.HasPrefix(internalPathPrefix, "/") {
 			internalPathPrefix = "/" + internalPathPrefix
 		}
@@ -50,7 +69,7 @@ func NewClient(ctx context.Context, bucket string, endpoint *url.URL, publicBase
 	return &client{
 		client:             s3Client,
 		presignClient:      s3.NewPresignClient(s3Client),
-		bucket:             bucket,
+		bucket:             cfg.Bucket,
 		publicBaseURL:      publicBaseURL,
 		internalEndpoint:   endpoint,
 		internalPathPrefix: internalPathPrefix,
