@@ -105,4 +105,21 @@ describe('caseConverterInterceptor', () => {
         const req = httpTestingController.expectOne('/api/test-blob-response');
         req.flush(blobResponse);
     });
+
+    it('should skip conversion for non-API requests', () => {
+        const mockTranslation = {
+            LOGIN_BUTTON: 'Login',
+            FORGOT_PASSWORD: 'Forgot Password?',
+            NESTED: {
+                INNER_KEY: 'value'
+            }
+        };
+
+        httpClient.get('/assets/i18n/en.json').subscribe((res: any) => {
+            expect(res).toEqual(mockTranslation);
+        });
+
+        const req = httpTestingController.expectOne('/assets/i18n/en.json');
+        req.flush(mockTranslation);
+    });
 });
