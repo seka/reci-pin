@@ -3,10 +3,15 @@ import { map } from 'rxjs/operators';
 import camelcaseKeys from 'camelcase-keys';
 import decamelizeKeys from 'decamelize-keys';
 
+const isApiRequest = (url: string): boolean => url.startsWith('/api/');
+
 export const caseConverterInterceptor: HttpInterceptorFn = (req, next) => {
+    if (!isApiRequest(req.url)) {
+        return next(req);
+    }
+
     let modifiedReq: HttpRequest<any> = req;
 
-    // Convert request body to snake_case if it exists and is not FormData/Blob
     if (req.body && !(req.body instanceof FormData) && !(req.body instanceof Blob)) {
         try {
             modifiedReq = req.clone({
@@ -21,7 +26,6 @@ export const caseConverterInterceptor: HttpInterceptorFn = (req, next) => {
         map((event) => {
             if (event instanceof HttpResponse && event.body && typeof event.body === 'object' && !(event.body instanceof Blob)) {
                 try {
-                    // Convert response body to camelCase
                     const camelCaseBody = camelcaseKeys(event.body, { deep: true });
                     return event.clone({ body: camelCaseBody });
                 } catch (e) {
