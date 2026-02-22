@@ -7,6 +7,8 @@ import (
 	"log"
 	"time"
 
+	"path"
+
 	"github.com/seka/reci-pin/backend/config"
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
@@ -250,7 +252,7 @@ func createRecipeImages(ctx context.Context, repoReg registry.Repository) error 
 		for j := range numImages {
 			image := &model.RecipeImage{
 				RecipeID:  recipe.ID,
-				ImagePath: fmt.Sprintf("recipes/%d/seed_%d.jpg", recipe.ID, j+1),
+				ImagePath: path.Join("recipes", fmt.Sprintf("%d", recipe.ID), fmt.Sprintf("seed_%d.jpg", j+1)),
 			}
 			if err := imageRepo.Create(ctx, image); err != nil {
 				return fmt.Errorf("creating image for recipe %d: %w", recipe.ID, err)
