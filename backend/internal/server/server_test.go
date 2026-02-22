@@ -65,7 +65,7 @@ func TestNew(t *testing.T) {
 
 	assert.NotNil(t, srv)
 	assert.NotNil(t, srv.router)
-	assert.Equal(t, cfg, srv.cfg)
+	assert.Equal(t, cfg, &srv.cfg.ApiServer)
 }
 
 func TestServer_HealthEndpoint(t *testing.T) {
