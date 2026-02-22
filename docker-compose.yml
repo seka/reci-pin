@@ -97,7 +97,7 @@ services:
       - SERVICES=s3
       - DEBUG=${DEBUG:-0}
     volumes:
-      - "${LOCALSTACK_VOLUME_DIR:-./localstack_data}:/var/lib/localstack"
+      - "localstack_data:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "./backend/scripts/localstack:/etc/localstack/init/ready.d" # Initialization scripts
     restart: unless-stopped
@@ -122,3 +122,4 @@ networks:
 volumes:
   postgres_data:
   elasticsearch_data:
+  localstack_data:
