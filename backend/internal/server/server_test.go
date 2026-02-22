@@ -56,11 +56,14 @@ func TestNew(t *testing.T) {
 	mockRegistry := registrymock.NewMockUseCase(ctrl)
 	setupMockRegistry(ctrl, mockRegistry)
 
-	srv := New(cfg, mockRegistry)
+	fullCfg := &config.Config{
+		ApiServer: *cfg,
+	}
+	srv := New(fullCfg, mockRegistry)
 
 	assert.NotNil(t, srv)
 	assert.NotNil(t, srv.router)
-	assert.Equal(t, cfg, srv.cfg)
+	assert.Equal(t, cfg, &srv.cfg.ApiServer)
 }
 
 func TestServer_HealthEndpoint(t *testing.T) {
@@ -71,7 +74,10 @@ func TestServer_HealthEndpoint(t *testing.T) {
 	mockRegistry := registrymock.NewMockUseCase(ctrl)
 	setupMockRegistry(ctrl, mockRegistry)
 
-	srv := New(cfg, mockRegistry)
+	fullCfg := &config.Config{
+		ApiServer: *cfg,
+	}
+	srv := New(fullCfg, mockRegistry)
 
 	req := httptest.NewRequest("GET", "/health", nil)
 	w := httptest.NewRecorder()
@@ -90,7 +96,10 @@ func TestServer_CORSHeaders(t *testing.T) {
 	mockRegistry := registrymock.NewMockUseCase(ctrl)
 	setupMockRegistry(ctrl, mockRegistry)
 
-	srv := New(cfg, mockRegistry)
+	fullCfg := &config.Config{
+		ApiServer: *cfg,
+	}
+	srv := New(fullCfg, mockRegistry)
 
 	req := httptest.NewRequest("OPTIONS", "/health", nil)
 	w := httptest.NewRecorder()
@@ -123,7 +132,10 @@ func TestServer_RoutingExists(t *testing.T) {
 			mockRegistry := registrymock.NewMockUseCase(ctrl)
 			setupMockRegistry(ctrl, mockRegistry)
 
-			srv := New(cfg, mockRegistry)
+			fullCfg := &config.Config{
+				ApiServer: *cfg,
+			}
+			srv := New(fullCfg, mockRegistry)
 
 			req := httptest.NewRequest(tt.method, tt.path, nil)
 			w := httptest.NewRecorder()

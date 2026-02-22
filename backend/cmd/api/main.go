@@ -153,7 +153,7 @@ func createServer(
 ) *server.Server {
 	repoRegistry := registry.NewRepository(db, esClient)
 	useCaseRegistry := registry.NewUseCase(repoRegistry, storageService, emailClient, cfg)
-	return server.New(&cfg.ApiServer, useCaseRegistry)
+	return server.New(cfg, useCaseRegistry)
 }
 
 func runServer(ctx context.Context, srv *server.Server) error {

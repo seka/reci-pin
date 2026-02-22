@@ -81,10 +81,10 @@ func (u *useCaseRegistry) NewLoginUseCase() auth.LoginUseCase {
 
 func (u *useCaseRegistry) NewGenerateTokenUseCase() auth.GenerateTokenUseCase {
 	return auth.NewGenerateTokenUseCase(
-		u.cfg.JWT.Secret,
-		time.Duration(u.cfg.JWT.ExpirationHours)*time.Hour,
+		u.cfg.ApiServer.JWT.Secret,
+		time.Duration(u.cfg.ApiServer.JWT.ExpirationHours)*time.Hour,
 		u.repo.NewRefreshTokenRepository(),
-		time.Duration(u.cfg.JWT.RefreshTokenExpirationDays)*24*time.Hour,
+		time.Duration(u.cfg.ApiServer.JWT.RefreshTokenExpirationDays)*24*time.Hour,
 	)
 }
 
@@ -97,7 +97,7 @@ func (u *useCaseRegistry) NewLogoutUseCase() auth.LogoutUseCase {
 }
 
 func (u *useCaseRegistry) NewValidateTokenUseCase() auth.ValidateTokenUseCase {
-	return auth.NewValidateTokenUseCase(u.cfg.JWT.Secret)
+	return auth.NewValidateTokenUseCase(u.cfg.ApiServer.JWT.Secret)
 }
 
 func (u *useCaseRegistry) NewGetUserUseCase() auth.GetUserUseCase {

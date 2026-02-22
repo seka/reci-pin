@@ -7,7 +7,7 @@ import (
 	"github.com/seka/reci-pin/backend/config"
 )
 
-func NewClient(cfg config.SearchEfunc NewClient(cfg config.SearchEngine) (*elasticsearch.TypedClient, error) {
+func NewClient(cfg config.SearchEngine) (*elasticsearch.TypedClient, error) {
 	fmt.Printf("Initializing Elasticsearch client with addresses: %v\n", cfg.Addresses)
 
 	esCfg := elasticsearch.Config{

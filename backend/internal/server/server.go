@@ -19,11 +19,11 @@ type Server struct {
 	router          *chi.Mux
 	httpServer      *http.Server
 	useCaseRegistry registry.UseCase
-	cfg             *config.ApiServer
+	cfg             *config.Config
 }
 
 // New creates a new server instance with the given dependencies
-func New(cfg *config.ApiServer, useCase registry.UseCase) *Server {
+func New(cfg *config.Config, useCase registry.UseCase) *Server {
 	s := &Server{
 		router:          chi.NewRouter(),
 		useCaseRegistry: useCase,
@@ -124,7 +124,7 @@ func (s *Server) setupRoutes() {
 
 // Run starts the HTTP server (blocking)
 func (s *Server) Run() error {
-	addr := net.JoinHostPort("", s.cfg.Port)
+	addr := net.JoinHostPort("", s.cfg.ApiServer.Port)
 	s.httpServer = &http.Server{
 		Addr:    addr,
 		Handler: s.router,
