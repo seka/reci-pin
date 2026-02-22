@@ -29,19 +29,6 @@ var (
 	cfg config.Config
 )
 
-func parseAddresses(raw string) []string {
-	parts := strings.Split(raw, ",")
-	addresses := make([]string, 0, len(parts))
-	for _, part := range parts {
-		addr := strings.TrimSpace(part)
-		if addr == "" {
-			continue
-		}
-		addresses = append(addresses, addr)
-	}
-	return addresses
-}
-
 func init() {
 	flag.StringVar(&cfg.ApiServer.Port, "port", "8080", "Server port")
 	flag.StringVar(&cfg.ApiServer.JWT.Secret, "jwt-secret", "change-me", "JWT secret key")
@@ -175,4 +162,17 @@ func runServer(ctx context.Context, srv *server.Server) error {
 		log.Println("Server exited")
 		return nil
 	}
+}
+
+func parseAddresses(raw string) []string {
+	parts := strings.Split(raw, ",")
+	addresses := make([]string, 0, len(parts))
+	for _, part := range parts {
+		addr := strings.TrimSpace(part)
+		if addr == "" {
+			continue
+		}
+		addresses = append(addresses, addr)
+	}
+	return addresses
 }
