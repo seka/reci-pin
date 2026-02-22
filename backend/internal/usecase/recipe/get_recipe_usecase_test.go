@@ -3,6 +3,7 @@ package recipe_test
 import (
 	"context"
 	"errors"
+	"net/url"
 	"testing"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
@@ -46,7 +47,7 @@ func TestGetRecipeUseCase_Execute(t *testing.T) {
 				mi.EXPECT().
 					GetByRecipeID(gomock.Any(), int64(1)).
 					Return([]model.RecipeImage{
-						{ID: 1, RecipeID: 1, ImagePath: "/images/1.jpg"},
+						{ID: 1, RecipeID: 1, ImageURL: url.URL{Path: "/images/1.jpg"}},
 					}, nil)
 			},
 			wantErr: false,

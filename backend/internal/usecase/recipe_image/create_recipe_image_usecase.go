@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
 	"path"
 	"path/filepath"
 	"strconv"
@@ -73,19 +74,20 @@ func (uc *createRecipeImageInteractor) Execute(ctx context.Context, input Create
 	timestamp := time.Now().UnixNano()
 	key := path.Join("recipes", strconv.FormatInt(input.RecipeID, 10), fmt.Sprintf("%d_%s", timestamp, input.Filename))
 
-	url, err := uc.storageService.GeneratePresignedURL(ctx, key, input.ContentType, input.Size, 15*time.Minute)
+	presignedURL, err := uc.storageService.GeneratePresignedURL(ctx, key, input.ContentType, input.Size, 15*time.Minute)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to generate presigned URL: %w", err)
 	}
 
+	parsedPathURL, _ := url.Parse(key)
 	image := &model.RecipeImage{
-		RecipeID:  input.RecipeID,
-		ImagePath: key,
+		RecipeID: input.RecipeID,
+		ImageURL: *parsedPathURL,
 	}
 
 	if err := uc.recipeImageRepo.Create(ctx, image); err != nil {
 		return nil, "", fmt.Errorf("failed to add image to recipe: %w", err)
 	}
 
-	return image, url, nil
+	return image, presignedURL, nil
 }

@@ -1,8 +1,6 @@
 package response
 
 import (
-	"net/url"
-
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 )
 
@@ -22,10 +20,9 @@ type TagResponse struct {
 }
 
 type RecipeImageResponse struct {
-	ID        int64  `json:"id"`
-	RecipeID  int64  `json:"recipe_id"`
-	ImagePath string `json:"image_path"`
-	ImageURL  string `json:"image_url"`
+	ID       int64  `json:"id"`
+	RecipeID int64  `json:"recipe_id"`
+	ImageURL string `json:"image_url"`
 }
 
 type CreateRecipeImageResponse struct {
@@ -33,21 +30,15 @@ type CreateRecipeImageResponse struct {
 	UploadURL string              `json:"upload_url"`
 }
 
-func NewRecipeImage(i *model.RecipeImage, publicBaseURL *url.URL) RecipeImageResponse {
-	imageURL := ""
-	if publicBaseURL != nil && i.ImagePath != "" {
-		imageURL = publicBaseURL.JoinPath(i.ImagePath).String()
-	}
-
+func NewRecipeImage(i *model.RecipeImage) RecipeImageResponse {
 	return RecipeImageResponse{
-		ID:        i.ID,
-		RecipeID:  i.RecipeID,
-		ImagePath: i.ImagePath,
-		ImageURL:  imageURL,
+		ID:       i.ID,
+		RecipeID: i.RecipeID,
+		ImageURL: i.ImageURL.String(),
 	}
 }
 
-func NewRecipe(m *model.Recipe, publicBaseURL *url.URL) *RecipeResponse {
+func NewRecipe(m *model.Recipe) *RecipeResponse {
 	tags := make([]TagResponse, 0, len(m.Tags))
 	for _, t := range m.Tags {
 		tags = append(tags, TagResponse{
@@ -58,7 +49,7 @@ func NewRecipe(m *model.Recipe, publicBaseURL *url.URL) *RecipeResponse {
 
 	images := make([]RecipeImageResponse, 0, len(m.Images))
 	for _, i := range m.Images {
-		images = append(images, NewRecipeImage(&i, publicBaseURL))
+		images = append(images, NewRecipeImage(&i))
 	}
 
 	return &RecipeResponse{
@@ -72,10 +63,10 @@ func NewRecipe(m *model.Recipe, publicBaseURL *url.URL) *RecipeResponse {
 	}
 }
 
-func NewRecipes(recipes []model.Recipe, publicBaseURL *url.URL) []RecipeResponse {
+func NewRecipes(recipes []model.Recipe) []RecipeResponse {
 	responses := make([]RecipeResponse, 0, len(recipes))
 	for _, r := range recipes {
-		responses = append(responses, *NewRecipe(&r, publicBaseURL))
+		responses = append(responses, *NewRecipe(&r))
 	}
 	return responses
 }

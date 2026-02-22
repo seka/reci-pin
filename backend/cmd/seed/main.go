@@ -261,14 +261,15 @@ func createRecipeImages(ctx context.Context, repoReg registry.Repository) error 
 	for i, recipe := range recipes {
 		numImages := (i % 2) + 1 // 1 or 2 images
 		for j := range numImages {
+			parsedPath, _ := url.Parse(path.Join("recipes", strconv.FormatInt(recipe.ID, 10), fmt.Sprintf("seed_%d.jpg", j+1)))
 			image := &model.RecipeImage{
-				RecipeID:  recipe.ID,
-				ImagePath: path.Join("recipes", strconv.FormatInt(recipe.ID, 10), fmt.Sprintf("seed_%d.jpg", j+1)),
+				RecipeID: recipe.ID,
+				ImageURL: *parsedPath,
 			}
 			if err := imageRepo.Create(ctx, image); err != nil {
 				return fmt.Errorf("creating image for recipe %d: %w", recipe.ID, err)
 			}
-			log.Printf("  Created image: %s", image.ImagePath)
+			log.Printf("  Created image: %s", image.ImageURL.String())
 		}
 	}
 	return nil

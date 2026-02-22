@@ -105,7 +105,7 @@ func run() error {
 	mailClient := mailhog.NewClient(testCfg.Email)
 	repoReg := registry.NewRepository(db, esClient)
 	useCaseReg := registry.NewUseCase(repoReg, storageService, mailClient, &testCfg)
-	srv := server.New(&testCfg, useCaseReg)
+	srv := server.New(&testCfg.ApiServer, useCaseReg)
 
 	// Run Server in Goroutine
 	serverErrCh := make(chan error, 1)
