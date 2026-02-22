@@ -18,6 +18,7 @@ import (
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
 	es "github.com/seka/reci-pin/backend/internal/infrastructure/database/elasticsearch"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/notification/mailhog"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/storage/s3"
 	"github.com/seka/reci-pin/backend/internal/registry"
 	"github.com/seka/reci-pin/backend/internal/server"
@@ -82,31 +83,28 @@ func run() error {
 	testCfg.ApiServer.Port = "8081"
 
 	// Connect to the NEW test database
-	db := postgres.New(testCfg.Database.DSN())
+	db := postgres.NewClient(testCfg.Database)
 	if err := db.Connect(ctx); err != nil {
 		return fmt.Errorf("connecting to test database: %w", err)
 	}
 	defer db.Close()
 
 	// Connect to Elasticsearch
-	esClient, err := es.NewClient()
+	esClient, err := es.NewClient(testCfg.SearchEngine)
 	if err != nil {
 		return fmt.Errorf("creating elasticsearch client: %w", err)
 	}
 
 	// Initialize Storage Service
-	storageService, err := s3.NewClient(ctx, config.Storage{
-		Bucket:        "test-bucket",
-		Endpoint:      "http://localhost:4566",
-		PublicBaseURL: "http://localhost:4566/test-bucket",
-	})
+	storageService, err := s3.NewClient(ctx, testCfg.Storage)
 	if err != nil {
 		return fmt.Errorf("creating storage service: %w", err)
 	}
 
 	// Initialize Server
+	mailClient := mailhog.NewClient(testCfg.Email)
 	repoReg := registry.NewRepository(db, esClient)
-	useCaseReg := registry.NewUseCase(repoReg, storageService, &testCfg)
+	useCaseReg := registry.NewUseCase(repoReg, storageService, mailClient, &testCfg)
 	srv := server.New(&testCfg, useCaseReg)
 
 	// Run Server in Goroutine
@@ -170,7 +168,7 @@ func run() error {
 func createDatabase(ctx context.Context, dbName string) error {
 	adminCfg := cfg.Database
 	adminCfg.DBName = "postgres"
-	adminDB := postgres.New(adminCfg.DSN())
+	adminDB := postgres.NewClient(adminCfg)
 	if err := adminDB.Connect(ctx); err != nil {
 		return err
 	}
@@ -195,7 +193,7 @@ func createDatabase(ctx context.Context, dbName string) error {
 func dropDatabase(ctx context.Context, dbName string) error {
 	adminCfg := cfg.Database
 	adminCfg.DBName = "postgres"
-	adminDB := postgres.New(adminCfg.DSN())
+	adminDB := postgres.NewClient(adminCfg)
 	if err := adminDB.Connect(ctx); err != nil {
 		return err
 	}
@@ -214,7 +212,7 @@ func runMigrations(ctx context.Context, dbName string) error {
 	// Connect to the new DB
 	migrationCfg := cfg.Database
 	migrationCfg.DBName = dbName
-	db := postgres.New(migrationCfg.DSN())
+	db := postgres.NewClient(migrationCfg)
 	if err := db.Connect(ctx); err != nil {
 		return err
 	}

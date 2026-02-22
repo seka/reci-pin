@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/seka/reci-pin/backend/config"
+	"github.com/seka/reci-pin/backend/internal/domain/notification"
 	"github.com/seka/reci-pin/backend/internal/domain/storage"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/notification/mailhog"
 	"github.com/seka/reci-pin/backend/internal/usecase/auth"
 	"github.com/seka/reci-pin/backend/internal/usecase/recipe"
 	"github.com/seka/reci-pin/backend/internal/usecase/recipe_image"
@@ -54,17 +54,19 @@ type UseCase interface {
 
 // useCaseRegistry implements the UseCase interface
 type useCaseRegistry struct {
-	repo           Repository
-	storageService storage.Client
-	cfg            *config.Config
+	repo        Repository
+	storage     storage.Client
+	emailClient notification.EmailClient
+	cfg         *config.Config
 }
 
 // NewUseCase creates a new UseCase registry
-func NewUseCase(repo Repository, storageService storage.Client, cfg *config.Config) UseCase {
+func NewUseCase(repo Repository, storage storage.Client, email notification.EmailClient, cfg *config.Config) UseCase {
 	return &useCaseRegistry{
-		repo:           repo,
-		storageService: storageService,
-		cfg:            cfg,
+		repo:        repo,
+		storage:     storage,
+		emailClient: email,
+		cfg:         cfg,
 	}
 }
 
@@ -79,10 +81,10 @@ func (u *useCaseRegistry) NewLoginUseCase() auth.LoginUseCase {
 
 func (u *useCaseRegistry) NewGenerateTokenUseCase() auth.GenerateTokenUseCase {
 	return auth.NewGenerateTokenUseCase(
-		u.cfg.ApiServer.JWT.Secret,
-		time.Duration(u.cfg.ApiServer.JWT.ExpirationHours)*time.Hour,
+		u.cfg.JWT.Secret,
+		time.Duration(u.cfg.JWT.ExpirationHours)*time.Hour,
 		u.repo.NewRefreshTokenRepository(),
-		time.Duration(u.cfg.ApiServer.JWT.RefreshTokenExpirationDays)*24*time.Hour,
+		time.Duration(u.cfg.JWT.RefreshTokenExpirationDays)*24*time.Hour,
 	)
 }
 
@@ -95,7 +97,7 @@ func (u *useCaseRegistry) NewLogoutUseCase() auth.LogoutUseCase {
 }
 
 func (u *useCaseRegistry) NewValidateTokenUseCase() auth.ValidateTokenUseCase {
-	return auth.NewValidateTokenUseCase(u.cfg.ApiServer.JWT.Secret)
+	return auth.NewValidateTokenUseCase(u.cfg.JWT.Secret)
 }
 
 func (u *useCaseRegistry) NewGetUserUseCase() auth.GetUserUseCase {
@@ -111,13 +113,11 @@ func (u *useCaseRegistry) NewWithdrawUseCase() auth.WithdrawUseCase {
 }
 
 func (u *useCaseRegistry) NewChangePasswordUseCase() auth.ChangePasswordUseCase {
-	emailSender := mailhog.NewClient(u.cfg.Email)
-	return auth.NewChangePasswordUseCase(u.repo.NewUserEmailCredentialRepository(), emailSender)
+	return auth.NewChangePasswordUseCase(u.repo.NewUserEmailCredentialRepository(), u.emailClient)
 }
 
 func (u *useCaseRegistry) NewRequestPasswordResetUseCase() auth.RequestPasswordResetUseCase {
-	emailSender := mailhog.NewClient(u.cfg.Email)
-	return auth.NewRequestPasswordResetUseCase(u.repo.NewUserEmailCredentialRepository(), u.repo.NewPasswordResetTokenRepository(), emailSender)
+	return auth.NewRequestPasswordResetUseCase(u.repo.NewUserEmailCredentialRepository(), u.repo.NewPasswordResetTokenRepository(), u.emailClient)
 }
 
 func (u *useCaseRegistry) NewResetPasswordUseCase() auth.ResetPasswordUseCase {
@@ -167,7 +167,7 @@ func (u *useCaseRegistry) NewCreateRecipeImageUseCase() recipe_image.CreateRecip
 	return recipe_image.NewCreateRecipeImageUseCase(
 		u.repo.NewRecipeRepository(),
 		u.repo.NewRecipeImageRepository(),
-		u.storageService,
+		u.storage,
 	)
 }
 

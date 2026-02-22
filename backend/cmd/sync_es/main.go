@@ -40,6 +40,18 @@ func parseAddresses(raw string) []string {
 	return addresses
 }
 
+func parseAddresses(raw string) []string {
+	parts := strings.Split(raw, ",")
+	addresses := make([]string, 0, len(parts))
+	for _, part := range parts {
+		addr := strings.TrimSpace(part)
+		if addr == "" {
+			continue
+		}
+		addresses = append(addresses, addr)
+	}
+	return addresses
+}
 func init() {
 	flag.StringVar(&cfg.Database.Host, "db-host", getEnv("DB_HOST", "localhost"), "Database host")
 	flag.StringVar(&cfg.Database.Port, "db-port", "5432", "Database port")
@@ -66,16 +78,16 @@ func main() {
 
 	ctx := context.Background()
 
-	// Connect	// Start Database
-	db := postgres.New(cfg.Database.DSN())
+	// Connect to Database
+	db := postgres.NewClient(cfg.Database)
 	if err := db.Connect(ctx); err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 	defer db.Close()
 	log.Println("Connected to database")
 
-	// Connect to	// Start SearchEngine
-	esClient, err := es.NewClient()
+	// Start SearchEngine
+	esClient, err := es.NewClient(cfg.SearchEngine)
 	if err != nil {
 		log.Fatalf("Failed to connect to elasticsearch: %v", err)
 	}
