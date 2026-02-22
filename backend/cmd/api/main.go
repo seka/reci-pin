@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"os/signal"
 	"sync"
@@ -66,11 +67,13 @@ func main() {
 	}
 
 	// Start Storage Service
+	storageEndpoint, _ := url.Parse(cfg.Storage.Endpoint)
+	storagePublicURL, _ := url.Parse(cfg.Storage.PublicBaseURL)
 	storageService, err := s3.NewClient(
 		ctx,
 		cfg.Storage.Bucket,
-		cfg.Storage.Endpoint,
-		cfg.Storage.PublicBaseURL,
+		storageEndpoint,
+		storagePublicURL,
 	)
 	if err != nil {
 		log.Fatalf("storage service error: %v", err)

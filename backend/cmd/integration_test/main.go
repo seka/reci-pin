@@ -90,7 +90,9 @@ func run() error {
 
 	// Initialize Storage Service
 	// Using default settings or dummy for test
-	storageService, err := s3.NewClient(ctx, "test-bucket", "http://localhost:4566", "http://localhost:4566/test-bucket")
+	s3Endpoint, _ := url.Parse("http://localhost:4566")
+	s3PublicURL, _ := url.Parse("http://localhost:4566/test-bucket")
+	storageService, err := s3.NewClient(ctx, "test-bucket", s3Endpoint, s3PublicURL)
 	if err != nil {
 		return fmt.Errorf("creating storage service: %w", err)
 	}
@@ -115,11 +117,11 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("creating health path: %w", err)
 	}
-	healthURL := (&url.URL{
+	healthURL := &url.URL{
 		Scheme: "http",
 		Host:   net.JoinHostPort("localhost", testCfg.Server.Port),
 		Path:   healthPath,
-	}).String()
+	}
 	if err := waitForServer(healthURL); err != nil {
 		return fmt.Errorf("server failed to start: %w", err)
 	}
@@ -128,11 +130,11 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("creating api path: %w", err)
 	}
-	baseURL := (&url.URL{
+	baseURL := &url.URL{
 		Scheme: "http",
 		Host:   net.JoinHostPort("localhost", testCfg.Server.Port),
 		Path:   apiPath,
-	}).String()
+	}
 
 	// 3. Run Scenarios
 	log.Println("Starting api scenarios...")
@@ -144,7 +146,7 @@ func run() error {
 	jar, _ := cookiejar.New(nil)
 	client.Jar = jar
 
-	if err := runScenario(ctx, client, baseURL, db); err != nil {
+	if err := runScenario(ctx, client, baseURL.String(), db); err != nil {
 		return fmt.Errorf("scenario failed: %w", err)
 	}
 
@@ -160,8 +162,16 @@ func run() error {
 
 func createDatabase(ctx context.Context, dbName string) error {
 	// Connect to default 'postgres' database to create new DB
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=postgres sslmode=%s",
-		cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Password, cfg.Database.SSLMode)
+	u := &url.URL{
+		Scheme: "postgres",
+		User:   url.UserPassword(cfg.Database.User, cfg.Database.Password),
+		Host:   net.JoinHostPort(cfg.Database.Host, cfg.Database.Port),
+		Path:   "postgres",
+	}
+	q := u.Query()
+	q.Set("sslmode", cfg.Database.SSLMode)
+	u.RawQuery = q.Encode()
+	dsn := u.String()
 
 	adminDB := postgres.New(dsn)
 	if err := adminDB.Connect(ctx); err != nil {
@@ -186,8 +196,16 @@ func createDatabase(ctx context.Context, dbName string) error {
 }
 
 func dropDatabase(ctx context.Context, dbName string) error {
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=postgres sslmode=%s",
-		cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Password, cfg.Database.SSLMode)
+	u := &url.URL{
+		Scheme: "postgres",
+		User:   url.UserPassword(cfg.Database.User, cfg.Database.Password),
+		Host:   net.JoinHostPort(cfg.Database.Host, cfg.Database.Port),
+		Path:   "postgres",
+	}
+	q := u.Query()
+	q.Set("sslmode", cfg.Database.SSLMode)
+	u.RawQuery = q.Encode()
+	dsn := u.String()
 
 	adminDB := postgres.New(dsn)
 	if err := adminDB.Connect(ctx); err != nil {
@@ -206,8 +224,16 @@ func dropDatabase(ctx context.Context, dbName string) error {
 
 func runMigrations(ctx context.Context, dbName string) error {
 	// Connect to the new DB
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Password, dbName, cfg.Database.SSLMode)
+	u := &url.URL{
+		Scheme: "postgres",
+		User:   url.UserPassword(cfg.Database.User, cfg.Database.Password),
+		Host:   net.JoinHostPort(cfg.Database.Host, cfg.Database.Port),
+		Path:   dbName,
+	}
+	q := u.Query()
+	q.Set("sslmode", cfg.Database.SSLMode)
+	u.RawQuery = q.Encode()
+	dsn := u.String()
 
 	db := postgres.New(dsn)
 	if err := db.Connect(ctx); err != nil {
@@ -235,10 +261,10 @@ func runMigrations(ctx context.Context, dbName string) error {
 	return nil
 }
 
-func waitForServer(url string) error {
+func waitForServer(url *url.URL) error {
 	deadline := time.Now().Add(10 * time.Second)
 	for time.Now().Before(deadline) {
-		resp, err := http.Get(url)
+		resp, err := http.Get(url.String())
 		if err == nil && resp.StatusCode == http.StatusOK {
 			_ = resp.Body.Close()
 			return nil

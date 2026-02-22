@@ -2,6 +2,7 @@ package elasticsearch
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 
 	"github.com/elastic/go-elasticsearch/v8"
@@ -10,7 +11,10 @@ import (
 func NewClient() (*elasticsearch.TypedClient, error) {
 	esAddress := os.Getenv("ELASTICSEARCH_ADDRESS")
 	if esAddress == "" {
-		esAddress = "http://localhost:9200"
+		esAddress = (&url.URL{
+			Scheme: "http",
+			Host:   "localhost:9200",
+		}).String()
 	}
 	fmt.Printf("Initializing Elasticsearch client with address: %s\n", esAddress)
 

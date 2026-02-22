@@ -23,32 +23,22 @@ type client struct {
 }
 
 // NewClient creates a new StorageService backed by S3
-func NewClient(ctx context.Context, bucket string, endpoint string, publicBaseURL string) (storage.Storage, error) {
+func NewClient(ctx context.Context, bucket string, endpoint *url.URL, publicBaseURL *url.URL) (storage.Storage, error) {
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load SDK config: %w", err)
 	}
 
 	s3Client := s3.NewFromConfig(cfg, func(o *s3.Options) {
-		if endpoint != "" {
-			o.BaseEndpoint = aws.String(endpoint)
+		if endpoint != nil {
+			o.BaseEndpoint = aws.String(endpoint.String())
 			o.UsePathStyle = true // Required for LocalStack
 		}
 	})
 
-	parsedPublic, err := url.Parse(publicBaseURL)
-	if err != nil && publicBaseURL != "" {
-		return nil, fmt.Errorf("invalid public base URL: %w", err)
-	}
-
-	parsedInternal, err := url.Parse(endpoint)
-	if err != nil && endpoint != "" {
-		return nil, fmt.Errorf("invalid internal endpoint: %w", err)
-	}
-
 	var internalPathPrefix string
-	if parsedInternal != nil {
-		internalPathPrefix = parsedInternal.JoinPath(bucket).Path
+	if endpoint != nil {
+		internalPathPrefix = endpoint.JoinPath(bucket).Path
 		if !strings.HasPrefix(internalPathPrefix, "/") {
 			internalPathPrefix = "/" + internalPathPrefix
 		}
@@ -61,8 +51,8 @@ func NewClient(ctx context.Context, bucket string, endpoint string, publicBaseUR
 		client:             s3Client,
 		presignClient:      s3.NewPresignClient(s3Client),
 		bucket:             bucket,
-		publicBaseURL:      parsedPublic,
-		internalEndpoint:   parsedInternal,
+		publicBaseURL:      publicBaseURL,
+		internalEndpoint:   endpoint,
 		internalPathPrefix: internalPathPrefix,
 	}, nil
 }

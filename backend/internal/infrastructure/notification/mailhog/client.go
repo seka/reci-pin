@@ -58,7 +58,6 @@ func (s *Client) SendPasswordReset(to string, token string) error {
 	q := u.Query()
 	q.Set("token", token)
 	u.RawQuery = q.Encode()
-	resetURL := u.String()
 	subject := "パスワード再設定のご案内"
 	body := fmt.Sprintf("いつも Reci-pin をご利用いただきありがとうございます。\n"+
 		"パスワード再設定のリクエストを受け付けました。\n\n"+
@@ -70,7 +69,7 @@ func (s *Client) SendPasswordReset(to string, token string) error {
 		"Reci-pin 運営事務局\n"+
 		"お問い合わせ: support@reci-pin.com\n"+
 		"プライバシーポリシー: https://reci-pin.com/privacy\n"+
-		"--------------------------------------------------", resetURL)
+		"--------------------------------------------------", u.String())
 
 	msg := fmt.Sprintf("From: %s\r\n"+
 		"To: %s\r\n"+
