@@ -89,10 +89,11 @@ func run() error {
 	}
 
 	// Initialize Storage Service
-	// Using default settings or dummy for test
-	s3Endpoint, _ := url.Parse("http://localhost:4566")
-	s3PublicURL, _ := url.Parse("http://localhost:4566/test-bucket")
-	storageService, err := s3.NewClient(ctx, "test-bucket", s3Endpoint, s3PublicURL)
+	storageService, err := s3.NewClient(ctx, config.Storage{
+		Bucket:        "test-bucket",
+		Endpoint:      "http://localhost:4566",
+		PublicBaseURL: "http://localhost:4566/test-bucket",
+	})
 	if err != nil {
 		return fmt.Errorf("creating storage service: %w", err)
 	}
