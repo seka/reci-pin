@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -69,7 +70,7 @@ func (uc *createRecipeImageInteractor) Execute(ctx context.Context, input Create
 	}
 
 	timestamp := time.Now().UnixNano()
-	key := fmt.Sprintf("recipes/%d/%d_%s", input.RecipeID, timestamp, input.Filename)
+	key := path.Join("recipes", fmt.Sprintf("%d", input.RecipeID), fmt.Sprintf("%d_%s", timestamp, input.Filename))
 
 	url, err := uc.storageService.GeneratePresignedURL(ctx, key, input.ContentType, input.Size, 15*time.Minute)
 	if err != nil {
