@@ -33,9 +33,9 @@ func init() {
 	flag.StringVar(&cfg.Database.Password, "db-password", "postgres", "Database password")
 	flag.StringVar(&cfg.Database.SSLMode, "db-sslmode", "disable", "Database SSL mode")
 	// Note: db-name will be generated dynamically
-	flag.StringVar(&cfg.Server.Port, "port", "0", "Server port (0 for random)")
-	flag.StringVar(&cfg.JWT.Secret, "jwt-secret", "test-secret", "JWT secret")
-	cfg.JWT.ExpirationHours = 24
+	flag.StringVar(&cfg.ApiServer.Port, "port", "0", "Server port (0 for random)")
+	flag.StringVar(&cfg.ApiServer.JWT.Secret, "jwt-secret", "test-secret", "JWT secret")
+	cfg.ApiServer.JWT.ExpirationHours = 24
 }
 
 func main() {
@@ -70,7 +70,7 @@ func run() error {
 	testCfg := cfg
 	testCfg.Database.DBName = testDBName
 	// Set specific port for test, e.g. 8081
-	testCfg.Server.Port = "8081"
+	testCfg.ApiServer.Port = "8081"
 
 	// Connect to the NEW test database
 	db := postgres.New(testCfg.Database.DSN())
@@ -105,7 +105,7 @@ func run() error {
 	// Run Server in Goroutine
 	serverErrCh := make(chan error, 1)
 	go func() {
-		log.Printf("Starting test server on port %s", testCfg.Server.Port)
+		log.Printf("Starting test server on port %s", testCfg.ApiServer.Port)
 		if err := srv.Run(); err != nil && err != http.ErrServerClosed {
 			serverErrCh <- err
 		}
@@ -119,7 +119,7 @@ func run() error {
 	}
 	healthURL := &url.URL{
 		Scheme: "http",
-		Host:   net.JoinHostPort("localhost", testCfg.Server.Port),
+		Host:   net.JoinHostPort("localhost", testCfg.ApiServer.Port),
 		Path:   healthPath,
 	}
 	if err := waitForServer(healthURL); err != nil {
@@ -132,7 +132,7 @@ func run() error {
 	}
 	baseURL := &url.URL{
 		Scheme: "http",
-		Host:   net.JoinHostPort("localhost", testCfg.Server.Port),
+		Host:   net.JoinHostPort("localhost", testCfg.ApiServer.Port),
 		Path:   apiPath,
 	}
 
