@@ -11,10 +11,11 @@ import (
 func NewClient() (*elasticsearch.TypedClient, error) {
 	esAddress := os.Getenv("ELASTICSEARCH_ADDRESS")
 	if esAddress == "" {
-		esAddress = (&url.URL{
+		u := &url.URL{
 			Scheme: "http",
 			Host:   "localhost:9200",
-		}).String()
+		}
+		esAddress = u.String()
 	}
 	fmt.Printf("Initializing Elasticsearch client with address: %s\n", esAddress)
 
