@@ -7,7 +7,9 @@ import (
 	"log"
 	"time"
 
+	"net/url"
 	"path"
+	"strconv"
 
 	"github.com/seka/reci-pin/backend/config"
 	"github.com/seka/reci-pin/backend/internal/domain/model"
@@ -24,7 +26,7 @@ var (
 
 func init() {
 	flag.StringVar(&cfg.Database.Host, "db-host", "localhost", "Database host")
-	flag.IntVar(&cfg.Database.Port, "db-port", 5432, "Database port")
+	flag.StringVar(&cfg.Database.Port, "db-port", "5432", "Database port")
 	flag.StringVar(&cfg.Database.User, "db-user", "postgres", "Database user")
 	flag.StringVar(&cfg.Database.Password, "db-password", "postgres", "Database password")
 	flag.StringVar(&cfg.Database.DBName, "db-name", "recipin_dev", "Database name")
@@ -169,11 +171,20 @@ func createRecipes(ctx context.Context, repoReg registry.Repository) error {
 	}
 
 	for i, user := range users {
+		recipePath, err := url.JoinPath("recipes", strconv.Itoa(i))
+		if err != nil {
+			return fmt.Errorf("creating recipe path: %w", err)
+		}
+		recipeURL := (&url.URL{
+			Scheme: "http",
+			Host:   "example.com",
+			Path:   recipePath,
+		}).String()
 		recipe := &model.Recipe{
 			UserID: user.ID,
 			Name:   fmt.Sprintf("Delicious Fish %d", i),
 			Memo:   "Freshly caught fish recipe.",
-			URL:    fmt.Sprintf("http://example.com/recipes/%d", i),
+			URL:    recipeURL,
 		}
 		if err := recipeRepo.Create(ctx, recipe); err != nil {
 			return fmt.Errorf("creating recipe %d: %w", i, err)
@@ -252,7 +263,7 @@ func createRecipeImages(ctx context.Context, repoReg registry.Repository) error 
 		for j := range numImages {
 			image := &model.RecipeImage{
 				RecipeID:  recipe.ID,
-				ImagePath: path.Join("recipes", fmt.Sprintf("%d", recipe.ID), fmt.Sprintf("seed_%d.jpg", j+1)),
+				ImagePath: path.Join("recipes", strconv.FormatInt(recipe.ID, 10), fmt.Sprintf("seed_%d.jpg", j+1)),
 			}
 			if err := imageRepo.Create(ctx, image); err != nil {
 				return fmt.Errorf("creating image for recipe %d: %w", recipe.ID, err)
