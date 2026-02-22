@@ -7,8 +7,10 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"net/http/cookiejar"
+	"net/url"
 	"os"
 	"time"
 
@@ -26,13 +28,12 @@ var (
 )
 
 func init() {
-	flag.StringVar(&cfg.Database.Host, "db-host", "localhost", "Database host")
-	flag.IntVar(&cfg.Database.Port, "db-port", 5432, "Database port")
+	flag.StringVar(&cfg.Database.Port, "db-port", "5432", "Database port")
 	flag.StringVar(&cfg.Database.User, "db-user", "postgres", "Database user")
 	flag.StringVar(&cfg.Database.Password, "db-password", "postgres", "Database password")
 	flag.StringVar(&cfg.Database.SSLMode, "db-sslmode", "disable", "Database SSL mode")
 	// Note: db-name will be generated dynamically
-	flag.IntVar(&cfg.Server.Port, "port", 0, "Server port (0 for random)")
+	flag.StringVar(&cfg.Server.Port, "port", "0", "Server port (0 for random)")
 	flag.StringVar(&cfg.JWT.Secret, "jwt-secret", "test-secret", "JWT secret")
 	cfg.JWT.ExpirationHours = 24
 }
@@ -69,7 +70,7 @@ func run() error {
 	testCfg := cfg
 	testCfg.Database.DBName = testDBName
 	// Set specific port for test, e.g. 8081
-	testCfg.Server.Port = 8081
+	testCfg.Server.Port = "8081"
 
 	// Connect to the NEW test database
 	db := postgres.New(testCfg.Database.DSN())
@@ -102,7 +103,7 @@ func run() error {
 	// Run Server in Goroutine
 	serverErrCh := make(chan error, 1)
 	go func() {
-		log.Printf("Starting test server on port %d", testCfg.Server.Port)
+		log.Printf("Starting test server on port %s", testCfg.Server.Port)
 		if err := srv.Run(); err != nil && err != http.ErrServerClosed {
 			serverErrCh <- err
 		}
@@ -110,12 +111,28 @@ func run() error {
 
 	// Wait for server to be ready
 	// Health check is at root /health, not /api/health
-	healthURL := fmt.Sprintf("http://localhost:%d/health", testCfg.Server.Port)
+	healthPath, err := url.JoinPath("health")
+	if err != nil {
+		return fmt.Errorf("creating health path: %w", err)
+	}
+	healthURL := (&url.URL{
+		Scheme: "http",
+		Host:   net.JoinHostPort("localhost", testCfg.Server.Port),
+		Path:   healthPath,
+	}).String()
 	if err := waitForServer(healthURL); err != nil {
 		return fmt.Errorf("server failed to start: %w", err)
 	}
 
-	baseURL := fmt.Sprintf("http://localhost:%d/api", testCfg.Server.Port)
+	apiPath, err := url.JoinPath("api")
+	if err != nil {
+		return fmt.Errorf("creating api path: %w", err)
+	}
+	baseURL := (&url.URL{
+		Scheme: "http",
+		Host:   net.JoinHostPort("localhost", testCfg.Server.Port),
+		Path:   apiPath,
+	}).String()
 
 	// 3. Run Scenarios
 	log.Println("Starting api scenarios...")
@@ -143,7 +160,7 @@ func run() error {
 
 func createDatabase(ctx context.Context, dbName string) error {
 	// Connect to default 'postgres' database to create new DB
-	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=postgres sslmode=%s",
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=postgres sslmode=%s",
 		cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Password, cfg.Database.SSLMode)
 
 	adminDB := postgres.New(dsn)
@@ -169,7 +186,7 @@ func createDatabase(ctx context.Context, dbName string) error {
 }
 
 func dropDatabase(ctx context.Context, dbName string) error {
-	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=postgres sslmode=%s",
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=postgres sslmode=%s",
 		cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Password, cfg.Database.SSLMode)
 
 	adminDB := postgres.New(dsn)
@@ -189,7 +206,7 @@ func dropDatabase(ctx context.Context, dbName string) error {
 
 func runMigrations(ctx context.Context, dbName string) error {
 	// Connect to the new DB
-	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Password, dbName, cfg.Database.SSLMode)
 
 	db := postgres.New(dsn)

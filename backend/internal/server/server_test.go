@@ -53,7 +53,7 @@ func TestNew(t *testing.T) {
 	defer ctrl.Finish()
 
 	cfg := &config.Config{
-		Server: config.ServerConfig{Port: 8080},
+		Server: config.ServerConfig{Port: "8080"},
 	}
 	mockRegistry := registrymock.NewMockUseCase(ctrl)
 	setupMockRegistry(ctrl, mockRegistry)

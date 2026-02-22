@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"net/url"
+	"strconv"
 )
 
 func init() {
@@ -26,7 +28,15 @@ func BrowseRecipes(ctx context.Context, client *http.Client, baseURL string) err
 	// In real stress test, parse IDs from list.
 	// For now just random 1-5
 	id := rand.Intn(5) + 1
-	resp2, err := client.Get(fmt.Sprintf("%s/recipes/%d", baseURL, id))
+	recipePath, err := url.JoinPath("recipes", strconv.Itoa(id))
+	if err != nil {
+		return fmt.Errorf("creating recipe detail path: %w", err)
+	}
+	detailURL, err := url.JoinPath(baseURL, recipePath)
+	if err != nil {
+		return fmt.Errorf("creating detail URL: %w", err)
+	}
+	resp2, err := client.Get(detailURL)
 	if err != nil {
 		return err
 	}

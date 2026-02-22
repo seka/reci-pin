@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -123,7 +124,7 @@ func (s *Server) setupRoutes() {
 
 // Run starts the HTTP server (blocking)
 func (s *Server) Run() error {
-	addr := fmt.Sprintf(":%d", s.cfg.Server.Port)
+	addr := net.JoinHostPort("", s.cfg.Server.Port)
 	s.httpServer = &http.Server{
 		Addr:    addr,
 		Handler: s.router,
