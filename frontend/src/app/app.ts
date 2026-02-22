@@ -24,14 +24,7 @@ export class App {
     this.translate.setDefaultLang('ja');
 
     if (isPlatformBrowser(this.platformId)) {
-      let savedLang: string | null = null;
-      try {
-        if (typeof window !== 'undefined' && window.localStorage) {
-          savedLang = localStorage.getItem('lang');
-        }
-      } catch (e) {
-        console.warn('localStorage is not available');
-      }
+      const savedLang = localStorage.getItem('lang');
       const browserLang = this.translate.getBrowserLang();
 
       // Normalize language code (e.g. 'en-US' -> 'en')
