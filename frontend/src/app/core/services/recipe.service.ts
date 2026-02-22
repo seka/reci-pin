@@ -4,12 +4,12 @@ import { Observable, switchMap, from } from 'rxjs';
 
 export interface Recipe {
   id: number;
-  user_id: number;
+  userId: number;
   name: string;
   url: string;
   memo: string;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
   tags?: Tag[];
   images?: RecipeImage[];
 }
@@ -21,17 +21,17 @@ export interface Tag {
 
 export interface RecipeImage {
   id: number;
-  recipe_id: number;
-  image_path: string;
-  image_url: string;
-  created_at: string;
+  recipeId: number;
+  imagePath: string;
+  imageUrl: string;
+  createdAt: string;
 }
 
 export interface CreateRecipeRequest {
   name: string;
   url: string;
   memo: string;
-  tag_ids: number[];
+  tagIds: number[];
 }
 
 export interface UpdateRecipeRequest {
@@ -42,18 +42,18 @@ export interface UpdateRecipeRequest {
 
 export interface SearchRecipeRequest {
   query: string;
-  tag_ids: number[];
+  tagIds: number[];
 }
 
 export interface CreateRecipeImageRequest {
   filename: string;
-  content_type: string;
+  contentType: string;
   size: number;
 }
 
 export interface CreateRecipeImageResponse {
   image: RecipeImage;
-  upload_url: string;
+  uploadUrl: string;
 }
 
 @Injectable({
@@ -89,19 +89,19 @@ export class RecipeService {
   }
 
   addTags(recipeId: number, tagIds: number[]): Observable<void> {
-    return this.http.post<void>(`${this.API_URL}/${recipeId}/tags`, { tag_ids: tagIds });
+    return this.http.post<void>(`${this.API_URL}/${recipeId}/tags`, { tagIds });
   }
 
   removeTags(recipeId: number, tagIds: number[]): Observable<void> {
     return this.http.request<void>('delete', `${this.API_URL}/${recipeId}/tags`, {
-      body: { tag_ids: tagIds },
+      body: { tagIds },
     });
   }
 
   uploadImage(recipeId: number, file: File): Observable<RecipeImage> {
     const body: CreateRecipeImageRequest = {
       filename: file.name,
-      content_type: file.type,
+      contentType: file.type,
       size: file.size,
     };
 
@@ -109,7 +109,7 @@ export class RecipeService {
       .post<CreateRecipeImageResponse>(`${this.API_URL}/${recipeId}/images`, body)
       .pipe(
         switchMap((res) => {
-          let uploadUrl = res.upload_url;
+          const uploadUrl = res.uploadUrl;
           return from(
             fetch(uploadUrl, {
               method: 'PUT',

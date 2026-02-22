@@ -9,8 +9,8 @@ export interface User {
   id: number;
   email: string;
   name: string;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AuthResponse {
@@ -168,7 +168,7 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
-  changePassword(data: { current_password: string; new_password: string }): Observable<void> {
+  changePassword(data: { currentPassword: string; newPassword: string }): Observable<void> {
     return this.http.put<void>(`${this.API_URL}/auth/password`, data);
   }
 
@@ -188,7 +188,7 @@ export class AuthService {
   resetPassword(token: string, newPassword: string): Observable<MessageResponse> {
     return this.http.post<MessageResponse>(`${this.API_URL}/auth/password-reset`, {
       token,
-      new_password: newPassword,
+      newPassword,
     });
   }
 
