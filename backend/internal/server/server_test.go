@@ -57,7 +57,11 @@ func TestNew(t *testing.T) {
 	storageCfg := &config.Storage{}
 	setupMockRegistry(ctrl, mockRegistry)
 
-	srv := New(cfg, storageCfg, mockRegistry)
+	fullCfg := &config.Config{
+		ApiServer: *cfg,
+		Storage:   *storageCfg,
+	}
+	srv := New(fullCfg, mockRegistry)
 
 	assert.NotNil(t, srv)
 	assert.NotNil(t, srv.router)
@@ -73,7 +77,11 @@ func TestServer_HealthEndpoint(t *testing.T) {
 	storageCfg := &config.Storage{}
 	setupMockRegistry(ctrl, mockRegistry)
 
-	srv := New(cfg, storageCfg, mockRegistry)
+	fullCfg := &config.Config{
+		ApiServer: *cfg,
+		Storage:   *storageCfg,
+	}
+	srv := New(fullCfg, mockRegistry)
 
 	req := httptest.NewRequest("GET", "/health", nil)
 	w := httptest.NewRecorder()
@@ -93,7 +101,11 @@ func TestServer_CORSHeaders(t *testing.T) {
 	storageCfg := &config.Storage{}
 	setupMockRegistry(ctrl, mockRegistry)
 
-	srv := New(cfg, storageCfg, mockRegistry)
+	fullCfg := &config.Config{
+		ApiServer: *cfg,
+		Storage:   *storageCfg,
+	}
+	srv := New(fullCfg, mockRegistry)
 
 	req := httptest.NewRequest("OPTIONS", "/health", nil)
 	w := httptest.NewRecorder()
@@ -127,7 +139,11 @@ func TestServer_RoutingExists(t *testing.T) {
 			storageCfg := &config.Storage{}
 			setupMockRegistry(ctrl, mockRegistry)
 
-			srv := New(cfg, storageCfg, mockRegistry)
+			fullCfg := &config.Config{
+				ApiServer: *cfg,
+				Storage:   *storageCfg,
+			}
+			srv := New(fullCfg, mockRegistry)
 
 			req := httptest.NewRequest(tt.method, tt.path, nil)
 			w := httptest.NewRecorder()

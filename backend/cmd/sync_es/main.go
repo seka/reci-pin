@@ -75,7 +75,7 @@ func main() {
 	log.Println("Connected to database")
 
 	// Connect to	// Start SearchEngine
-	searchEngine, err := es.NewClient()
+	esClient, err := es.NewClient()
 	if err != nil {
 		log.Fatalf("Failed to connect to elasticsearch: %v", err)
 	}
