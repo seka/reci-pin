@@ -112,13 +112,13 @@ func (u *useCaseRegistry) NewWithdrawUseCase() auth.WithdrawUseCase {
 
 func (u *useCaseRegistry) NewChangePasswordUseCase() auth.ChangePasswordUseCase {
 	// TODO: EmailSenderの設定をConfigから読み込むようにする
-	emailSender := mailhog.New("mailhog", 1025, "no-reply@reci-pin.com")
+	emailSender := mailhog.New("mailhog", "1025", "no-reply@reci-pin.com")
 	return auth.NewChangePasswordUseCase(u.repo.NewUserEmailCredentialRepository(), emailSender)
 }
 
 func (u *useCaseRegistry) NewRequestPasswordResetUseCase() auth.RequestPasswordResetUseCase {
 	// TODO: EmailSenderの設定をConfigから読み込むようにする
-	emailSender := mailhog.New("mailhog", 1025, "no-reply@reci-pin.com")
+	emailSender := mailhog.New("mailhog", "1025", "no-reply@reci-pin.com")
 	return auth.NewRequestPasswordResetUseCase(u.repo.NewUserEmailCredentialRepository(), u.repo.NewPasswordResetTokenRepository(), emailSender)
 }
 

@@ -28,7 +28,7 @@ func getEnv(key, fallback string) string {
 
 func init() {
 	flag.StringVar(&cfg.Database.Host, "db-host", getEnv("DB_HOST", "localhost"), "Database host")
-	flag.IntVar(&cfg.Database.Port, "db-port", 5432, "Database port")
+	flag.StringVar(&cfg.Database.Port, "db-port", "5432", "Database port")
 	flag.StringVar(&cfg.Database.User, "db-user", getEnv("DB_USER", "postgres"), "Database user")
 	flag.StringVar(&cfg.Database.Password, "db-password", getEnv("DB_PASSWORD", "postgres"), "Database password")
 	flag.StringVar(&cfg.Database.DBName, "db-name", getEnv("DB_NAME", "recipin_dev"), "Database name")

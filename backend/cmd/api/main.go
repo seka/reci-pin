@@ -27,9 +27,9 @@ var (
 )
 
 func init() {
-	flag.IntVar(&cfg.Server.Port, "port", 8080, "Server port")
+	flag.StringVar(&cfg.Server.Port, "port", "8080", "Server port")
 	flag.StringVar(&cfg.Database.Host, "db-host", "localhost", "Database host")
-	flag.IntVar(&cfg.Database.Port, "db-port", 5432, "Database port")
+	flag.StringVar(&cfg.Database.Port, "db-port", "5432", "Database port")
 	flag.StringVar(&cfg.Database.User, "db-user", "postgres", "Database user")
 	flag.StringVar(&cfg.Database.Password, "db-password", "postgres", "Database password")
 	flag.StringVar(&cfg.Database.DBName, "db-name", "recipin_dev", "Database name")

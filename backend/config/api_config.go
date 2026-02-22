@@ -1,7 +1,8 @@
 package config
 
 import (
-	"fmt"
+	"net"
+	"net/url"
 )
 
 type Config struct {
@@ -13,7 +14,7 @@ type Config struct {
 
 type DatabaseConfig struct {
 	Host     string
-	Port     int
+	Port     string
 	User     string
 	Password string
 	DBName   string
@@ -21,7 +22,7 @@ type DatabaseConfig struct {
 }
 
 type ServerConfig struct {
-	Port int
+	Port string
 }
 
 type StorageConfig struct {
@@ -37,6 +38,14 @@ type JWTConfig struct {
 }
 
 func (c *DatabaseConfig) DSN() string {
-	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-		c.Host, c.Port, c.User, c.Password, c.DBName, c.SSLMode)
+	u := &url.URL{
+		Scheme: "postgres",
+		User:   url.UserPassword(c.User, c.Password),
+		Host:   net.JoinHostPort(c.Host, c.Port),
+		Path:   c.DBName,
+	}
+	q := u.Query()
+	q.Set("sslmode", c.SSLMode)
+	u.RawQuery = q.Encode()
+	return u.String()
 }
