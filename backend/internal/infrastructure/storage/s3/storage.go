@@ -24,7 +24,7 @@ type client struct {
 }
 
 // NewClient creates a new StorageService backed by S3
-func NewClient(ctx context.Context, cfg appConfig.Storage) (storage.Storage, error) {
+func NewClient(ctx context.Context, cfg appConfig.Storage) (storage.Client, error) {
 	awsCfg, err := awsConfig.LoadDefaultConfig(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load SDK config: %w", err)

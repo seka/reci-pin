@@ -39,7 +39,7 @@ func main() {
 
 	ctx := context.Background()
 
-	// Connect to Database
+	// Connect	// Start Database
 	db := postgres.New(cfg.Database.DSN())
 	if err := db.Connect(ctx); err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)

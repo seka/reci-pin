@@ -1,0 +1,6 @@
+./change_password_usecase_test.go
+./get_user_usecase_test.go
+./login_usecase_test.go
+./signup_usecase_test.go
+./token_usecase_test.go
+./verify_email_usecase_test.go

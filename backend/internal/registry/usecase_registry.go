@@ -55,12 +55,12 @@ type UseCase interface {
 // useCaseRegistry implements the UseCase interface
 type useCaseRegistry struct {
 	repo           Repository
-	storageService storage.Storage
+	storageService storage.Client
 	cfg            *config.Config
 }
 
 // NewUseCase creates a new UseCase registry
-func NewUseCase(repo Repository, storageService storage.Storage, cfg *config.Config) UseCase {
+func NewUseCase(repo Repository, storageService storage.Client, cfg *config.Config) UseCase {
 	return &useCaseRegistry{
 		repo:           repo,
 		storageService: storageService,

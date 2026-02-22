@@ -14,9 +14,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/seka/reci-pin/backend/config"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
+	es "github.com/seka/reci-pin/backend/internal/infrastructure/database/elasticsearch"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/storage/s3"
 	"github.com/seka/reci-pin/backend/internal/registry"
@@ -36,6 +36,15 @@ func init() {
 	flag.StringVar(&cfg.ApiServer.Port, "port", "0", "Server port (0 for random)")
 	flag.StringVar(&cfg.ApiServer.JWT.Secret, "jwt-secret", "test-secret", "JWT secret")
 	cfg.ApiServer.JWT.ExpirationHours = 24
+
+	// Initialize other configs with defaults
+	cfg.Storage.Bucket = "test-bucket"
+	cfg.Storage.Endpoint = "http://localhost:4566"
+	cfg.Storage.PublicBaseURL = "http://localhost:4566/test-bucket"
+	cfg.SearchEngine.Addresses = []string{"http://localhost:9200"}
+	cfg.Email.Host = "localhost"
+	cfg.Email.Port = "1025"
+	cfg.Email.From = "no-reply@reci-pin.com"
 }
 
 func main() {
@@ -80,10 +89,7 @@ func run() error {
 	defer db.Close()
 
 	// Connect to Elasticsearch
-	esCfg := elasticsearch.Config{
-		Addresses: []string{"http://localhost:9200"},
-	}
-	esClient, err := elasticsearch.NewTypedClient(esCfg)
+	esClient, err := es.NewClient()
 	if err != nil {
 		return fmt.Errorf("creating elasticsearch client: %w", err)
 	}
@@ -162,19 +168,9 @@ func run() error {
 }
 
 func createDatabase(ctx context.Context, dbName string) error {
-	// Connect to default 'postgres' database to create new DB
-	u := &url.URL{
-		Scheme: "postgres",
-		User:   url.UserPassword(cfg.Database.User, cfg.Database.Password),
-		Host:   net.JoinHostPort(cfg.Database.Host, cfg.Database.Port),
-		Path:   "postgres",
-	}
-	q := u.Query()
-	q.Set("sslmode", cfg.Database.SSLMode)
-	u.RawQuery = q.Encode()
-	dsn := u.String()
-
-	adminDB := postgres.New(dsn)
+	adminCfg := cfg.Database
+	adminCfg.DBName = "postgres"
+	adminDB := postgres.New(adminCfg.DSN())
 	if err := adminDB.Connect(ctx); err != nil {
 		return err
 	}
@@ -197,18 +193,9 @@ func createDatabase(ctx context.Context, dbName string) error {
 }
 
 func dropDatabase(ctx context.Context, dbName string) error {
-	u := &url.URL{
-		Scheme: "postgres",
-		User:   url.UserPassword(cfg.Database.User, cfg.Database.Password),
-		Host:   net.JoinHostPort(cfg.Database.Host, cfg.Database.Port),
-		Path:   "postgres",
-	}
-	q := u.Query()
-	q.Set("sslmode", cfg.Database.SSLMode)
-	u.RawQuery = q.Encode()
-	dsn := u.String()
-
-	adminDB := postgres.New(dsn)
+	adminCfg := cfg.Database
+	adminCfg.DBName = "postgres"
+	adminDB := postgres.New(adminCfg.DSN())
 	if err := adminDB.Connect(ctx); err != nil {
 		return err
 	}
@@ -225,18 +212,9 @@ func dropDatabase(ctx context.Context, dbName string) error {
 
 func runMigrations(ctx context.Context, dbName string) error {
 	// Connect to the new DB
-	u := &url.URL{
-		Scheme: "postgres",
-		User:   url.UserPassword(cfg.Database.User, cfg.Database.Password),
-		Host:   net.JoinHostPort(cfg.Database.Host, cfg.Database.Port),
-		Path:   dbName,
-	}
-	q := u.Query()
-	q.Set("sslmode", cfg.Database.SSLMode)
-	u.RawQuery = q.Encode()
-	dsn := u.String()
-
-	db := postgres.New(dsn)
+	migrationCfg := cfg.Database
+	migrationCfg.DBName = dbName
+	db := postgres.New(migrationCfg.DSN())
 	if err := db.Connect(ctx); err != nil {
 		return err
 	}

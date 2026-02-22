@@ -73,12 +73,14 @@ func main() {
 
 	// Start Server
 	srv := createServer(&cfg, db, esClient, storageService)
-	wg.Go(func() {
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 		if err := runServer(ctx, srv); err != nil {
 			errCh <- fmt.Errorf("server error: %w", err)
 			cancel()
 		}
-	})
+	}()
 
 	// Wait for signal
 	quit := make(chan os.Signal, 1)
@@ -109,7 +111,12 @@ func connectDatabase(ctx context.Context, db database.Database) error {
 	return nil
 }
 
-func createServer(cfg *config.Config, db database.Database, esClient *elasticsearch.TypedClient, storageService storage.Storage) *server.Server {
+func createServer(
+	cfg *config.Config,
+	db database.Database,
+	esClient *elasticsearch.TypedClient,
+	storageService storage.Client,
+) *server.Server {
 	repoRegistry := registry.NewRepository(db, esClient)
 	useCaseRegistry := registry.NewUseCase(repoRegistry, storageService, cfg)
 	return server.New(cfg, useCaseRegistry)

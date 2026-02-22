@@ -1,0 +1,8 @@
+./password_reset_token_repository_mock.go
+./recipe_image_repository_mock.go
+./recipe_repository_mock.go
+./refresh_token_repository_mock.go
+./search_repository_mock.go
+./tag_repository_mock.go
+./user_email_credential_repository_mock.go
+./user_repository_mock.go

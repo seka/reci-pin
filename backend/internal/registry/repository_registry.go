@@ -22,15 +22,15 @@ type Repository interface {
 
 // repositoryRegistry implements the Repository interface
 type repositoryRegistry struct {
-	db       database.Database
-	esClient *elasticsearch.TypedClient
+	db           database.Database
+	searchEngine *elasticsearch.TypedClient
 }
 
 // NewRepository creates a new Repository registry
-func NewRepository(db database.Database, esClient *elasticsearch.TypedClient) Repository {
+func NewRepository(db database.Database, searchEngine *elasticsearch.TypedClient) Repository {
 	return &repositoryRegistry{
-		db:       db,
-		esClient: esClient,
+		db:           db,
+		searchEngine: searchEngine,
 	}
 }
 
@@ -59,7 +59,7 @@ func (r *repositoryRegistry) NewPasswordResetTokenRepository() repository.Passwo
 }
 
 func (r *repositoryRegistry) NewRecipeSearchRepository() repository.RecipeSearchRepository {
-	return es.NewRecipeSearcher(r.esClient)
+	return es.NewRecipeSearcher(r.searchEngine)
 }
 
 func (r *repositoryRegistry) NewRefreshTokenRepository() repository.RefreshTokenRepository {
