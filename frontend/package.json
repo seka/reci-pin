@@ -31,6 +31,8 @@
     "@angular/ssr": "^21.1.2",
     "@ngx-translate/core": "^17.0.0",
     "@ngx-translate/http-loader": "^17.0.0",
+    "camelcase-keys": "^10.0.2",
+    "decamelize-keys": "^2.0.1",
     "express": "^5.1.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
