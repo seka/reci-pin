@@ -246,8 +246,8 @@ export class RecipesComponent implements OnInit {
     const tagIds = this.searchMode === 'tag' ? this.selectedTagIds : [];
 
     this.recipeService.searchRecipes({
-      query: query,
-      tag_ids: tagIds
+      query: query || '',
+      tagIds: tagIds,
     }).subscribe({
       next: (recipes) => (this.recipes = recipes),
       error: (err: Error) => console.error('Failed to search recipes', err),

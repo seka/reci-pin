@@ -58,7 +58,7 @@ export class RecipeEditComponent implements OnInit {
                 };
                 this.originalTagIds = recipe.tags?.map((t) => t.id) || [];
                 if (recipe.images && recipe.images.length > 0) {
-                    this.initialImagePreview = recipe.images[0].image_url;
+                    this.initialImagePreview = recipe.images[0].imageUrl;
                 }
                 this.isLoading = false;
             },

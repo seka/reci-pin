@@ -205,8 +205,8 @@ export class ChangePasswordComponent {
 
     this.authService
       .changePassword({
-        current_password: currentPassword,
-        new_password: newPassword,
+        currentPassword: currentPassword,
+        newPassword: newPassword,
       })
       .subscribe({
         next: () => {

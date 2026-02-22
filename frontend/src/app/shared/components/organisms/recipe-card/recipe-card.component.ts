@@ -115,7 +115,7 @@ export class RecipeCardComponent {
   get thumbnailUrl(): string | null {
     if (!this.recipe.images?.length) return null;
 
-    const imageUrl = this.recipe.images[0].image_url;
+    const imageUrl = this.recipe.images[0].imageUrl;
     if (!imageUrl) return null;
 
     try {

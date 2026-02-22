@@ -33,7 +33,7 @@ export class RecipeCreateComponent {
             name: event.formData.name,
             url: event.formData.url,
             memo: event.formData.memo,
-            tag_ids: event.formData.tagIds || [],
+            tagIds: event.formData.tagIds || [],
         };
 
         this.recipeService.createRecipe(requestData).subscribe({
