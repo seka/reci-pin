@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	mock_postgres "github.com/seka/reci-pin/backend/internal/infrastructure/database/mock"
+	mockPostgres "github.com/seka/reci-pin/backend/internal/infrastructure/database/mock"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -18,7 +18,7 @@ func TestRefreshTokenRepository_Save(t *testing.T) {
 		token *model.RefreshToken
 	}
 	type mocks struct {
-		setup func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows)
+		setup func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows)
 	}
 	tests := []struct {
 		name    string
@@ -38,7 +38,7 @@ func TestRefreshTokenRepository_Save(t *testing.T) {
 				},
 			},
 			mocks: mocks{
-				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
+				setup: func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows) {
 					r.EXPECT().Next().Return(true)
 					r.EXPECT().Scan(gomock.Any(), gomock.Any()).DoAndReturn(
 						func(dest ...any) error {
@@ -60,7 +60,7 @@ func TestRefreshTokenRepository_Save(t *testing.T) {
 				token: &model.RefreshToken{UserID: 1},
 			},
 			mocks: mocks{
-				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
+				setup: func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows) {
 					m.EXPECT().Query(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("db error"))
 				},
 			},
@@ -73,8 +73,8 @@ func TestRefreshTokenRepository_Save(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockDB := mock_postgres.NewMockDatabase(ctrl)
-			mockRows := mock_postgres.NewMockRows(ctrl)
+			mockDB := mockPostgres.NewMockDatabase(ctrl)
+			mockRows := mockPostgres.NewMockRows(ctrl)
 			tt.mocks.setup(mockDB, mockRows)
 
 			repo := postgres.NewRefreshTokenRepository(mockDB)
@@ -95,7 +95,7 @@ func TestRefreshTokenRepository_GetByHash(t *testing.T) {
 		hash string
 	}
 	type mocks struct {
-		setup func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows)
+		setup func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows)
 	}
 	tests := []struct {
 		name    string
@@ -108,7 +108,7 @@ func TestRefreshTokenRepository_GetByHash(t *testing.T) {
 			name: "Success",
 			args: args{hash: "hash"},
 			mocks: mocks{
-				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
+				setup: func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows) {
 					r.EXPECT().Next().Return(true)
 					r.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
 						func(dest ...any) error {
@@ -135,7 +135,7 @@ func TestRefreshTokenRepository_GetByHash(t *testing.T) {
 			name: "Not Found",
 			args: args{hash: "notfound"},
 			mocks: mocks{
-				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
+				setup: func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows) {
 					r.EXPECT().Next().Return(false)
 					r.EXPECT().Close()
 
@@ -152,8 +152,8 @@ func TestRefreshTokenRepository_GetByHash(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockDB := mock_postgres.NewMockDatabase(ctrl)
-			mockRows := mock_postgres.NewMockRows(ctrl)
+			mockDB := mockPostgres.NewMockDatabase(ctrl)
+			mockRows := mockPostgres.NewMockRows(ctrl)
 			tt.mocks.setup(mockDB, mockRows)
 
 			repo := postgres.NewRefreshTokenRepository(mockDB)
@@ -179,7 +179,7 @@ func TestRefreshTokenRepository_Revoke(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockDB := mock_postgres.NewMockDatabase(ctrl)
+	mockDB := mockPostgres.NewMockDatabase(ctrl)
 	mockDB.EXPECT().Execute(gomock.Any(), gomock.Any(), int64(1)).Return(int64(1), nil)
 
 	repo := postgres.NewRefreshTokenRepository(mockDB)
@@ -191,7 +191,7 @@ func TestRefreshTokenRepository_RevokeAllByUserID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockDB := mock_postgres.NewMockDatabase(ctrl)
+	mockDB := mockPostgres.NewMockDatabase(ctrl)
 	mockDB.EXPECT().Execute(gomock.Any(), gomock.Any(), int64(1)).Return(int64(1), nil)
 
 	repo := postgres.NewRefreshTokenRepository(mockDB)

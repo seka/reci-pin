@@ -9,7 +9,7 @@ import (
 	"github.com/seka/reci-pin/backend/config"
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	infraSearchEngine "github.com/seka/reci-pin/backend/internal/infrastructure/searchengine"
-	es_repo "github.com/seka/reci-pin/backend/internal/infrastructure/searchengine/elasticsearch"
+	esRepo "github.com/seka/reci-pin/backend/internal/infrastructure/searchengine/elasticsearch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -27,7 +27,7 @@ func setupTestClient(t *testing.T) (infraSearchEngine.SearchEngine, *elasticsear
 	rawClient, err := elasticsearch.NewTypedClient(cfg)
 	require.NoError(t, err)
 
-	engine, err := es_repo.NewClient(config.SearchEngine{Addresses: []string{esAddress}})
+	engine, err := esRepo.NewClient(config.SearchEngine{Addresses: []string{esAddress}})
 	require.NoError(t, err)
 
 	// Ping to ensure connection
@@ -55,7 +55,7 @@ func cleanupIndex(t *testing.T, client *elasticsearch.TypedClient) {
 
 func TestRecipeSearcher_Integration(t *testing.T) {
 	engine, client := setupTestClient(t)
-	searcher := es_repo.NewRecipeSearcher(engine)
+	searcher := esRepo.NewRecipeSearcher(engine)
 	ctx := context.Background()
 
 	// Test case data
