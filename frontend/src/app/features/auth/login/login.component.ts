@@ -7,6 +7,7 @@ import { AuthCardComponent } from '../../../shared/components/organisms/auth-car
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
 import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
 import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
+import { LinkComponent } from '../../../shared/components/atoms/link/link.component';
 
 @Component({
   selector: 'app-login',
@@ -19,6 +20,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
     AuthCardComponent,
     InputComponent,
     ButtonComponent,
+    LinkComponent,
   ],
   template: `
     <app-auth-card [title]="'AUTH.LOGIN_BUTTON' | translate">
@@ -46,9 +48,9 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
         </div>
 
         <div style="text-align: center; margin-bottom: var(--spacing-2);">
-          <a routerLink="/password-reset/request" style="font-size: var(--font-size-2); color: var(--color-text-secondary); text-decoration: none;">
+          <app-link routerLink="/password-reset/request" variant="secondary">
             {{ 'AUTH.FORGOT_PASSWORD' | translate }}
-          </a>
+          </app-link>
         </div>
 
         @if (errorMessage) {
