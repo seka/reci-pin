@@ -157,9 +157,9 @@ seed.force: ## Clean database, clear ES index and run seed
 seed.image: ## Upload seed images to LocalStack
 	@echo "Uploading seed images to LocalStack..."
 	docker cp internal/infrastructure/storage/mock/seed_placeholder.png reci-pin-localstack:/tmp/seed_placeholder.png
-	docker exec reci-pin-localstack awslocal s3 cp /tmp/seed_placeholder.png s3://recipin-bucket/recipes/1/seed_1.jpg --content-type image/png
-	docker exec reci-pin-localstack awslocal s3 cp /tmp/seed_placeholder.png s3://recipin-bucket/recipes/2/seed_1.jpg --content-type image/png
-	docker exec reci-pin-localstack awslocal s3 cp /tmp/seed_placeholder.png s3://recipin-bucket/recipes/2/seed_2.jpg --content-type image/png
+	docker exec reci-pin-localstack awslocal s3 cp /tmp/seed_placeholder.png s3://$(STORAGE_BUCKET)/recipes/1/seed_1.jpg --content-type image/png
+	docker exec reci-pin-localstack awslocal s3 cp /tmp/seed_placeholder.png s3://$(STORAGE_BUCKET)/recipes/2/seed_1.jpg --content-type image/png
+	docker exec reci-pin-localstack awslocal s3 cp /tmp/seed_placeholder.png s3://$(STORAGE_BUCKET)/recipes/2/seed_2.jpg --content-type image/png
 
 .PHONY: sync-es.run
 sync-es.run: ## Sync data from DB to Elasticsearch
