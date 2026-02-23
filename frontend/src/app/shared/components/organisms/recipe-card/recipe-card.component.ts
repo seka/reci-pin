@@ -1,12 +1,14 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { TranslatePipe } from '@ngx-translate/core';
 import { RouterModule } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 import { Recipe } from '../../../../core/services/recipe.service';
 import { VALIDATION_RULES } from '../../../../core/constants/validation.constants';
+import { ConfirmDialogComponent } from '../../molecules/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-recipe-card',
@@ -14,14 +16,25 @@ import { VALIDATION_RULES } from '../../../../core/constants/validation.constant
   imports: [MatCardModule, MatButtonModule, MatIconModule, MatChipsModule, TranslatePipe, RouterModule],
   template: `
     <mat-card class="recipe-card">
-      <a
-        mat-icon-button
-        class="edit-button"
-        [routerLink]="['/recipes', recipe.id, 'edit']"
-        [attr.aria-label]="'COMMON.EDIT' | translate"
-      >
-        <mat-icon>edit</mat-icon>
-      </a>
+      <div class="action-buttons">
+        <a
+          mat-icon-button
+          class="action-btn"
+          [routerLink]="['/recipes', recipe.id, 'edit']"
+          [attr.aria-label]="'COMMON.EDIT' | translate"
+        >
+          <mat-icon>edit</mat-icon>
+        </a>
+        <button
+          mat-icon-button
+          color="warn"
+          class="action-btn"
+          (click)="openDeleteDialog()"
+          [attr.aria-label]="'COMMON.DELETE' | translate"
+        >
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
       @if (thumbnailUrl) {
         <div class="card-image">
           <img [src]="thumbnailUrl" [alt]="recipe.name" />
@@ -89,11 +102,15 @@ import { VALIDATION_RULES } from '../../../../core/constants/validation.constant
       mat-chip-set {
         margin-top: var(--spacing-1_5);
       }
-      .edit-button {
+      .action-buttons {
         position: absolute;
         top: var(--spacing-1);
         right: var(--spacing-1);
         z-index: 10;
+        display: flex;
+        gap: var(--spacing-1);
+      }
+      .action-btn {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -102,7 +119,10 @@ import { VALIDATION_RULES } from '../../../../core/constants/validation.constant
         color: var(--color-primary);
         transition: all 0.2s ease;
       }
-      .edit-button:hover {
+      .action-btn[color="warn"] {
+        color: var(--color-error);
+      }
+      .action-btn:hover {
         background: rgba(255, 255, 255, 0.9);
         transform: scale(1.1);
       }
@@ -111,6 +131,25 @@ import { VALIDATION_RULES } from '../../../../core/constants/validation.constant
 })
 export class RecipeCardComponent {
   @Input() recipe!: Recipe;
+  @Output() delete = new EventEmitter<number>();
+
+  private readonly dialog = inject(MatDialog);
+
+  openDeleteDialog(): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'COMMON.CONFIRM_DELETE',
+        message: 'RECIPE.DELETE_CONFIRMATION',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.delete.emit(this.recipe.id);
+      }
+    });
+  }
 
   get thumbnailUrl(): string | null {
     if (!this.recipe.images?.length) return null;
