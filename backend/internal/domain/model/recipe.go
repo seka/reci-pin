@@ -12,7 +12,7 @@ type Recipe struct {
 	URL       string
 	Memo      string
 	Tags      []Tag
-	Images    []RecipeImage
+	Images    []PublicRecipeImage
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
