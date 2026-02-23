@@ -130,15 +130,15 @@ func (u *useCaseRegistry) NewCreateRecipeUseCase() recipe.CreateRecipeUseCase {
 }
 
 func (u *useCaseRegistry) NewGetRecipeUseCase() recipe.GetRecipeUseCase {
-	return recipe.NewGetRecipeUseCase(u.repo.NewRecipeRepository(), u.repo.NewRecipeImageRepository())
+	return recipe.NewGetRecipeUseCase(u.repo.NewRecipeRepository(), u.repo.NewRecipeImageRepository(), u.storage)
 }
 
 func (u *useCaseRegistry) NewGetUserRecipesUseCase() recipe.GetUserRecipesUseCase {
-	return recipe.NewGetUserRecipesUseCase(u.repo.NewRecipeRepository(), u.repo.NewRecipeImageRepository())
+	return recipe.NewGetUserRecipesUseCase(u.repo.NewRecipeRepository(), u.repo.NewRecipeImageRepository(), u.storage)
 }
 
 func (u *useCaseRegistry) NewUpdateRecipeUseCase() recipe.UpdateRecipeUseCase {
-	return recipe.NewUpdateRecipeUseCase(u.repo.NewRecipeRepository(), u.repo.NewRecipeSearchRepository())
+	return recipe.NewUpdateRecipeUseCase(u.repo.NewRecipeRepository(), u.repo.NewRecipeImageRepository(), u.repo.NewRecipeSearchRepository(), u.storage)
 }
 
 func (u *useCaseRegistry) NewDeleteRecipeUseCase() recipe.DeleteRecipeUseCase {
@@ -150,6 +150,7 @@ func (u *useCaseRegistry) NewSearchRecipesUseCase() recipe.SearchRecipesUseCase 
 		u.repo.NewRecipeRepository(),
 		u.repo.NewRecipeImageRepository(),
 		u.repo.NewRecipeSearchRepository(),
+		u.storage,
 	)
 }
 

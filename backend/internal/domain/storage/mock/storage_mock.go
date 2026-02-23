@@ -11,6 +11,7 @@ package mock
 
 import (
 	context "context"
+	url "net/url"
 	reflect "reflect"
 	time "time"
 
@@ -54,4 +55,18 @@ func (m *MockClient) GeneratePresignedURL(ctx context.Context, key, contentType 
 func (mr *MockClientMockRecorder) GeneratePresignedURL(ctx, key, contentType, contentLength, expires any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GeneratePresignedURL", reflect.TypeOf((*MockClient)(nil).GeneratePresignedURL), ctx, key, contentType, contentLength, expires)
+}
+
+// GetPublicURL mocks base method.
+func (m *MockClient) GetPublicURL() *url.URL {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPublicURL")
+	ret0, _ := ret[0].(*url.URL)
+	return ret0
+}
+
+// GetPublicURL indicates an expected call of GetPublicURL.
+func (mr *MockClientMockRecorder) GetPublicURL() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPublicURL", reflect.TypeOf((*MockClient)(nil).GetPublicURL))
 }

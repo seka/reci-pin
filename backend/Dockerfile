@@ -22,8 +22,13 @@ CMD air -c .air.toml -- \
     -db-sslmode=${DB_SSLMODE:-disable} \
     -jwt-secret=${JWT_SECRET:-change-me} \
     -jwt-expiration=${JWT_EXPIRATION_HOURS:-24} \
+    -storage-bucket=${STORAGE_BUCKET:-recipin-bucket} \
     -storage-endpoint=${STORAGE_ENDPOINT} \
-    -storage-public-url=${STORAGE_PUBLIC_URL}
+    -storage-public-url=${STORAGE_PUBLIC_URL} \
+    -es-addresses=${ELASTICSEARCH_ADDRESS:-http://elasticsearch:9200} \
+    -mail-host=${MAIL_HOST:-localhost} \
+    -mail-port=${MAIL_PORT:-1025} \
+    -mail-from=${MAIL_FROM:-no-reply@reci-pin.com}
 
 # Builder stage
 FROM base AS builder
@@ -47,5 +52,10 @@ CMD ./main \
     -db-sslmode=${DB_SSLMODE} \
     -jwt-secret=${JWT_SECRET} \
     -jwt-expiration=${JWT_EXPIRATION_HOURS} \
+    -storage-bucket=${STORAGE_BUCKET} \
     -storage-endpoint=${STORAGE_ENDPOINT} \
-    -storage-public-url=${STORAGE_PUBLIC_URL}
+    -storage-public-url=${STORAGE_PUBLIC_URL} \
+    -es-addresses=${ELASTICSEARCH_ADDRESS} \
+    -mail-host=${MAIL_HOST} \
+    -mail-port=${MAIL_PORT} \
+    -mail-from=${MAIL_FROM}

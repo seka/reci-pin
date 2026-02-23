@@ -30,7 +30,6 @@ const mockRecipe: Recipe = {
     {
       id: 1,
       recipeId: 1,
-      imagePath: '/images/recipe1.jpg',
       imageUrl: 'https://example.com/images/recipe1.jpg',
       createdAt: new Date().toISOString(),
     },

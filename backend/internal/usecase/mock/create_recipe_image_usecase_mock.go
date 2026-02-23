@@ -43,10 +43,10 @@ func (m *MockCreateRecipeImageUseCase) EXPECT() *MockCreateRecipeImageUseCaseMoc
 }
 
 // Execute mocks base method.
-func (m *MockCreateRecipeImageUseCase) Execute(ctx context.Context, input recipe_image.CreateRecipeImageInput) (*model.RecipeImage, string, error) {
+func (m *MockCreateRecipeImageUseCase) Execute(ctx context.Context, input recipe_image.CreateRecipeImageInput) (*model.PublicRecipeImage, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Execute", ctx, input)
-	ret0, _ := ret[0].(*model.RecipeImage)
+	ret0, _ := ret[0].(*model.PublicRecipeImage)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2

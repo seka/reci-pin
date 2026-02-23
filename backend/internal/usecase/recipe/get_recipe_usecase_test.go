@@ -8,6 +8,7 @@ import (
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository/mock"
+	mock_storage "github.com/seka/reci-pin/backend/internal/domain/storage/mock"
 	"github.com/seka/reci-pin/backend/internal/usecase/recipe"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -21,7 +22,7 @@ func TestGetRecipeUseCase_Execute(t *testing.T) {
 		name    string
 		id      int64
 		userID  int64
-		setup   func(*mock.MockRecipeRepository, *mock.MockRecipeImageRepository)
+		setup   func(*mock.MockRecipeRepository, *mock.MockRecipeImageRepository, *mock_storage.MockClient)
 		wantErr bool
 		errMsg  string
 	}{
@@ -29,7 +30,7 @@ func TestGetRecipeUseCase_Execute(t *testing.T) {
 			name:   "正常系_レシピ取得成功",
 			id:     1,
 			userID: 1,
-			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository) {
+			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository, ms *mock_storage.MockClient) {
 				mr.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{
@@ -47,8 +48,9 @@ func TestGetRecipeUseCase_Execute(t *testing.T) {
 				mi.EXPECT().
 					GetByRecipeID(gomock.Any(), int64(1)).
 					Return([]model.RecipeImage{
-						{ID: 1, RecipeID: 1, ImageURL: url.URL{Path: "/images/1.jpg"}},
+						{ID: 1, RecipeID: 1, ImagePath: "/images/1.jpg"},
 					}, nil)
+				ms.EXPECT().GetPublicURL().Return(&url.URL{Scheme: "https", Host: "example.com"})
 			},
 			wantErr: false,
 		},
@@ -56,7 +58,7 @@ func TestGetRecipeUseCase_Execute(t *testing.T) {
 			name:   "異常系_レシピ不在",
 			id:     999,
 			userID: 1,
-			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository) {
+			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository, ms *mock_storage.MockClient) {
 				mr.EXPECT().
 					GetByID(gomock.Any(), int64(999)).
 					Return(nil, errors.New("not found"))
@@ -68,7 +70,7 @@ func TestGetRecipeUseCase_Execute(t *testing.T) {
 			name:   "異常系_権限エラー",
 			id:     1,
 			userID: 2, // 異なるユーザー
-			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository) {
+			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository, ms *mock_storage.MockClient) {
 				mr.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{
@@ -86,9 +88,10 @@ func TestGetRecipeUseCase_Execute(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRecipeRepo := mock.NewMockRecipeRepository(ctrl)
 			mockImageRepo := mock.NewMockRecipeImageRepository(ctrl)
-			tt.setup(mockRecipeRepo, mockImageRepo)
+			mockStorage := mock_storage.NewMockClient(ctrl)
+			tt.setup(mockRecipeRepo, mockImageRepo, mockStorage)
 
-			uc := recipe.NewGetRecipeUseCase(mockRecipeRepo, mockImageRepo)
+			uc := recipe.NewGetRecipeUseCase(mockRecipeRepo, mockImageRepo, mockStorage)
 			result, err := uc.Execute(context.Background(), tt.id, tt.userID)
 
 			if tt.wantErr {

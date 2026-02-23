@@ -3,6 +3,7 @@ package recipe_image_test
 import (
 	"context"
 	"errors"
+	"net/url"
 	"testing"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
@@ -46,6 +47,7 @@ func TestCreateRecipeImageUseCase_Execute(t *testing.T) {
 						img.ID = 1
 						return nil
 					})
+				ms.EXPECT().GetPublicURL().Return(&url.URL{Scheme: "http", Host: "localhost"})
 			},
 			wantErr: false,
 		},
@@ -198,7 +200,7 @@ func TestCreateRecipeImageUseCase_Execute(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotNil(t, image)
 				assert.NotEmpty(t, url)
-				assert.Equal(t, tt.input.RecipeID, image.RecipeID)
+				assert.Equal(t, tt.input.RecipeID, image.RecipeImage.RecipeID)
 			}
 		})
 	}

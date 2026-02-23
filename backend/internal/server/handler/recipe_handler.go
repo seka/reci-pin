@@ -333,7 +333,7 @@ func (h *RecipeHandler) AddImage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := response.CreateRecipeImageResponse{
-		Image:     response.NewRecipeImage(image),
+		Image:     response.NewRecipeImageResponse(*image),
 		UploadURL: uploadURL,
 	}
 

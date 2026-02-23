@@ -3,7 +3,6 @@ package postgres_test
 import (
 	"context"
 	"errors"
-	"net/url"
 	"testing"
 	"time"
 
@@ -29,7 +28,7 @@ func TestRecipeImageRepository_Create(t *testing.T) {
 	}{
 		{
 			name: "Success",
-			args: args{image: &model.RecipeImage{RecipeID: 100, ImageURL: url.URL{Path: "/path/to/image.jpg"}}},
+			args: args{image: &model.RecipeImage{RecipeID: 100, ImagePath: "/path/to/image.jpg"}},
 			mocks: mocks{
 				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
 					r.EXPECT().Next().Return(true)
@@ -48,7 +47,7 @@ func TestRecipeImageRepository_Create(t *testing.T) {
 		},
 		{
 			name: "DB Error",
-			args: args{image: &model.RecipeImage{RecipeID: 100, ImageURL: url.URL{Path: "/path/to/image.jpg"}}},
+			args: args{image: &model.RecipeImage{RecipeID: 100, ImagePath: "/path/to/image.jpg"}},
 			mocks: mocks{
 				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
 					m.EXPECT().Query(gomock.Any(), gomock.Any(), int64(100), "/path/to/image.jpg").

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
-	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -19,7 +18,7 @@ import (
 
 //go:generate mockgen -source=$GOFILE -destination=../mock/create_recipe_image_usecase_mock.go -package=mock
 type CreateRecipeImageUseCase interface {
-	Execute(ctx context.Context, input CreateRecipeImageInput) (*model.RecipeImage, string, error)
+	Execute(ctx context.Context, input CreateRecipeImageInput) (*model.PublicRecipeImage, string, error)
 }
 
 type CreateRecipeImageInput struct {
@@ -48,7 +47,7 @@ func NewCreateRecipeImageUseCase(
 	}
 }
 
-func (uc *createRecipeImageInteractor) Execute(ctx context.Context, input CreateRecipeImageInput) (*model.RecipeImage, string, error) {
+func (uc *createRecipeImageInteractor) Execute(ctx context.Context, input CreateRecipeImageInput) (*model.PublicRecipeImage, string, error) {
 	recipe, err := uc.recipeRepo.GetByID(ctx, input.RecipeID)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to get recipe: %w", err)
@@ -72,22 +71,31 @@ func (uc *createRecipeImageInteractor) Execute(ctx context.Context, input Create
 	}
 
 	timestamp := time.Now().UnixNano()
-	key := path.Join("recipes", strconv.FormatInt(input.RecipeID, 10), fmt.Sprintf("%d_%s", timestamp, input.Filename))
+	key, err := url.JoinPath("recipes", strconv.FormatInt(input.RecipeID, 10), fmt.Sprintf("%d_%s", timestamp, input.Filename))
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to join path: %w", err)
+	}
 
 	presignedURL, err := uc.storageService.GeneratePresignedURL(ctx, key, input.ContentType, input.Size, 15*time.Minute)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to generate presigned URL: %w", err)
 	}
 
-	parsedPathURL, _ := url.Parse(key)
 	image := &model.RecipeImage{
-		RecipeID: input.RecipeID,
-		ImageURL: *parsedPathURL,
+		RecipeID:  input.RecipeID,
+		ImagePath: key,
 	}
 
 	if err := uc.recipeImageRepo.Create(ctx, image); err != nil {
 		return nil, "", fmt.Errorf("failed to add image to recipe: %w", err)
 	}
 
-	return image, presignedURL, nil
+	baseURL := uc.storageService.GetPublicURL()
+	u := baseURL.JoinPath(image.ImagePath)
+	publicImage := &model.PublicRecipeImage{
+		RecipeImage: *image,
+		ImageURL:    *u,
+	}
+
+	return publicImage, presignedURL, nil
 }

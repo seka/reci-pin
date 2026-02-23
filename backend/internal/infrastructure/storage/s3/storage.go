@@ -74,6 +74,10 @@ func NewClient(ctx context.Context, cfg config.Storage) (storage.Client, error) 
 	}, nil
 }
 
+func (c *client) GetPublicURL() *url.URL {
+	return c.publicBaseURL
+}
+
 func (c *client) GeneratePresignedURL(ctx context.Context, key string, contentType string, contentLength int64, expires time.Duration) (string, error) {
 	request, err := c.presignClient.PresignPutObject(ctx, &s3.PutObjectInput{
 		Bucket:        aws.String(c.bucket),

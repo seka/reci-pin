@@ -6,6 +6,7 @@ import (
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
+	"github.com/seka/reci-pin/backend/internal/domain/storage"
 )
 
 type SearchRecipesUseCase interface {
@@ -16,17 +17,20 @@ type searchRecipesInteractor struct {
 	recipeRepo      repository.RecipeRepository
 	recipeImageRepo repository.RecipeImageRepository
 	searchRepo      repository.RecipeSearchRepository
+	storageService  storage.Client
 }
 
 func NewSearchRecipesUseCase(
 	recipeRepo repository.RecipeRepository,
 	recipeImageRepo repository.RecipeImageRepository,
 	searchRepo repository.RecipeSearchRepository,
+	storageService storage.Client,
 ) SearchRecipesUseCase {
 	return &searchRecipesInteractor{
 		recipeRepo:      recipeRepo,
 		recipeImageRepo: recipeImageRepo,
 		searchRepo:      searchRepo,
+		storageService:  storageService,
 	}
 }
 
@@ -48,13 +52,17 @@ func (uc *searchRecipesInteractor) Execute(ctx context.Context, input SearchReci
 
 	ids, _, err := uc.searchRepo.Search(ctx, criteria)
 	if err != nil {
-		// Fallback to DB search if ES fails? Or return error.
-		// For now, return error to make sure ES is working.
-		// Alternatively, we could log and fallback to recipeRepo.Search(ctx, input.UserID, input.Query, input.TagIDs)
-		// But recipeRepo.Search might be deprecated or removed.
-		// Let's fallback for robustness during migration.
 		fmt.Printf("ES search failed, falling back to DB: %v\n", err)
-		return uc.recipeRepo.Search(ctx, input.UserID, input.Query, input.TagIDs)
+		// Search in DB
+		recipes, err := uc.recipeRepo.Search(ctx, input.UserID, input.Query, input.TagIDs)
+		if err != nil {
+			return nil, fmt.Errorf("failed to search recipes in DB: %w", err)
+		}
+		// Extract IDs from DB results to use common loading logic
+		ids = make([]int64, len(recipes))
+		for i, r := range recipes {
+			ids[i] = r.ID
+		}
 	}
 
 	if len(ids) == 0 {
@@ -85,9 +93,20 @@ func (uc *searchRecipesInteractor) Execute(ctx context.Context, input SearchReci
 
 		images, err := uc.recipeImageRepo.GetByRecipeID(ctx, recipes[i].ID)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get recipe images: %w", err)
+			return nil, fmt.Errorf("failed to get images for recipe %d: %w", recipes[i].ID, err)
 		}
-		recipes[i].Images = images
+
+		// Orchestrate: Convert to PublicRecipeImage
+		baseURL := uc.storageService.GetPublicURL()
+		publicImages := make([]model.PublicRecipeImage, len(images))
+		for j, img := range images {
+			u := baseURL.JoinPath(img.ImagePath)
+			publicImages[j] = model.PublicRecipeImage{
+				RecipeImage: img,
+				ImageURL:    *u,
+			}
+		}
+		recipes[i].Images = publicImages
 	}
 
 	return recipes, nil

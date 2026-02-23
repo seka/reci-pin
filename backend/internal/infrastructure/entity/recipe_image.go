@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"net/url"
 	"time"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
@@ -18,21 +17,17 @@ func (e *RecipeImage) ToModel() *model.RecipeImage {
 	if e == nil {
 		return nil
 	}
-	parsedURL, _ := url.Parse(e.ImagePath)
 	return &model.RecipeImage{
-		ID:       e.ID,
-		RecipeID: e.RecipeID,
-		ImageURL: *parsedURL,
+		ID:        e.ID,
+		RecipeID:  e.RecipeID,
+		ImagePath: e.ImagePath,
 	}
 }
 
 func NewRecipeImage(m *model.RecipeImage) *RecipeImage {
-	if m == nil {
-		return nil
-	}
 	return &RecipeImage{
 		ID:        m.ID,
 		RecipeID:  m.RecipeID,
-		ImagePath: m.ImageURL.Path,
+		ImagePath: m.ImagePath,
 	}
 }

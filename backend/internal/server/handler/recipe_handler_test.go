@@ -833,7 +833,10 @@ func TestRecipeHandler_AddImage(t *testing.T) {
 						Size:        10240,
 					}
 					m.EXPECT().Execute(gomock.Any(), input).
-						Return(&model.RecipeImage{ID: 1, ImageURL: url.URL{Path: "test.jpg"}}, "upload-url", nil)
+						Return(&model.PublicRecipeImage{
+							RecipeImage: model.RecipeImage{ID: 1, ImagePath: "test.jpg"},
+							ImageURL:    url.URL{Path: "http://localhost/test.jpg"},
+						}, "upload-url", nil)
 				},
 			},
 			wantStatus: http.StatusCreated,

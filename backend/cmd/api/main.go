@@ -48,11 +48,12 @@ func init() {
 	flag.StringVar(&cfg.Storage.PublicBaseURL, "storage-public-url", "", "Base URL for public access")
 
 	// Search Engine configuration
+	// Search Engine configuration
+	cfg.SearchEngine.Addresses = []string{"http://localhost:9200"}
 	flag.Func("es-addresses", "Elasticsearch addresses (comma separated)", func(s string) error {
 		cfg.SearchEngine.Addresses = parseAddresses(s)
 		return nil
 	})
-	cfg.SearchEngine.Addresses = []string{"http://localhost:9200"}
 
 	// Mail configuration
 	flag.StringVar(&cfg.Email.Host, "mail-host", "localhost", "MailHog host")

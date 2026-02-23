@@ -30,11 +30,11 @@ type CreateRecipeImageResponse struct {
 	UploadURL string              `json:"upload_url"`
 }
 
-func NewRecipeImage(i *model.RecipeImage) RecipeImageResponse {
+func NewRecipeImageResponse(img model.PublicRecipeImage) RecipeImageResponse {
 	return RecipeImageResponse{
-		ID:       i.ID,
-		RecipeID: i.RecipeID,
-		ImageURL: i.ImageURL.String(),
+		ID:       img.ID,
+		RecipeID: img.RecipeID,
+		ImageURL: img.ImageURL.String(),
 	}
 }
 
@@ -49,7 +49,7 @@ func NewRecipe(m *model.Recipe) *RecipeResponse {
 
 	images := make([]RecipeImageResponse, 0, len(m.Images))
 	for _, i := range m.Images {
-		images = append(images, NewRecipeImage(&i))
+		images = append(images, NewRecipeImageResponse(i))
 	}
 
 	return &RecipeResponse{
@@ -69,4 +69,32 @@ func NewRecipes(recipes []model.Recipe) []RecipeResponse {
 		responses = append(responses, *NewRecipe(&r))
 	}
 	return responses
+}
+
+func NewRecipeResponse(recipe *model.Recipe) *RecipeResponse {
+	// This function seems to be a duplicate of NewRecipe, but the instruction explicitly asks for it.
+	// The image handling here is also slightly different (slice of pointers vs slice of values).
+	// I will implement it as provided in the snippet, assuming `recipe.Images` contains `model.PublicRecipeImage`.
+	images := make([]RecipeImageResponse, len(recipe.Images))
+	for i := range recipe.Images {
+		images[i] = NewRecipeImageResponse(recipe.Images[i])
+	}
+
+	tags := make([]TagResponse, 0, len(recipe.Tags))
+	for _, t := range recipe.Tags {
+		tags = append(tags, TagResponse{
+			ID:   t.ID,
+			Name: t.Name,
+		})
+	}
+
+	return &RecipeResponse{
+		ID:     recipe.ID,
+		UserID: recipe.UserID,
+		Name:   recipe.Name,
+		URL:    recipe.URL,
+		Memo:   recipe.Memo,
+		Tags:   tags,
+		Images: images,
+	}
 }
