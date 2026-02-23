@@ -16,6 +16,8 @@ import { RecipeCardComponent } from '../../shared/components/organisms/recipe-ca
 import { HeadlineComponent } from '../../shared/components/atoms/headline/headline.component';
 import { ButtonComponent } from '../../shared/components/atoms/button/button.component';
 import { InputComponent } from '../../shared/components/atoms/input/input.component';
+import { SearchBarComponent } from '../../shared/components/molecules/search-bar/search-bar.component';
+import { EmptyStateComponent } from '../../shared/components/molecules/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-recipes',
@@ -35,7 +37,9 @@ import { InputComponent } from '../../shared/components/atoms/input/input.compon
     RecipeCardComponent,
     HeadlineComponent,
     ButtonComponent,
-    InputComponent
+    InputComponent,
+    SearchBarComponent,
+    EmptyStateComponent
   ],
   template: `
     <div class="recipes-container">
@@ -58,7 +62,7 @@ import { InputComponent } from '../../shared/components/atoms/input/input.compon
         </div>
 
         @if (searchMode === 'keyword') {
-        <div class="search-row">
+        <app-search-bar (searchSubmit)="search()">
           <app-input
             [(ngModel)]="searchQuery"
             (keyup.enter)="search()"
@@ -67,15 +71,11 @@ import { InputComponent } from '../../shared/components/atoms/input/input.compon
             placeholder="キーワードで検索..."
             class="search-input"
           ></app-input>
-          <app-button (click)="search()" variant="secondary" class="search-btn">
-            <mat-icon style="font-size: 18px; width: 18px; height: 18px; vertical-align: middle; margin-right: 4px;">search</mat-icon>
-            検索
-          </app-button>
-        </div>
+        </app-search-bar>
         }
 
         @if (searchMode === 'tag') {
-        <div class="search-row">
+        <app-search-bar (searchSubmit)="search()">
            <mat-form-field class="tag-chip-list" appearance="outline" floatLabel="always">
             <mat-label>タグで絞り込み</mat-label>
             <mat-chip-grid #chipGrid aria-label="Tag selection">
@@ -105,19 +105,27 @@ import { InputComponent } from '../../shared/components/atoms/input/input.compon
               }
             </mat-autocomplete>
           </mat-form-field>
-          <app-button (click)="search()" variant="secondary" class="search-btn">
-            <mat-icon style="font-size: 18px; width: 18px; height: 18px; vertical-align: middle; margin-right: 4px;">search</mat-icon>
-            検索
-          </app-button>
-        </div>
+        </app-search-bar>
         }
       </div>
 
-      <div class="recipes-grid">
-        @for (recipe of recipes; track recipe.id) {
-          <app-recipe-card [recipe]="recipe" (delete)="onDeleteRecipe($event)" class="recipe-card-item"></app-recipe-card>
-        }
-      </div>
+      @if (recipes.length > 0) {
+        <div class="recipes-grid">
+          @for (recipe of recipes; track recipe.id) {
+            <app-recipe-card [recipe]="recipe" (delete)="onDeleteRecipe($event)" class="recipe-card-item"></app-recipe-card>
+          }
+        </div>
+      } @else {
+        <app-empty-state 
+          icon="receipt_long" 
+          [title]="'RECIPE.EMPTY_TITLE' | translate" 
+          [message]="'RECIPE.EMPTY_MESSAGE' | translate">
+          <app-button routerLink="/recipes/new" variant="primary">
+            <mat-icon style="vertical-align: middle; margin-right: 4px;">add</mat-icon>
+            {{ 'RECIPE.ADD_NEW' | translate }}
+          </app-button>
+        </app-empty-state>
+      }
     </div>
   `,
   styles: [
@@ -147,22 +155,11 @@ import { InputComponent } from '../../shared/components/atoms/input/input.compon
         display: flex;
         justify-content: flex-start;
       }
-      .search-row {
-        display: flex;
-        gap: var(--spacing-2);
-        align-items: center;
+      .search-input {
         width: 100%;
       }
-      .search-input {
-        flex: 1;
-      }
       .tag-chip-list {
-        flex: 1;
-      }
-      /* Override mat-form-field bottom margin for both inputs to prevent layout shift */
-      .tag-chip-list ::ng-deep .mat-mdc-form-field-subscript-wrapper,
-      .search-input ::ng-deep .mat-mdc-form-field-subscript-wrapper {
-        display: none;
+        width: 100%;
       }
       .header-actions {
         display: flex;
