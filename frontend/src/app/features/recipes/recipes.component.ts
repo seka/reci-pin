@@ -3,7 +3,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { CommonModule, AsyncPipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { SearchModeToggleComponent } from '../../shared/components/molecules/search-mode-toggle/search-mode-toggle.component';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -26,7 +26,7 @@ import { InputComponent } from '../../shared/components/atoms/input/input.compon
     FormsModule,
     ReactiveFormsModule,
     MatIconModule,
-    MatButtonToggleModule,
+    SearchModeToggleComponent,
     MatChipsModule,
     MatAutocompleteModule,
     MatFormFieldModule,
@@ -54,13 +54,11 @@ import { InputComponent } from '../../shared/components/atoms/input/input.compon
 
       <div class="search-section">
         <div class="search-mode-toggle">
-          <mat-button-toggle-group [(ngModel)]="searchMode">
-            <mat-button-toggle value="keyword">キーワード</mat-button-toggle>
-            <mat-button-toggle value="tag">タグ</mat-button-toggle>
-          </mat-button-toggle-group>
+          <app-search-mode-toggle [(value)]="searchMode"></app-search-mode-toggle>
         </div>
 
-        <div class="search-row" *ngIf="searchMode === 'keyword'">
+        @if (searchMode === 'keyword') {
+        <div class="search-row">
           <app-input
             [(ngModel)]="searchQuery"
             (keyup.enter)="search()"
@@ -74,8 +72,10 @@ import { InputComponent } from '../../shared/components/atoms/input/input.compon
             検索
           </app-button>
         </div>
+        }
 
-        <div class="search-row" *ngIf="searchMode === 'tag'">
+        @if (searchMode === 'tag') {
+        <div class="search-row">
            <mat-form-field class="tag-chip-list" appearance="outline" floatLabel="always">
             <mat-label>タグで絞り込み</mat-label>
             <mat-chip-grid #chipGrid aria-label="Tag selection">
@@ -110,6 +110,7 @@ import { InputComponent } from '../../shared/components/atoms/input/input.compon
             検索
           </app-button>
         </div>
+        }
       </div>
 
       <div class="recipes-grid">
