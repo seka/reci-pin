@@ -10,8 +10,8 @@ import (
 
 	"github.com/seka/reci-pin/backend/config"
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	es "github.com/seka/reci-pin/backend/internal/infrastructure/database/elasticsearch"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
+	postgres "github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
+	es "github.com/seka/reci-pin/backend/internal/infrastructure/searchengine/elasticsearch"
 	"github.com/seka/reci-pin/backend/internal/registry"
 )
 
@@ -73,9 +73,10 @@ func main() {
 	log.Println("Connected to elasticsearch")
 
 	// Initialize Registry
-	repoReg := registry.NewRepository(db, esClient)
+	repoReg := registry.NewRepository(db)
+	searcherReg := registry.NewSearcher(esClient)
 	recipeRepo := repoReg.NewRecipeRepository()
-	searchRepo := repoReg.NewRecipeSearchRepository()
+	searchRepo := searcherReg.NewRecipeSearchRepository()
 
 	// 1. Get All Recipes
 	log.Println("Fetching all recipes...")

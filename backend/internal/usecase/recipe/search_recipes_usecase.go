@@ -6,6 +6,7 @@ import (
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
+	"github.com/seka/reci-pin/backend/internal/domain/searcher"
 	"github.com/seka/reci-pin/backend/internal/domain/storage"
 )
 
@@ -16,20 +17,20 @@ type SearchRecipesUseCase interface {
 type searchRecipesInteractor struct {
 	recipeRepo      repository.RecipeRepository
 	recipeImageRepo repository.RecipeImageRepository
-	searchRepo      repository.RecipeSearchRepository
+	searchRepo      searcher.RecipeSearcher
 	storageService  storage.Client
 }
 
 func NewSearchRecipesUseCase(
 	recipeRepo repository.RecipeRepository,
 	recipeImageRepo repository.RecipeImageRepository,
-	searchRepo repository.RecipeSearchRepository,
+	recipeSearcher searcher.RecipeSearcher,
 	storageService storage.Client,
 ) SearchRecipesUseCase {
 	return &searchRecipesInteractor{
 		recipeRepo:      recipeRepo,
 		recipeImageRepo: recipeImageRepo,
-		searchRepo:      searchRepo,
+		searchRepo:      recipeSearcher,
 		storageService:  storageService,
 	}
 }
@@ -42,7 +43,7 @@ type SearchRecipesInput struct {
 
 func (uc *searchRecipesInteractor) Execute(ctx context.Context, input SearchRecipesInput) ([]model.Recipe, error) {
 	// Search in ElasticSearch
-	criteria := repository.SearchCriteria{
+	criteria := model.RecipeSearchCriteria{
 		UserID:   input.UserID,
 		Keyword:  input.Query,
 		TagIDs:   input.TagIDs,

@@ -56,15 +56,17 @@ type UseCase interface {
 type useCaseRegistry struct {
 	repo        Repository
 	storage     storage.Client
+	searcher    Searcher
 	emailClient notification.EmailClient
 	cfg         *config.Config
 }
 
 // NewUseCase creates a new UseCase registry
-func NewUseCase(repo Repository, storage storage.Client, email notification.EmailClient, cfg *config.Config) UseCase {
+func NewUseCase(repo Repository, storage storage.Client, searcher Searcher, email notification.EmailClient, cfg *config.Config) UseCase {
 	return &useCaseRegistry{
 		repo:        repo,
 		storage:     storage,
+		searcher:    searcher,
 		emailClient: email,
 		cfg:         cfg,
 	}
@@ -126,7 +128,7 @@ func (u *useCaseRegistry) NewResetPasswordUseCase() auth.ResetPasswordUseCase {
 
 // Recipe UseCases
 func (u *useCaseRegistry) NewCreateRecipeUseCase() recipe.CreateRecipeUseCase {
-	return recipe.NewCreateRecipeUseCase(u.repo.NewRecipeRepository(), u.repo.NewRecipeSearchRepository())
+	return recipe.NewCreateRecipeUseCase(u.repo.NewRecipeRepository(), u.searcher.NewRecipeSearchRepository())
 }
 
 func (u *useCaseRegistry) NewGetRecipeUseCase() recipe.GetRecipeUseCase {
@@ -138,18 +140,18 @@ func (u *useCaseRegistry) NewGetUserRecipesUseCase() recipe.GetUserRecipesUseCas
 }
 
 func (u *useCaseRegistry) NewUpdateRecipeUseCase() recipe.UpdateRecipeUseCase {
-	return recipe.NewUpdateRecipeUseCase(u.repo.NewRecipeRepository(), u.repo.NewRecipeImageRepository(), u.repo.NewRecipeSearchRepository(), u.storage)
+	return recipe.NewUpdateRecipeUseCase(u.repo.NewRecipeRepository(), u.repo.NewRecipeImageRepository(), u.searcher.NewRecipeSearchRepository(), u.storage)
 }
 
 func (u *useCaseRegistry) NewDeleteRecipeUseCase() recipe.DeleteRecipeUseCase {
-	return recipe.NewDeleteRecipeUseCase(u.repo.NewRecipeRepository(), u.repo.NewRecipeSearchRepository())
+	return recipe.NewDeleteRecipeUseCase(u.repo.NewRecipeRepository(), u.searcher.NewRecipeSearchRepository())
 }
 
 func (u *useCaseRegistry) NewSearchRecipesUseCase() recipe.SearchRecipesUseCase {
 	return recipe.NewSearchRecipesUseCase(
 		u.repo.NewRecipeRepository(),
 		u.repo.NewRecipeImageRepository(),
-		u.repo.NewRecipeSearchRepository(),
+		u.searcher.NewRecipeSearchRepository(),
 		u.storage,
 	)
 }

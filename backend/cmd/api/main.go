@@ -12,14 +12,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/seka/reci-pin/backend/config"
 	"github.com/seka/reci-pin/backend/internal/domain/notification"
 	"github.com/seka/reci-pin/backend/internal/domain/storage"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
-	es "github.com/seka/reci-pin/backend/internal/infrastructure/database/elasticsearch"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/notification/mailhog"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/searchengine"
+	es "github.com/seka/reci-pin/backend/internal/infrastructure/searchengine/elasticsearch"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/storage/s3"
 	"github.com/seka/reci-pin/backend/internal/registry"
 	"github.com/seka/reci-pin/backend/internal/server"
@@ -135,12 +135,13 @@ func connectDatabase(ctx context.Context, db database.Database) error {
 func createServer(
 	cfg *config.Config,
 	db database.Database,
-	esClient *elasticsearch.TypedClient,
+	esClient searchengine.SearchEngine,
 	storageService storage.Client,
 	emailClient notification.EmailClient,
 ) *server.Server {
-	repoRegistry := registry.NewRepository(db, esClient)
-	useCaseRegistry := registry.NewUseCase(repoRegistry, storageService, emailClient, cfg)
+	repoRegistry := registry.NewRepository(db)
+	searcherRegistry := registry.NewSearcher(esClient)
+	useCaseRegistry := registry.NewUseCase(repoRegistry, storageService, searcherRegistry, emailClient, cfg)
 	return server.New(&cfg.ApiServer, useCaseRegistry)
 }
 

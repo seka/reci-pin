@@ -8,7 +8,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/seka/reci-pin/backend/config"
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	infra_searchengine "github.com/seka/reci-pin/backend/internal/infrastructure/searchengine"
+	infraSearchEngine "github.com/seka/reci-pin/backend/internal/infrastructure/searchengine"
 	es_repo "github.com/seka/reci-pin/backend/internal/infrastructure/searchengine/elasticsearch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -19,7 +19,7 @@ const (
 	esAddress     = "http://localhost:9200"
 )
 
-func setupTestClient(t *testing.T) (infra_searchengine.SearchEngine, *elasticsearch.TypedClient) {
+func setupTestClient(t *testing.T) (infraSearchEngine.SearchEngine, *elasticsearch.TypedClient) {
 	cfg := elasticsearch.Config{
 		Addresses: []string{esAddress},
 	}

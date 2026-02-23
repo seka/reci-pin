@@ -11,16 +11,16 @@ import (
 	"github.com/elastic/go-elasticsearch/v8/typedapi/types/enums/sortorder"
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/searcher"
-	infra_searchengine "github.com/seka/reci-pin/backend/internal/infrastructure/searchengine"
+	infraSearchEngine "github.com/seka/reci-pin/backend/internal/infrastructure/searchengine"
 )
 
 const indexName = "recipes"
 
 type RecipeSearcher struct {
-	client infra_searchengine.SearchEngine
+	client infraSearchEngine.SearchEngine
 }
 
-func NewRecipeSearcher(client infra_searchengine.SearchEngine) searcher.RecipeSearcher {
+func NewRecipeSearcher(client infraSearchEngine.SearchEngine) searcher.RecipeSearcher {
 	return &RecipeSearcher{client: client}
 }
 

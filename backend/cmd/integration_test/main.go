@@ -16,9 +16,9 @@ import (
 
 	"github.com/seka/reci-pin/backend/config"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
-	es "github.com/seka/reci-pin/backend/internal/infrastructure/database/elasticsearch"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
+	postgres "github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/notification/mailhog"
+	es "github.com/seka/reci-pin/backend/internal/infrastructure/searchengine/elasticsearch"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/storage/s3"
 	"github.com/seka/reci-pin/backend/internal/registry"
 	"github.com/seka/reci-pin/backend/internal/server"
@@ -103,8 +103,9 @@ func run() error {
 
 	// Initialize Server
 	mailClient := mailhog.NewClient(testCfg.Email)
-	repoReg := registry.NewRepository(db, esClient)
-	useCaseReg := registry.NewUseCase(repoReg, storageService, mailClient, &testCfg)
+	repoReg := registry.NewRepository(db)
+	searcherReg := registry.NewSearcher(esClient)
+	useCaseReg := registry.NewUseCase(repoReg, storageService, searcherReg, mailClient, &testCfg)
 	srv := server.New(&testCfg.ApiServer, useCaseReg)
 
 	// Run Server in Goroutine
