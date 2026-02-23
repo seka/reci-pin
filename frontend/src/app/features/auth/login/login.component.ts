@@ -8,6 +8,7 @@ import { InputComponent } from '../../../shared/components/atoms/input/input.com
 import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
 import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
 import { LinkComponent } from '../../../shared/components/atoms/link/link.component';
+import { AlertComponent } from '../../../shared/components/atoms/alert/alert.component';
 
 @Component({
   selector: 'app-login',
@@ -21,6 +22,7 @@ import { LinkComponent } from '../../../shared/components/atoms/link/link.compon
     InputComponent,
     ButtonComponent,
     LinkComponent,
+    AlertComponent,
   ],
   template: `
     <app-auth-card [title]="'AUTH.LOGIN_BUTTON' | translate">
@@ -53,9 +55,7 @@ import { LinkComponent } from '../../../shared/components/atoms/link/link.compon
           </app-link>
         </div>
 
-        @if (errorMessage) {
-          <p class="error">{{ errorMessage }}</p>
-        }
+        <app-alert type="error" [message]="errorMessage"></app-alert>
       </form>
 
       <div footer>
@@ -82,11 +82,6 @@ import { LinkComponent } from '../../../shared/components/atoms/link/link.compon
       }
       .full-width-btn {
         width: 100%;
-      }
-      .error {
-        color: var(--color-error);
-        margin-top: var(--spacing-2);
-        text-align: center;
       }
     `,
   ],

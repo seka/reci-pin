@@ -15,6 +15,7 @@ import { HeadlineComponent } from '../../../shared/components/atoms/headline/hea
 import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { LinkComponent } from '../../../shared/components/atoms/link/link.component';
+import { AlertComponent } from '../../../shared/components/atoms/alert/alert.component';
 
 @Component({
   selector: 'app-change-password',
@@ -28,6 +29,7 @@ import { LinkComponent } from '../../../shared/components/atoms/link/link.compon
     HeadlineComponent,
     TranslatePipe,
     LinkComponent,
+    AlertComponent,
   ],
   template: `
     <div class="change-password-container">
@@ -76,9 +78,7 @@ import { LinkComponent } from '../../../shared/components/atoms/link/link.compon
           </app-button>
         </div>
 
-        @if (errorMessage) {
-          <p class="error-global">{{ errorMessage }}</p>
-        }
+        <app-alert type="error" [message]="errorMessage"></app-alert>
       </form>
     </div>
   `,
@@ -121,12 +121,6 @@ import { LinkComponent } from '../../../shared/components/atoms/link/link.compon
 
       .actions {
         margin-top: var(--spacing-1);
-      }
-
-      .error-global {
-        color: var(--color-error);
-        margin-top: var(--spacing-1_5);
-        font-weight: bold;
       }
     `,
   ],

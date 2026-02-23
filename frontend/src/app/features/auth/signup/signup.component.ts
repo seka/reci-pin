@@ -7,6 +7,7 @@ import { AuthCardComponent } from '../../../shared/components/organisms/auth-car
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
 import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
 import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
+import { AlertComponent } from '../../../shared/components/atoms/alert/alert.component';
 
 @Component({
   selector: 'app-signup',
@@ -19,6 +20,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
     AuthCardComponent,
     InputComponent,
     ButtonComponent,
+    AlertComponent,
   ],
   template: `
     <app-auth-card [title]="'AUTH.SIGNUP_TITLE' | translate">
@@ -61,9 +63,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
           <app-button variant="primary" type="submit" class="submit-btn" [disabled]="signupForm.invalid">{{ 'AUTH.REGISTER' | translate }}</app-button>
         </div>
 
-        @if (errorMessage) {
-          <p class="error">{{ errorMessage }}</p>
-        }
+        <app-alert type="error" [message]="errorMessage" class="signup-alert"></app-alert>
       </form>
 
       <div footer>
@@ -91,11 +91,8 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
       .full-width-btn {
         width: 100%;
       }
-      .error {
-        color: var(--color-error);
-        margin-top: var(--spacing-2);
-        text-align: left !important;
-        width: 100%;
+      .signup-alert {
+        text-align: left;
       }
     `,
   ],

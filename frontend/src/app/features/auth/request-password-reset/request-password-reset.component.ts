@@ -8,6 +8,7 @@ import { AuthCardComponent } from '../../../shared/components/organisms/auth-car
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
 import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
 import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
+import { AlertComponent } from '../../../shared/components/atoms/alert/alert.component';
 
 @Component({
     selector: 'app-request-password-reset',
@@ -20,6 +21,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
         AuthCardComponent,
         InputComponent,
         ButtonComponent,
+        AlertComponent,
     ],
     templateUrl: './request-password-reset.component.html',
     styleUrls: ['./request-password-reset.component.scss'],
