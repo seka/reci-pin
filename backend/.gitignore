@@ -61,3 +61,6 @@ proxy/certs/*.pem
 # Binaries
 stress_test
 seed
+
+# Go tool temporary directory
+.gotmp/
