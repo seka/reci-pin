@@ -7,6 +7,7 @@ import (
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
+	"github.com/seka/reci-pin/backend/internal/domain/storage"
 	"github.com/seka/reci-pin/backend/internal/domain/validation"
 )
 
@@ -15,17 +16,23 @@ type UpdateRecipeUseCase interface {
 }
 
 type updateRecipeInteractor struct {
-	recipeRepo repository.RecipeRepository
-	searchRepo repository.RecipeSearchRepository
+	recipeRepo      repository.RecipeRepository
+	recipeImageRepo repository.RecipeImageRepository
+	searchRepo      repository.RecipeSearchRepository
+	storageService  storage.Client
 }
 
 func NewUpdateRecipeUseCase(
 	recipeRepo repository.RecipeRepository,
+	recipeImageRepo repository.RecipeImageRepository,
 	searchRepo repository.RecipeSearchRepository,
+	storageService storage.Client,
 ) UpdateRecipeUseCase {
 	return &updateRecipeInteractor{
-		recipeRepo: recipeRepo,
-		searchRepo: searchRepo,
+		recipeRepo:      recipeRepo,
+		recipeImageRepo: recipeImageRepo,
+		searchRepo:      searchRepo,
+		storageService:  storageService,
 	}
 }
 
@@ -62,13 +69,30 @@ func (uc *updateRecipeInteractor) Execute(ctx context.Context, input UpdateRecip
 		return nil, fmt.Errorf("failed to update recipe: %w", err)
 	}
 
-	// Fetch tags for indexing
+	// Fetch tags for indexing and response
 	tags, err := uc.recipeRepo.GetTags(ctx, recipe.ID)
 	if err != nil {
-		// Log warning but proceed with indexing without tags if failed
-		fmt.Printf("failed to get tags for indexing: %v\n", err)
+		fmt.Printf("failed to get tags: %v\n", err)
 	} else {
 		recipe.Tags = tags
+	}
+
+	// Fetch images for response
+	images, err := uc.recipeImageRepo.GetByRecipeID(ctx, recipe.ID)
+	if err != nil {
+		fmt.Printf("failed to get recipe images: %v\n", err)
+	} else {
+		// Orchestrate: Convert to PublicRecipeImage
+		baseURL := uc.storageService.GetPublicURL()
+		publicImages := make([]model.PublicRecipeImage, len(images))
+		for i, img := range images {
+			u := baseURL.JoinPath(img.ImagePath)
+			publicImages[i] = model.PublicRecipeImage{
+				RecipeImage: img,
+				ImageURL:    *u,
+			}
+		}
+		recipe.Images = publicImages
 	}
 
 	// Update index

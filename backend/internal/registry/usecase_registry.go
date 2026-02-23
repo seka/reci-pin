@@ -138,7 +138,7 @@ func (u *useCaseRegistry) NewGetUserRecipesUseCase() recipe.GetUserRecipesUseCas
 }
 
 func (u *useCaseRegistry) NewUpdateRecipeUseCase() recipe.UpdateRecipeUseCase {
-	return recipe.NewUpdateRecipeUseCase(u.repo.NewRecipeRepository(), u.repo.NewRecipeSearchRepository())
+	return recipe.NewUpdateRecipeUseCase(u.repo.NewRecipeRepository(), u.repo.NewRecipeImageRepository(), u.repo.NewRecipeSearchRepository(), u.storage)
 }
 
 func (u *useCaseRegistry) NewDeleteRecipeUseCase() recipe.DeleteRecipeUseCase {

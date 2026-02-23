@@ -20,9 +20,10 @@ type TagResponse struct {
 }
 
 type RecipeImageResponse struct {
-	ID       int64  `json:"id"`
-	RecipeID int64  `json:"recipe_id"`
-	ImageURL string `json:"image_url"`
+	ID        int64  `json:"id"`
+	RecipeID  int64  `json:"recipe_id"`
+	ImagePath string `json:"image_path"`
+	ImageURL  string `json:"image_url"`
 }
 
 type CreateRecipeImageResponse struct {
@@ -32,9 +33,10 @@ type CreateRecipeImageResponse struct {
 
 func NewRecipeImageResponse(img model.PublicRecipeImage) RecipeImageResponse {
 	return RecipeImageResponse{
-		ID:       img.ID,
-		RecipeID: img.RecipeID,
-		ImageURL: img.ImageURL.String(),
+		ID:        img.ID,
+		RecipeID:  img.RecipeID,
+		ImagePath: img.ImagePath,
+		ImageURL:  img.ImageURL.String(),
 	}
 }
 

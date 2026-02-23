@@ -3,10 +3,13 @@ package recipe_test
 import (
 	"context"
 	"errors"
+	"net/url"
 	"testing"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository/mock"
+	repoMock "github.com/seka/reci-pin/backend/internal/domain/repository/mock"
+	storageMock "github.com/seka/reci-pin/backend/internal/domain/storage/mock"
 	"github.com/seka/reci-pin/backend/internal/usecase/recipe"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -19,7 +22,7 @@ func TestUpdateRecipeUseCase_Execute(t *testing.T) {
 	tests := []struct {
 		name    string
 		input   recipe.UpdateRecipeInput
-		setup   func(*mock.MockRecipeRepository, *mock.MockRecipeSearchRepository)
+		setup   func(*repoMock.MockRecipeRepository, *repoMock.MockRecipeImageRepository, *repoMock.MockRecipeSearchRepository, *storageMock.MockClient)
 		wantErr bool
 		errMsg  string
 	}{
@@ -32,7 +35,7 @@ func TestUpdateRecipeUseCase_Execute(t *testing.T) {
 				URL:    "https://example.com/updated",
 				Memo:   "Updated memo",
 			},
-			setup: func(m *mock.MockRecipeRepository, ms *mock.MockRecipeSearchRepository) {
+			setup: func(m *repoMock.MockRecipeRepository, mi *repoMock.MockRecipeImageRepository, ms *repoMock.MockRecipeSearchRepository, s *storageMock.MockClient) {
 				m.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{
@@ -43,11 +46,21 @@ func TestUpdateRecipeUseCase_Execute(t *testing.T) {
 				m.EXPECT().
 					Update(gomock.Any(), gomock.Any()).
 					Return(nil)
-				
-				// GetTags for indexing
+
+				// GetTags for indexing and response
 				m.EXPECT().
 					GetTags(gomock.Any(), int64(1)).
 					Return([]model.Tag{}, nil)
+
+				// GetImages for response
+				mi.EXPECT().
+					GetByRecipeID(gomock.Any(), int64(1)).
+					Return([]model.RecipeImage{}, nil)
+
+				// Storage URL
+				s.EXPECT().
+					GetPublicURL().
+					Return(&url.URL{Scheme: "https", Host: "localhost", Path: "/storage"})
 
 				// Index
 				ms.EXPECT().
@@ -63,7 +76,7 @@ func TestUpdateRecipeUseCase_Execute(t *testing.T) {
 				UserID: 1,
 				Name:   "Updated Recipe",
 			},
-			setup: func(m *mock.MockRecipeRepository, ms *mock.MockRecipeSearchRepository) {
+			setup: func(m *repoMock.MockRecipeRepository, mi *repoMock.MockRecipeImageRepository, ms *repoMock.MockRecipeSearchRepository, s *storageMock.MockClient) {
 				m.EXPECT().
 					GetByID(gomock.Any(), int64(999)).
 					Return(nil, errors.New("not found"))
@@ -78,7 +91,7 @@ func TestUpdateRecipeUseCase_Execute(t *testing.T) {
 				UserID: 2,
 				Name:   "Updated Recipe",
 			},
-			setup: func(m *mock.MockRecipeRepository, ms *mock.MockRecipeSearchRepository) {
+			setup: func(m *repoMock.MockRecipeRepository, mi *repoMock.MockRecipeImageRepository, ms *repoMock.MockRecipeSearchRepository, s *storageMock.MockClient) {
 				m.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{
@@ -96,7 +109,7 @@ func TestUpdateRecipeUseCase_Execute(t *testing.T) {
 				UserID: 1,
 				Name:   "Updated Recipe",
 			},
-			setup: func(m *mock.MockRecipeRepository, ms *mock.MockRecipeSearchRepository) {
+			setup: func(m *repoMock.MockRecipeRepository, mi *repoMock.MockRecipeImageRepository, ms *repoMock.MockRecipeSearchRepository, s *storageMock.MockClient) {
 				m.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{
@@ -114,11 +127,13 @@ func TestUpdateRecipeUseCase_Execute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := mock.NewMockRecipeRepository(ctrl)
-			mockSearchRepo := mock.NewMockRecipeSearchRepository(ctrl)
-			tt.setup(mockRepo, mockSearchRepo)
+			mockRepo := repoMock.NewMockRecipeRepository(ctrl)
+			mockImageRepo := repoMock.NewMockRecipeImageRepository(ctrl)
+			mockSearchRepo := repoMock.NewMockRecipeSearchRepository(ctrl)
+			mockStorage := storageMock.NewMockClient(ctrl)
+			tt.setup(mockRepo, mockImageRepo, mockSearchRepo, mockStorage)
 
-			uc := recipe.NewUpdateRecipeUseCase(mockRepo, mockSearchRepo)
+			uc := recipe.NewUpdateRecipeUseCase(mockRepo, mockImageRepo, mockSearchRepo, mockStorage)
 			result, err := uc.Execute(context.Background(), tt.input)
 
 			if tt.wantErr {
@@ -150,7 +165,7 @@ func TestDeleteRecipeUseCase_Execute(t *testing.T) {
 			name:   "正常系_レシピ削除成功",
 			id:     1,
 			userID: 1,
-			setup: func(m *mock.MockRecipeRepository, ms *mock.MockRecipeSearchRepository) {
+			setup: func(m *repoMock.MockRecipeRepository, ms *repoMock.MockRecipeSearchRepository) {
 				m.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{
@@ -172,7 +187,7 @@ func TestDeleteRecipeUseCase_Execute(t *testing.T) {
 			name:   "異常系_レシピ不在",
 			id:     999,
 			userID: 1,
-			setup: func(m *mock.MockRecipeRepository, ms *mock.MockRecipeSearchRepository) {
+			setup: func(m *repoMock.MockRecipeRepository, ms *repoMock.MockRecipeSearchRepository) {
 				m.EXPECT().
 					GetByID(gomock.Any(), int64(999)).
 					Return(nil, errors.New("not found"))
@@ -184,7 +199,7 @@ func TestDeleteRecipeUseCase_Execute(t *testing.T) {
 			name:   "異常系_権限エラー",
 			id:     1,
 			userID: 2,
-			setup: func(m *mock.MockRecipeRepository, ms *mock.MockRecipeSearchRepository) {
+			setup: func(m *repoMock.MockRecipeRepository, ms *repoMock.MockRecipeSearchRepository) {
 				m.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{
@@ -199,8 +214,8 @@ func TestDeleteRecipeUseCase_Execute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := mock.NewMockRecipeRepository(ctrl)
-			mockSearchRepo := mock.NewMockRecipeSearchRepository(ctrl)
+			mockRepo := repoMock.NewMockRecipeRepository(ctrl)
+			mockSearchRepo := repoMock.NewMockRecipeSearchRepository(ctrl)
 			tt.setup(mockRepo, mockSearchRepo)
 
 			uc := recipe.NewDeleteRecipeUseCase(mockRepo, mockSearchRepo)
