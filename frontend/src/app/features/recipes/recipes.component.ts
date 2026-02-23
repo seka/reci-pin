@@ -114,7 +114,7 @@ import { InputComponent } from '../../shared/components/atoms/input/input.compon
 
       <div class="recipes-grid">
         @for (recipe of recipes; track recipe.id) {
-          <app-recipe-card [recipe]="recipe" class="recipe-card-item"></app-recipe-card>
+          <app-recipe-card [recipe]="recipe" (delete)="onDeleteRecipe($event)" class="recipe-card-item"></app-recipe-card>
         }
       </div>
     </div>
@@ -251,6 +251,15 @@ export class RecipesComponent implements OnInit {
     }).subscribe({
       next: (recipes) => (this.recipes = recipes),
       error: (err: Error) => console.error('Failed to search recipes', err),
+    });
+  }
+
+  onDeleteRecipe(id: number): void {
+    this.recipeService.deleteRecipe(id).subscribe({
+      next: () => {
+        this.recipes = this.recipes.filter(r => r.id !== id);
+      },
+      error: (err: Error) => console.error('Failed to delete recipe', err),
     });
   }
 
