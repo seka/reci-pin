@@ -3,6 +3,7 @@ package recipe_image_test
 import (
 	"context"
 	"errors"
+	"net/url"
 	"testing"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
@@ -20,7 +21,7 @@ func TestCreateRecipeImageUseCase_Execute(t *testing.T) {
 	tests := []struct {
 		name    string
 		input   recipe_image.CreateRecipeImageInput
-		setup   func(*mock.MockRecipeRepository, *mock.MockRecipeImageRepository, *mock_storage.MockStorage)
+		setup   func(*mock.MockRecipeRepository, *mock.MockRecipeImageRepository, *mock_storage.MockClient)
 		wantErr bool
 		errMsg  string
 	}{
@@ -33,7 +34,7 @@ func TestCreateRecipeImageUseCase_Execute(t *testing.T) {
 				ContentType: "image/jpeg",
 				Size:        1024,
 			},
-			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository, ms *mock_storage.MockStorage) {
+			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository, ms *mock_storage.MockClient) {
 				mr.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{ID: 1, UserID: 1}, nil)
@@ -46,6 +47,7 @@ func TestCreateRecipeImageUseCase_Execute(t *testing.T) {
 						img.ID = 1
 						return nil
 					})
+				ms.EXPECT().GetPublicURL().Return(&url.URL{Scheme: "http", Host: "localhost"})
 			},
 			wantErr: false,
 		},
@@ -58,7 +60,7 @@ func TestCreateRecipeImageUseCase_Execute(t *testing.T) {
 				ContentType: "image/jpeg",
 				Size:        1024,
 			},
-			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository, ms *mock_storage.MockStorage) {
+			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository, ms *mock_storage.MockClient) {
 				mr.EXPECT().
 					GetByID(gomock.Any(), int64(999)).
 					Return(nil, errors.New("not found"))
@@ -75,7 +77,7 @@ func TestCreateRecipeImageUseCase_Execute(t *testing.T) {
 				ContentType: "image/jpeg",
 				Size:        1024,
 			},
-			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository, ms *mock_storage.MockStorage) {
+			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository, ms *mock_storage.MockClient) {
 				mr.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{ID: 1, UserID: 1}, nil)
@@ -92,7 +94,7 @@ func TestCreateRecipeImageUseCase_Execute(t *testing.T) {
 				ContentType: "image/jpeg",
 				Size:        51 * 1024 * 1024, // 51MB
 			},
-			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository, ms *mock_storage.MockStorage) {
+			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository, ms *mock_storage.MockClient) {
 				mr.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{ID: 1, UserID: 1}, nil)
@@ -109,7 +111,7 @@ func TestCreateRecipeImageUseCase_Execute(t *testing.T) {
 				ContentType: "image/gif",
 				Size:        1024,
 			},
-			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository, ms *mock_storage.MockStorage) {
+			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository, ms *mock_storage.MockClient) {
 				mr.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{ID: 1, UserID: 1}, nil)
@@ -126,7 +128,7 @@ func TestCreateRecipeImageUseCase_Execute(t *testing.T) {
 				ContentType: "image/jpeg",
 				Size:        1024,
 			},
-			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository, ms *mock_storage.MockStorage) {
+			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository, ms *mock_storage.MockClient) {
 				mr.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{ID: 1, UserID: 1}, nil)
@@ -143,7 +145,7 @@ func TestCreateRecipeImageUseCase_Execute(t *testing.T) {
 				ContentType: "image/jpeg",
 				Size:        1024,
 			},
-			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository, ms *mock_storage.MockStorage) {
+			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository, ms *mock_storage.MockClient) {
 				mr.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{ID: 1, UserID: 1}, nil)
@@ -163,7 +165,7 @@ func TestCreateRecipeImageUseCase_Execute(t *testing.T) {
 				ContentType: "image/jpeg",
 				Size:        1024,
 			},
-			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository, ms *mock_storage.MockStorage) {
+			setup: func(mr *mock.MockRecipeRepository, mi *mock.MockRecipeImageRepository, ms *mock_storage.MockClient) {
 				mr.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{ID: 1, UserID: 1}, nil)
@@ -183,7 +185,7 @@ func TestCreateRecipeImageUseCase_Execute(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRecipeRepo := mock.NewMockRecipeRepository(ctrl)
 			mockImageRepo := mock.NewMockRecipeImageRepository(ctrl)
-			mockStorageService := mock_storage.NewMockStorage(ctrl)
+			mockStorageService := mock_storage.NewMockClient(ctrl)
 			tt.setup(mockRecipeRepo, mockImageRepo, mockStorageService)
 
 			uc := recipe_image.NewCreateRecipeImageUseCase(mockRecipeRepo, mockImageRepo, mockStorageService)
@@ -198,7 +200,7 @@ func TestCreateRecipeImageUseCase_Execute(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotNil(t, image)
 				assert.NotEmpty(t, url)
-				assert.Equal(t, tt.input.RecipeID, image.RecipeID)
+				assert.Equal(t, tt.input.RecipeID, image.RecipeImage.RecipeID)
 			}
 		})
 	}
