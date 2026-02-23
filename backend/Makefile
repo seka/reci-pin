@@ -45,6 +45,16 @@ ES_PORT ?= 9200
 JWT_SECRET ?= change-me
 JWT_EXPIRATION ?= 24
 
+# Storage settings
+STORAGE_BUCKET ?= recipin-bucket
+STORAGE_ENDPOINT ?= http://localhost:4566
+STORAGE_PUBLIC_URL ?= http://localhost:4566/recipin-bucket
+
+# Mail settings
+MAIL_HOST ?= localhost
+MAIL_PORT ?= 1025
+MAIL_FROM ?= no-reply@reci-pin.com
+
 # Testing tool settings
 TARGET ?= http://localhost:8080/api
 STRESS_CONFIG ?= ./cmd/stress_test/config.json
@@ -67,7 +77,13 @@ app.run: ## Run the API server with default settings
 		-jwt-secret $(JWT_SECRET) \
 		-jwt-expiration $(JWT_EXPIRATION) \
 		-es-host $(ES_HOST) \
-		-es-port $(ES_PORT)
+		-es-port $(ES_PORT) \
+		-storage-bucket $(STORAGE_BUCKET) \
+		-storage-endpoint $(STORAGE_ENDPOINT) \
+		-storage-public-url $(STORAGE_PUBLIC_URL) \
+		-mail-host $(MAIL_HOST) \
+		-mail-port $(MAIL_PORT) \
+		-mail-from $(MAIL_FROM)
 
 .PHONY: app.fmt
 app.fmt: ## Format code and auto-fix issues
@@ -105,14 +121,32 @@ app.clean: ## Clean build artifacts
 .PHONY: seed.run
 seed.run: ## Run database seed and sync to Elasticsearch
 	@echo "Running database seed..."
-	go run ./cmd/seed/main.go
+	go run ./cmd/seed/main.go \
+		-db-host $(DB_HOST) \
+		-db-port $(DB_PORT) \
+		-db-user $(DB_USER) \
+		-db-password $(DB_PASSWORD) \
+		-db-name $(DB_NAME) \
+		-db-sslmode $(DB_SSLMODE) \
+		-storage-bucket $(STORAGE_BUCKET) \
+		-storage-endpoint $(STORAGE_ENDPOINT) \
+		-storage-public-url $(STORAGE_PUBLIC_URL)
 	$(MAKE) seed.image
 	$(MAKE) sync-es.run
 
 .PHONY: seed.force
 seed.force: ## Clean database, clear ES index and run seed
 	@echo "Cleaning and seeding database..."
-	go run ./cmd/seed/main.go -clean
+	go run ./cmd/seed/main.go -clean \
+		-db-host $(DB_HOST) \
+		-db-port $(DB_PORT) \
+		-db-user $(DB_USER) \
+		-db-password $(DB_PASSWORD) \
+		-db-name $(DB_NAME) \
+		-db-sslmode $(DB_SSLMODE) \
+		-storage-bucket $(STORAGE_BUCKET) \
+		-storage-endpoint $(STORAGE_ENDPOINT) \
+		-storage-public-url $(STORAGE_PUBLIC_URL)
 	$(MAKE) seed.image
 	$(MAKE) sync-es.clear
 	$(MAKE) sync-es.run
