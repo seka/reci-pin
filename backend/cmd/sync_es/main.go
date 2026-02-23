@@ -19,18 +19,6 @@ var (
 	cfg config.Config
 )
 
-func parseAddresses(raw string) []string {
-	parts := strings.Split(raw, ",")
-	addresses := make([]string, 0, len(parts))
-	for _, part := range parts {
-		addr := strings.TrimSpace(part)
-		if addr == "" {
-			continue
-		}
-		addresses = append(addresses, addr)
-	}
-	return addresses
-}
 func init() {
 	flag.StringVar(&cfg.Database.Host, "db-host", "localhost", "Database host")
 	flag.StringVar(&cfg.Database.Port, "db-port", "5432", "Database port")
@@ -125,4 +113,17 @@ func main() {
 
 	log.Printf("Sync completed in %v", duration)
 	// log.Printf("Success: %d, Failed: %d", successCount, errCount) // Need mutex for counters
+}
+
+func parseAddresses(raw string) []string {
+	parts := strings.Split(raw, ",")
+	addresses := make([]string, 0, len(parts))
+	for _, part := range parts {
+		addr := strings.TrimSpace(part)
+		if addr == "" {
+			continue
+		}
+		addresses = append(addresses, addr)
+	}
+	return addresses
 }
