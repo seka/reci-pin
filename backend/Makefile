@@ -65,7 +65,9 @@ app.run: ## Run the API server with default settings
 		-db-name $(DB_NAME) \
 		-db-sslmode $(DB_SSLMODE) \
 		-jwt-secret $(JWT_SECRET) \
-		-jwt-expiration $(JWT_EXPIRATION)
+		-jwt-expiration $(JWT_EXPIRATION) \
+		-es-host $(ES_HOST) \
+		-es-port $(ES_PORT)
 
 .PHONY: app.fmt
 app.fmt: ## Format code and auto-fix issues
@@ -141,13 +143,6 @@ sync-es.clear: ## Clear Elasticsearch index
 	@echo "Clearing Elasticsearch index..."
 	curl -f -X DELETE "http://$(ES_HOST):$(ES_PORT)/recipes" || true
 
-.PHONY: sync-es.docker
-sync-es.docker: ## Sync data from DB to Elasticsearch (run inside Docker)
-	@echo "Syncing data to Elasticsearch inside Docker container..."
-	docker-compose -f ../docker-compose.yml exec backend go run ./cmd/sync_es/main.go \
-		-db-host postgres \
-		-es-host elasticsearch
-
 # ============================================================================
 # Integration test targets
 # ============================================================================
@@ -155,7 +150,10 @@ sync-es.docker: ## Sync data from DB to Elasticsearch (run inside Docker)
 .PHONY: integration-test.run
 integration-test.run: ## Run integration tests (set TARGET to customize)
 	@echo "Running integration tests against $(TARGET)..."
-	go run ./cmd/integration_test/main.go -target=$(TARGET)
+	go run ./cmd/integration_test/main.go \
+		-target=$(TARGET) \
+		-es-host $(ES_HOST) \
+		-es-port $(ES_PORT)
 
 # ============================================================================
 # Stress test targets

@@ -25,7 +25,9 @@ import (
 )
 
 var (
-	cfg config.Config
+	cfg    config.Config
+	esHost string
+	esPort string
 )
 
 func init() {
@@ -42,14 +44,22 @@ func init() {
 	cfg.Storage.Bucket = "test-bucket"
 	cfg.Storage.Endpoint = "http://localhost:4566"
 	cfg.Storage.PublicBaseURL = "http://localhost:4566/test-bucket"
-	cfg.SearchEngine.Addresses = []string{"http://localhost:9200"}
-	cfg.Email.Host = "localhost"
-	cfg.Email.Port = "1025"
+
+	flag.StringVar(&esHost, "es-host", "localhost", "Elasticsearch host")
+	flag.StringVar(&esPort, "es-port", "9200", "Elasticsearch port")
+	cfg.SearchEngine.Addresses = []string{}
+
+	flag.StringVar(&cfg.Email.Host, "mail-host", "localhost", "MailHog host")
+	flag.StringVar(&cfg.Email.Port, "mail-port", "1025", "MailHog port")
 	cfg.Email.From = "no-reply@reci-pin.com"
 }
 
 func main() {
 	flag.Parse()
+
+	if len(cfg.SearchEngine.Addresses) == 0 {
+		cfg.SearchEngine.Addresses = []string{"http://" + esHost + ":" + esPort}
+	}
 
 	if err := run(); err != nil {
 		log.Fatalf("Integration test failed: %v", err)
