@@ -260,7 +260,7 @@ func createRecipeImages(ctx context.Context, repoReg registry.Repository) error 
 	for i, recipe := range recipes {
 		numImages := (i % 2) + 1 // 1 or 2 images
 		for j := range numImages {
-			imagePath, err := url.JoinPath("recipes", strconv.FormatInt(recipe.ID, 10), fmt.Sprintf("seed_%d.jpg", j+1))
+			imagePath, err := url.JoinPath("recipes", strconv.FormatInt(recipe.ID, 10), fmt.Sprintf("seed_%d.png", j+1))
 			if err != nil {
 				return fmt.Errorf("joining image path: %w", err)
 			}
