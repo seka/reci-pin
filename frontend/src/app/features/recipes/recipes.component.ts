@@ -47,7 +47,7 @@ import { EmptyStateComponent } from '../../shared/components/molecules/empty-sta
         <app-headline variant="h2">{{ 'RECIPE.MY_RECIPES' | translate }}</app-headline>
         <div class="header-actions">
           <app-button routerLink="/recipes/new" variant="primary" class="add-btn">
-            <mat-icon style="vertical-align: middle; margin-right: 4px;">add</mat-icon>
+            <mat-icon class="icon-align">add</mat-icon>
             {{ 'RECIPE.ADD_NEW' | translate }}
           </app-button>
           <a routerLink="/settings" class="settings-link" title="設定">
@@ -121,7 +121,7 @@ import { EmptyStateComponent } from '../../shared/components/molecules/empty-sta
           [title]="'RECIPE.EMPTY_TITLE' | translate" 
           [message]="'RECIPE.EMPTY_MESSAGE' | translate">
           <app-button routerLink="/recipes/new" variant="primary">
-            <mat-icon style="vertical-align: middle; margin-right: 4px;">add</mat-icon>
+            <mat-icon class="icon-align">add</mat-icon>
             {{ 'RECIPE.ADD_NEW' | translate }}
           </app-button>
         </app-empty-state>
@@ -168,6 +168,10 @@ import { EmptyStateComponent } from '../../shared/components/molecules/empty-sta
       }
       .add-btn {
         width: auto;
+      }
+      .icon-align {
+        vertical-align: middle;
+        margin-right: 4px;
       }
       .settings-link {
         color: var(--color-text-secondary);

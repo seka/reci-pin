@@ -49,7 +49,7 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
           <app-button variant="primary" type="submit" class="submit-btn" [disabled]="loginForm.invalid">{{ 'AUTH.LOGIN_BUTTON' | translate }}</app-button>
         </div>
 
-        <div style="text-align: center; margin-bottom: var(--spacing-2);">
+        <div class="forgot-password-link">
           <app-link routerLink="/password-reset/request" variant="secondary">
             {{ 'AUTH.FORGOT_PASSWORD' | translate }}
           </app-link>
@@ -59,7 +59,7 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
       </form>
 
       <div footer>
-        <a routerLink="/signup" style="text-decoration: none;">
+        <a routerLink="/signup" class="no-text-decoration">
           <app-button variant="accent" type="button" class="full-width-btn"
             >{{ 'AUTH.CREATE_ACCOUNT' | translate }}</app-button
           >

@@ -13,7 +13,7 @@ import { ButtonComponent } from '../../atoms/button/button.component';
         <ng-content></ng-content>
       </div>
       <app-button (click)="onSearch()" variant="secondary" class="search-btn">
-        <mat-icon style="font-size: 18px; width: 18px; height: 18px; vertical-align: middle; margin-right: 4px;">search</mat-icon>
+        <mat-icon class="search-icon">search</mat-icon>
         検索
       </app-button>
     </div>
@@ -29,6 +29,13 @@ import { ButtonComponent } from '../../atoms/button/button.component';
       .search-input-wrapper {
         flex: 1;
         width: 100%;
+      }
+      .search-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        vertical-align: middle;
+        margin-right: 4px;
       }
       /* Prevent layout shift for inputs inside search bar */
       ::ng-deep .search-input-wrapper .mat-mdc-form-field-subscript-wrapper {

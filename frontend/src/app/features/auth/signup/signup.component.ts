@@ -47,7 +47,7 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
           ></app-input>
         </div>
 
-        <div style="margin-top: var(--spacing-2);">
+        <div class="margin-top-2">
           <app-input
             [label]="'AUTH.PASSWORD' | translate"
             type="password"
@@ -67,16 +67,22 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
       </form>
 
       <div footer>
-        <a routerLink="/login" style="text-decoration: none;">
-          <app-button variant="accent" type="button" class="full-width-btn"
-            >{{ 'AUTH.LOGIN_LINK' | translate }}</app-button
+        <div class="footer-actions">
+          <app-link routerLink="/login"
+            >{{ 'AUTH.LOGIN_LINK' | translate }}</app-link
           >
-        </a>
+        </div>
       </div>
     </app-auth-card>
   `,
   styles: [
     `
+      .margin-top-2 {
+        margin-top: var(--spacing-2);
+      }
+      .footer-actions {
+        margin-top: var(--spacing-2);
+      }
       .actions {
         margin-top: var(--spacing-3);
         margin-bottom: var(--spacing-2);

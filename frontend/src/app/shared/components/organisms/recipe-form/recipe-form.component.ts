@@ -51,7 +51,7 @@ export interface RecipeFormSubmitEvent {
         </mat-card-header>
         <mat-card-content>
           <form [formGroup]="recipeForm" (ngSubmit)="onSubmit()">
-            <div style="margin-bottom: var(--spacing-2);">
+            <div class="form-group">
               <app-input
                 [label]="'RECIPE.NAME' | translate"
                 formControlName="name"
@@ -63,7 +63,7 @@ export interface RecipeFormSubmitEvent {
               ></app-input>
             </div>
 
-            <div style="margin-bottom: var(--spacing-2);">
+            <div class="form-group">
               <app-input
                 label="URL"
                 formControlName="url"
@@ -74,7 +74,7 @@ export interface RecipeFormSubmitEvent {
               ></app-input>
             </div>
 
-            <div style="margin-bottom: var(--spacing-2);">
+            <div class="form-group">
               <app-textarea
                 [label]="'RECIPE.MEMO' | translate"
                 formControlName="memo"
@@ -164,6 +164,9 @@ export interface RecipeFormSubmitEvent {
       }
       mat-card-title {
         margin-bottom: var(--spacing-3);
+      }
+      .form-group {
+        margin-bottom: var(--spacing-2);
       }
       .full-width {
         width: 100%;

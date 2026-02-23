@@ -29,7 +29,7 @@ import { LinkComponent } from '../../shared/components/atoms/link/link.component
           </div>
         }
         <div class="account-actions">
-          <a routerLink="/settings/password" style="text-decoration: none;">
+          <a routerLink="/settings/password" class="no-text-decoration">
             <app-button variant="outline">{{ 'SETTINGS.CHANGE_PASSWORD_BUTTON' | translate }}</app-button>
           </a>
         </div>
@@ -82,6 +82,9 @@ import { LinkComponent } from '../../shared/components/atoms/link/link.component
 
       .back-link {
         margin-bottom: var(--spacing-2);
+      }
+      .no-text-decoration {
+        text-decoration: none;
       }
     `,
   ],
