@@ -6,9 +6,10 @@ import (
 	"time"
 
 	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/seka/reci-pin/backend/config"
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	"github.com/seka/reci-pin/backend/internal/domain/repository"
-	es_repo "github.com/seka/reci-pin/backend/internal/infrastructure/database/elasticsearch"
+	infra_searchengine "github.com/seka/reci-pin/backend/internal/infrastructure/searchengine"
+	es_repo "github.com/seka/reci-pin/backend/internal/infrastructure/searchengine/elasticsearch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,39 +19,43 @@ const (
 	esAddress     = "http://localhost:9200"
 )
 
-func setupTestClient(t *testing.T) *elasticsearch.TypedClient {
+func setupTestClient(t *testing.T) (infra_searchengine.SearchEngine, *elasticsearch.TypedClient) {
 	cfg := elasticsearch.Config{
 		Addresses: []string{esAddress},
 	}
-	client, err := elasticsearch.NewTypedClient(cfg)
+	// We need the raw client for refreshes in tests, and the interface for the searcher
+	rawClient, err := elasticsearch.NewTypedClient(cfg)
+	require.NoError(t, err)
+
+	engine, err := es_repo.NewClient(config.SearchEngine{Addresses: []string{esAddress}})
 	require.NoError(t, err)
 
 	// Ping to ensure connection
-	_, err = client.Info().Do(context.Background())
+	_, err = rawClient.Info().Do(context.Background())
 	if err != nil {
 		t.Skipf("Skipping integration test: Elasticsearch not available at %s: %v", esAddress, err)
 	}
 
-	return client
+	return engine, rawClient
 }
 
 func cleanupIndex(t *testing.T, client *elasticsearch.TypedClient) {
 	_, err := client.Indices.Delete(testIndexName).IgnoreUnavailable(true).Do(context.Background())
 	require.NoError(t, err)
-	
+
 	// Re-create is handled by migration/sync usually, but here we depend on auto-creation or existing index.
-	// For "Index" test, mapping might be auto-created even if index doesn't exist, 
+	// For "Index" test, mapping might be auto-created even if index doesn't exist,
 	// but strictly speaking we should probably ensure proper mapping.
 	// For now, we'll just delete documents or let them be.
 	// Actually, deleting the index is destructive for other data if any.
 	// Better to just delete the specific test data.
-	
+
 	// Ideally we run this against a separate test index or clean up specific IDs.
 }
 
 func TestRecipeSearcher_Integration(t *testing.T) {
-	client := setupTestClient(t)
-	searcher := es_repo.NewRecipeSearcher(client)
+	engine, client := setupTestClient(t)
+	searcher := es_repo.NewRecipeSearcher(engine)
 	ctx := context.Background()
 
 	// Test case data
@@ -77,11 +82,11 @@ func TestRecipeSearcher_Integration(t *testing.T) {
 
 	t.Run("Search Recipe by Keyword", func(t *testing.T) {
 		// Eventual consistency might still apply slightly, but Refresh should handle it.
-		
-		ids, total, err := searcher.Search(ctx, repository.SearchCriteria{
-			UserID:  recipe.UserID,
-			Keyword: "Curry",
-			Page:    1,
+
+		ids, total, err := searcher.Search(ctx, model.RecipeSearchCriteria{
+			UserID:   recipe.UserID,
+			Keyword:  "Curry",
+			Page:     1,
 			PageSize: 10,
 		})
 		assert.NoError(t, err)
@@ -89,10 +94,10 @@ func TestRecipeSearcher_Integration(t *testing.T) {
 		assert.Contains(t, ids, recipe.ID)
 
 		// Test partial match
-		ids, total, err = searcher.Search(ctx, repository.SearchCriteria{
-			UserID:  recipe.UserID,
-			Keyword: "Spicy", // Matches Memo or Tag? Search implementation only checks name/memo for keyword
-			Page:    1,
+		ids, total, err = searcher.Search(ctx, model.RecipeSearchCriteria{
+			UserID:   recipe.UserID,
+			Keyword:  "Spicy", // Matches Memo or Tag? Search implementation only checks name/memo for keyword
+			Page:     1,
 			PageSize: 10,
 		})
 		assert.NoError(t, err)
@@ -101,10 +106,10 @@ func TestRecipeSearcher_Integration(t *testing.T) {
 	})
 
 	t.Run("Search Recipe by Tag", func(t *testing.T) {
-		ids, total, err := searcher.Search(ctx, repository.SearchCriteria{
-			UserID: recipe.UserID,
-			TagIDs: []int64{10}, // "Spicy"
-			Page:   1,
+		ids, total, err := searcher.Search(ctx, model.RecipeSearchCriteria{
+			UserID:   recipe.UserID,
+			TagIDs:   []int64{10}, // "Spicy"
+			Page:     1,
 			PageSize: 10,
 		})
 		assert.NoError(t, err)
@@ -113,10 +118,10 @@ func TestRecipeSearcher_Integration(t *testing.T) {
 	})
 
 	t.Run("Search Recipe - No Match", func(t *testing.T) {
-		ids, total, err := searcher.Search(ctx, repository.SearchCriteria{
-			UserID:  recipe.UserID,
-			Keyword: "NonExistentThingy",
-			Page:    1,
+		ids, total, err := searcher.Search(ctx, model.RecipeSearchCriteria{
+			UserID:   recipe.UserID,
+			Keyword:  "NonExistentThingy",
+			Page:     1,
 			PageSize: 10,
 		})
 		assert.NoError(t, err)
@@ -133,7 +138,7 @@ func TestRecipeSearcher_Integration(t *testing.T) {
 		require.NoError(t, err)
 
 		// Should not be found
-		ids, _, err := searcher.Search(ctx, repository.SearchCriteria{
+		ids, _, err := searcher.Search(ctx, model.RecipeSearchCriteria{
 			UserID:  recipe.UserID,
 			Keyword: "Curry",
 		})

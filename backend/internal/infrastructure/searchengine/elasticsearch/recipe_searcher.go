@@ -6,21 +6,21 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/core/search"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/types/enums/sortorder"
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	"github.com/seka/reci-pin/backend/internal/domain/repository"
+	"github.com/seka/reci-pin/backend/internal/domain/searcher"
+	infra_searchengine "github.com/seka/reci-pin/backend/internal/infrastructure/searchengine"
 )
 
 const indexName = "recipes"
 
 type RecipeSearcher struct {
-	client *elasticsearch.TypedClient
+	client infra_searchengine.SearchEngine
 }
 
-func NewRecipeSearcher(client *elasticsearch.TypedClient) repository.RecipeSearchRepository {
+func NewRecipeSearcher(client infra_searchengine.SearchEngine) searcher.RecipeSearcher {
 	return &RecipeSearcher{client: client}
 }
 
@@ -68,7 +68,7 @@ func (r *RecipeSearcher) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (r *RecipeSearcher) Search(ctx context.Context, criteria repository.SearchCriteria) ([]int64, int64, error) {
+func (r *RecipeSearcher) Search(ctx context.Context, criteria model.RecipeSearchCriteria) ([]int64, int64, error) {
 	mustQueries := []types.Query{
 		{
 			Term: map[string]types.TermQuery{
