@@ -4,63 +4,15 @@ Thumbs.db
 
 # IDEs
 .idea/
-.vscode/
+.vscode/*
+!/.vscode/settings.json
+!/.vscode/tasks.json
+!/.vscode/launch.json
+!/.vscode/extensions.json
+!/.vscode/mcp.json
 *.swp
 *.swo
 *~
-
-# Backend (Go)
-backend/tmp/
-backend/*.exe
-backend/*.exe~
-backend/*.dll
-backend/*.so
-backend/*.dylib
-backend/*.test
-backend/*.out
-backend/vendor/
-backend/.air/
-
-# Frontend (Angular)
-frontend/node_modules/
-frontend/dist/
-frontend/.angular/
-frontend/*.log
-frontend/npm-debug.log*
-frontend/yarn-debug.log*
-frontend/yarn-error.log*
-frontend/tmp
-frontend/out-tsc
-frontend/bazel-out
-frontend/.project
-frontend/.classpath
-frontend/.c9/
-frontend/*.launch
-frontend/.settings/
-frontend/*.sublime-workspace
-frontend/.vscode/*
-!frontend/.vscode/settings.json
-!frontend/.vscode/tasks.json
-!frontend/.vscode/launch.json
-!frontend/.vscode/extensions.json
-!frontend/.vscode/mcp.json
-frontend/.history/*
-frontend/.sass-cache/
-frontend/connect.lock
-frontend/coverage
-frontend/libpeerconnection.log
-frontend/testem.log
-frontend/typings
-frontend/__screenshots__/
-
-# Yarn Berry
-frontend/.yarn/*
-!frontend/.yarn/patches
-!frontend/.yarn/plugins
-!frontend/.yarn/releases
-!frontend/.yarn/sdks
-!frontend/.yarn/versions
-frontend/.pnp.*
 
 # Environment variables
 .env
@@ -70,28 +22,11 @@ frontend/.pnp.*
 # Docker
 docker-compose.override.yml
 
-# Logs
+# Ignore logs
 *.log
 logs/
-
-# Database
-*.db
-*.sqlite
-*.sqlite3
 
 # Temporary files
 tmp/
 temp/
 *.tmp
-
-# Worktrees
-.worktrees/
-
-# Certificates
-proxy/certs/*.pem
-
-*storybook.log
-storybook-static
-
-/worktrees
-cookies.txt

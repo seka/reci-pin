@@ -1,0 +1,43 @@
+# Frontend (Angular & Node)
+/node_modules/
+/dist/
+/.angular/
+/.history/
+/.sass-cache/
+/.c9/
+/.settings/
+/__screenshots__/
+/out-tsc/
+/bazel-out/
+/coverage/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+testem.log
+libpeerconnection.log
+*storybook.log
+
+# Yarn Berry
+/.yarn/*
+!/.yarn/patches
+!/.yarn/plugins
+!/.yarn/releases
+!/.yarn/sdks
+!/.yarn/versions
+/.pnp.*
+
+.project
+.classpath
+*.launch
+*.sublime-workspace
+
+# Storybook
+/storybook-static/
+
+# Lock files, typings
+connect.lock
+/typings/
+/tmp/
