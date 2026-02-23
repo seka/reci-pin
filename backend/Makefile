@@ -126,7 +126,15 @@ seed.image: ## Upload seed images to LocalStack
 .PHONY: sync-es.run
 sync-es.run: ## Sync data from DB to Elasticsearch
 	@echo "Syncing data to Elasticsearch from host..."
-	go run ./cmd/sync_es/main.go
+	go run ./cmd/sync_es/main.go \
+		-db-host $(DB_HOST) \
+		-db-port $(DB_PORT) \
+		-db-user $(DB_USER) \
+		-db-password $(DB_PASSWORD) \
+		-db-name $(DB_NAME) \
+		-db-sslmode $(DB_SSLMODE) \
+		-es-host $(ES_HOST) \
+		-es-port $(ES_PORT)
 
 .PHONY: sync-es.clear
 sync-es.clear: ## Clear Elasticsearch index
@@ -136,7 +144,9 @@ sync-es.clear: ## Clear Elasticsearch index
 .PHONY: sync-es.docker
 sync-es.docker: ## Sync data from DB to Elasticsearch (run inside Docker)
 	@echo "Syncing data to Elasticsearch inside Docker container..."
-	docker-compose -f ../docker-compose.yml exec backend go run ./cmd/sync_es/main.go -db-host=postgres
+	docker-compose -f ../docker-compose.yml exec backend go run ./cmd/sync_es/main.go \
+		-db-host postgres \
+		-es-host elasticsearch
 
 # ============================================================================
 # Integration test targets

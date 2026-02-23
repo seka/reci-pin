@@ -16,7 +16,9 @@ import (
 )
 
 var (
-	cfg config.Config
+	cfg    config.Config
+	esHost string
+	esPort string
 )
 
 func init() {
@@ -28,7 +30,9 @@ func init() {
 	flag.StringVar(&cfg.Database.SSLMode, "db-sslmode", "disable", "Database SSL mode")
 
 	// Search Engine configuration
-	cfg.SearchEngine.Addresses = []string{"http://localhost:9200"}
+	flag.StringVar(&esHost, "es-host", "localhost", "Elasticsearch host")
+	flag.StringVar(&esPort, "es-port", "9200", "Elasticsearch port")
+	cfg.SearchEngine.Addresses = []string{}
 	flag.Func("es-addresses", "Elasticsearch addresses (comma separated)", func(v string) error {
 		cfg.SearchEngine.Addresses = parseAddresses(v)
 		return nil
@@ -42,6 +46,10 @@ func init() {
 
 func main() {
 	flag.Parse()
+
+	if len(cfg.SearchEngine.Addresses) == 0 {
+		cfg.SearchEngine.Addresses = []string{"http://" + esHost + ":" + esPort}
+	}
 
 	ctx := context.Background()
 
