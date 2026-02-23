@@ -5,6 +5,8 @@
     "LOGOUT": "ログアウト",
     "COMMON": {
         "CANCEL": "キャンセル",
+        "DELETE": "削除",
+        "CONFIRM_DELETE": "削除の確認",
         "JAPANESE": "日本語",
         "ENGLISH": "英語",
         "SEND": "送信する",
@@ -73,6 +75,7 @@
         "VIEW_DETAILS": "レシピを見る",
         "MY_RECIPES": "マイレシピ",
         "ADD_NEW": "新規レシピ追加",
+        "DELETE_CONFIRMATION": "本当にこのレシピを削除しますか？\nこの操作は取り消せません。",
         "IMAGE": "画像",
         "IMAGE_DROP_HINT": "クリックまたはドラッグ＆ドロップで画像を追加"
     },

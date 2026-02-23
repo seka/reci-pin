@@ -5,6 +5,8 @@
     "LOGOUT": "Logout",
     "COMMON": {
         "CANCEL": "Cancel",
+        "DELETE": "Delete",
+        "CONFIRM_DELETE": "Confirm Deletion",
         "JAPANESE": "Japanese",
         "ENGLISH": "English",
         "SEND": "Send",
@@ -73,6 +75,7 @@
         "VIEW_DETAILS": "View Recipe",
         "MY_RECIPES": "My Recipes",
         "ADD_NEW": "Add New Recipe",
+        "DELETE_CONFIRMATION": "Are you sure you want to delete this recipe?\nThis action cannot be undone.",
         "IMAGE": "Image",
         "IMAGE_DROP_HINT": "Click or drag & drop to add an image"
     },
