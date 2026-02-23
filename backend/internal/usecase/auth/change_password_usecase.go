@@ -21,12 +21,12 @@ type ChangePasswordInput struct {
 
 type changePasswordInteractor struct {
 	credentialRepo repository.UserEmailCredentialRepository
-	emailSender    notification.EmailSender
+	emailSender    notification.EmailClient
 }
 
 func NewChangePasswordUseCase(
 	credentialRepo repository.UserEmailCredentialRepository,
-	emailSender notification.EmailSender,
+	emailSender notification.EmailClient,
 ) ChangePasswordUseCase {
 	return &changePasswordInteractor{
 		credentialRepo: credentialRepo,

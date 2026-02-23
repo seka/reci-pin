@@ -6,6 +6,7 @@ import (
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
+	"github.com/seka/reci-pin/backend/internal/domain/storage"
 )
 
 type SearchRecipesUseCase interface {
@@ -16,17 +17,20 @@ type searchRecipesInteractor struct {
 	recipeRepo      repository.RecipeRepository
 	recipeImageRepo repository.RecipeImageRepository
 	searchRepo      repository.RecipeSearchRepository
+	storageService  storage.Client
 }
 
 func NewSearchRecipesUseCase(
 	recipeRepo repository.RecipeRepository,
 	recipeImageRepo repository.RecipeImageRepository,
 	searchRepo repository.RecipeSearchRepository,
+	storageService storage.Client,
 ) SearchRecipesUseCase {
 	return &searchRecipesInteractor{
 		recipeRepo:      recipeRepo,
 		recipeImageRepo: recipeImageRepo,
 		searchRepo:      searchRepo,
+		storageService:  storageService,
 	}
 }
 
@@ -85,9 +89,20 @@ func (uc *searchRecipesInteractor) Execute(ctx context.Context, input SearchReci
 
 		images, err := uc.recipeImageRepo.GetByRecipeID(ctx, recipes[i].ID)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get recipe images: %w", err)
+			return nil, fmt.Errorf("failed to get images for recipe %d: %w", recipes[i].ID, err)
 		}
-		recipes[i].Images = images
+
+		// Orchestrate: Convert to PublicRecipeImage
+		baseURL := uc.storageService.GetPublicURL()
+		publicImages := make([]model.PublicRecipeImage, len(images))
+		for j, img := range images {
+			u := baseURL.JoinPath(img.ImagePath)
+			publicImages[j] = model.PublicRecipeImage{
+				RecipeImage: img,
+				ImageURL:    *u,
+			}
+		}
+		recipes[i].Images = publicImages
 	}
 
 	return recipes, nil
