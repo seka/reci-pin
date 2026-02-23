@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"net/url"
-	"path"
 	"strconv"
 
 	"github.com/seka/reci-pin/backend/config"
@@ -32,6 +31,11 @@ func init() {
 	flag.StringVar(&cfg.Database.DBName, "db-name", "recipin_dev", "Database name")
 	flag.StringVar(&cfg.Database.SSLMode, "db-sslmode", "disable", "Database SSL mode")
 	flag.BoolVar(&doClean, "clean", false, "Clean existing data before seeing")
+
+	// Storage configuration
+	flag.StringVar(&cfg.Storage.Bucket, "storage-bucket", "recipin-bucket", "S3 bucket name")
+	flag.StringVar(&cfg.Storage.Endpoint, "storage-endpoint", "", "S3 endpoint URL (for LocalStack)")
+	flag.StringVar(&cfg.Storage.PublicBaseURL, "storage-public-url", "", "Base URL for public access")
 }
 
 func main() {
@@ -40,7 +44,7 @@ func main() {
 	ctx := context.Background()
 
 	// Connect to Database
-	db := postgres.New(cfg.Database.DSN())
+	db := postgres.NewClient(cfg.Database)
 	if err := db.Connect(ctx); err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
@@ -261,9 +265,13 @@ func createRecipeImages(ctx context.Context, repoReg registry.Repository) error 
 	for i, recipe := range recipes {
 		numImages := (i % 2) + 1 // 1 or 2 images
 		for j := range numImages {
+			imagePath, err := url.JoinPath("recipes", strconv.FormatInt(recipe.ID, 10), fmt.Sprintf("seed_%d.jpg", j+1))
+			if err != nil {
+				return fmt.Errorf("joining image path: %w", err)
+			}
 			image := &model.RecipeImage{
 				RecipeID:  recipe.ID,
-				ImagePath: path.Join("recipes", strconv.FormatInt(recipe.ID, 10), fmt.Sprintf("seed_%d.jpg", j+1)),
+				ImagePath: imagePath,
 			}
 			if err := imageRepo.Create(ctx, image); err != nil {
 				return fmt.Errorf("creating image for recipe %d: %w", recipe.ID, err)

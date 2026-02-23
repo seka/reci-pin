@@ -14,10 +14,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/seka/reci-pin/backend/config"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
+	es "github.com/seka/reci-pin/backend/internal/infrastructure/database/elasticsearch"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/notification/mailhog"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/storage/s3"
 	"github.com/seka/reci-pin/backend/internal/registry"
 	"github.com/seka/reci-pin/backend/internal/server"
@@ -33,9 +34,18 @@ func init() {
 	flag.StringVar(&cfg.Database.Password, "db-password", "postgres", "Database password")
 	flag.StringVar(&cfg.Database.SSLMode, "db-sslmode", "disable", "Database SSL mode")
 	// Note: db-name will be generated dynamically
-	flag.StringVar(&cfg.Server.Port, "port", "0", "Server port (0 for random)")
-	flag.StringVar(&cfg.JWT.Secret, "jwt-secret", "test-secret", "JWT secret")
-	cfg.JWT.ExpirationHours = 24
+	flag.StringVar(&cfg.ApiServer.Port, "port", "0", "Server port (0 for random)")
+	flag.StringVar(&cfg.ApiServer.JWT.Secret, "jwt-secret", "test-secret", "JWT secret")
+	cfg.ApiServer.JWT.ExpirationHours = 24
+
+	// Initialize other configs with defaults
+	cfg.Storage.Bucket = "test-bucket"
+	cfg.Storage.Endpoint = "http://localhost:4566"
+	cfg.Storage.PublicBaseURL = "http://localhost:4566/test-bucket"
+	cfg.SearchEngine.Addresses = []string{"http://localhost:9200"}
+	cfg.Email.Host = "localhost"
+	cfg.Email.Port = "1025"
+	cfg.Email.From = "no-reply@reci-pin.com"
 }
 
 func main() {
@@ -70,40 +80,37 @@ func run() error {
 	testCfg := cfg
 	testCfg.Database.DBName = testDBName
 	// Set specific port for test, e.g. 8081
-	testCfg.Server.Port = "8081"
+	testCfg.ApiServer.Port = "8081"
 
 	// Connect to the NEW test database
-	db := postgres.New(testCfg.Database.DSN())
+	db := postgres.NewClient(testCfg.Database)
 	if err := db.Connect(ctx); err != nil {
 		return fmt.Errorf("connecting to test database: %w", err)
 	}
 	defer db.Close()
 
 	// Connect to Elasticsearch
-	esCfg := elasticsearch.Config{
-		Addresses: []string{"http://localhost:9200"},
-	}
-	esClient, err := elasticsearch.NewTypedClient(esCfg)
+	esClient, err := es.NewClient(testCfg.SearchEngine)
 	if err != nil {
 		return fmt.Errorf("creating elasticsearch client: %w", err)
 	}
 
 	// Initialize Storage Service
-	// Using default settings or dummy for test
-	storageService, err := s3.NewClient(ctx, "test-bucket", "http://localhost:4566", "http://localhost:4566/test-bucket")
+	storageService, err := s3.NewClient(ctx, testCfg.Storage)
 	if err != nil {
 		return fmt.Errorf("creating storage service: %w", err)
 	}
 
 	// Initialize Server
+	mailClient := mailhog.NewClient(testCfg.Email)
 	repoReg := registry.NewRepository(db, esClient)
-	useCaseReg := registry.NewUseCase(repoReg, storageService, &testCfg)
-	srv := server.New(&testCfg, useCaseReg)
+	useCaseReg := registry.NewUseCase(repoReg, storageService, mailClient, &testCfg)
+	srv := server.New(&testCfg.ApiServer, useCaseReg)
 
 	// Run Server in Goroutine
 	serverErrCh := make(chan error, 1)
 	go func() {
-		log.Printf("Starting test server on port %s", testCfg.Server.Port)
+		log.Printf("Starting test server on port %s", testCfg.ApiServer.Port)
 		if err := srv.Run(); err != nil && err != http.ErrServerClosed {
 			serverErrCh <- err
 		}
@@ -115,11 +122,11 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("creating health path: %w", err)
 	}
-	healthURL := (&url.URL{
+	healthURL := &url.URL{
 		Scheme: "http",
-		Host:   net.JoinHostPort("localhost", testCfg.Server.Port),
+		Host:   net.JoinHostPort("localhost", testCfg.ApiServer.Port),
 		Path:   healthPath,
-	}).String()
+	}
 	if err := waitForServer(healthURL); err != nil {
 		return fmt.Errorf("server failed to start: %w", err)
 	}
@@ -128,11 +135,11 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("creating api path: %w", err)
 	}
-	baseURL := (&url.URL{
+	baseURL := &url.URL{
 		Scheme: "http",
-		Host:   net.JoinHostPort("localhost", testCfg.Server.Port),
+		Host:   net.JoinHostPort("localhost", testCfg.ApiServer.Port),
 		Path:   apiPath,
-	}).String()
+	}
 
 	// 3. Run Scenarios
 	log.Println("Starting api scenarios...")
@@ -144,7 +151,7 @@ func run() error {
 	jar, _ := cookiejar.New(nil)
 	client.Jar = jar
 
-	if err := runScenario(ctx, client, baseURL, db); err != nil {
+	if err := runScenario(ctx, client, baseURL.String(), db); err != nil {
 		return fmt.Errorf("scenario failed: %w", err)
 	}
 
@@ -159,11 +166,9 @@ func run() error {
 }
 
 func createDatabase(ctx context.Context, dbName string) error {
-	// Connect to default 'postgres' database to create new DB
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=postgres sslmode=%s",
-		cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Password, cfg.Database.SSLMode)
-
-	adminDB := postgres.New(dsn)
+	adminCfg := cfg.Database
+	adminCfg.DBName = "postgres"
+	adminDB := postgres.NewClient(adminCfg)
 	if err := adminDB.Connect(ctx); err != nil {
 		return err
 	}
@@ -186,10 +191,9 @@ func createDatabase(ctx context.Context, dbName string) error {
 }
 
 func dropDatabase(ctx context.Context, dbName string) error {
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=postgres sslmode=%s",
-		cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Password, cfg.Database.SSLMode)
-
-	adminDB := postgres.New(dsn)
+	adminCfg := cfg.Database
+	adminCfg.DBName = "postgres"
+	adminDB := postgres.NewClient(adminCfg)
 	if err := adminDB.Connect(ctx); err != nil {
 		return err
 	}
@@ -206,10 +210,9 @@ func dropDatabase(ctx context.Context, dbName string) error {
 
 func runMigrations(ctx context.Context, dbName string) error {
 	// Connect to the new DB
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Password, dbName, cfg.Database.SSLMode)
-
-	db := postgres.New(dsn)
+	migrationCfg := cfg.Database
+	migrationCfg.DBName = dbName
+	db := postgres.NewClient(migrationCfg)
 	if err := db.Connect(ctx); err != nil {
 		return err
 	}
@@ -235,10 +238,10 @@ func runMigrations(ctx context.Context, dbName string) error {
 	return nil
 }
 
-func waitForServer(url string) error {
+func waitForServer(url *url.URL) error {
 	deadline := time.Now().Add(10 * time.Second)
 	for time.Now().Before(deadline) {
-		resp, err := http.Get(url)
+		resp, err := http.Get(url.String())
 		if err == nil && resp.StatusCode == http.StatusOK {
 			_ = resp.Body.Close()
 			return nil
