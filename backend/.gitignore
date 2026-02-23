@@ -1,66 +1,28 @@
-# OS
-.DS_Store
-Thumbs.db
+# Backend (Go) binaries and caches
+/tmp/
+/.gotmp/
+/.cocache/
+/.gomodcache/
+/.gocache/
+/.air/
+/vendor/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
 
-# IDEs
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-
-# Backend (Go)
-backend/tmp/
-backend/*.exe
-backend/*.exe~
-backend/*.dll
-backend/*.so
-backend/*.dylib
-backend/*.test
-backend/*.out
-backend/vendor/
-backend/.air/
-
-# Frontend (Angular)
-frontend/node_modules/
-frontend/dist/
-frontend/.angular/
-frontend/*.log
-frontend/npm-debug.log*
-frontend/yarn-debug.log*
-frontend/yarn-error.log*
-
-# Environment variables
-.env
-.env.local
-.env.*.local
-
-# Docker
-docker-compose.override.yml
-
-# Logs
-*.log
-logs/
-
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Temporary files
-tmp/
-temp/
-*.tmp
-
-# Worktrees
-.worktrees/
-
-# Certificates
-proxy/certs/*.pem
-
-# Binaries
-stress_test
-seed
-
-# Go tool temporary directory
-.gotmp/
+# Generated binaries
+/api
+/integration_test
+/seed
+/stress_test
+/sync_es
+/main
+cmd/api/api
+cmd/integration_test/integration_test
+cmd/seed/seed
+cmd/stress_test/stress_test
+cmd/sync_es/sync_es

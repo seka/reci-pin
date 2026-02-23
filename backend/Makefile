@@ -4,6 +4,10 @@
 # Server settings
 PORT ?= 8080
 
+# Go cache and module cache confinement
+export GOCACHE=$(shell pwd)/.gocache
+export GOMODCACHE=$(shell pwd)/.gomodcache
+
 # ============================================================================
 # Development targets
 # ============================================================================
