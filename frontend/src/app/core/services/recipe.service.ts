@@ -22,7 +22,6 @@ export interface Tag {
 export interface RecipeImage {
   id: number;
   recipeId: number;
-  imagePath: string;
   imageUrl: string;
   createdAt: string;
 }
