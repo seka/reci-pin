@@ -14,9 +14,6 @@ type RecipeImage struct {
 }
 
 func (e *RecipeImage) ToModel() *model.RecipeImage {
-	if e == nil {
-		return nil
-	}
 	return &model.RecipeImage{
 		ID:        e.ID,
 		RecipeID:  e.RecipeID,
@@ -25,9 +22,6 @@ func (e *RecipeImage) ToModel() *model.RecipeImage {
 }
 
 func NewRecipeImage(m *model.RecipeImage) *RecipeImage {
-	if m == nil {
-		return nil
-	}
 	return &RecipeImage{
 		ID:        m.ID,
 		RecipeID:  m.RecipeID,

@@ -2,22 +2,21 @@ package mailhog
 
 import (
 	"fmt"
+	"net"
 	"net/smtp"
+	"net/url"
 
+	"github.com/seka/reci-pin/backend/config"
 	"github.com/seka/reci-pin/backend/internal/domain/notification"
 )
 
 type Client struct {
-	host string
-	port int
-	from string
+	cfg config.EmailServer
 }
 
-func New(host string, port int, from string) notification.EmailSender {
+func NewClient(cfg config.EmailServer) notification.EmailClient {
 	return &Client{
-		host: host,
-		port: port,
-		from: from,
+		cfg: cfg,
 	}
 }
 
@@ -36,11 +35,11 @@ func (s *Client) SendPasswordChangeNotification(to string) error {
 		"To: %s\r\n"+
 		"Subject: %s\r\n"+
 		"\r\n"+
-		"%s\r\n", s.from, to, subject, body)
+		"%s\r\n", s.cfg.From, to, subject, body)
 
-	addr := fmt.Sprintf("%s:%d", s.host, s.port)
+	addr := net.JoinHostPort(s.cfg.Host, s.cfg.Port)
 	// MailHog uses no authentication by default
-	if err := smtp.SendMail(addr, nil, s.from, []string{to}, []byte(msg)); err != nil {
+	if err := smtp.SendMail(addr, nil, s.cfg.From, []string{to}, []byte(msg)); err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
 	}
 
@@ -48,7 +47,14 @@ func (s *Client) SendPasswordChangeNotification(to string) error {
 }
 
 func (s *Client) SendPasswordReset(to string, token string) error {
-	resetURL := fmt.Sprintf("http://localhost:4200/password-reset?token=%s", token)
+	u := &url.URL{
+		Scheme: "http",
+		Host:   net.JoinHostPort("localhost", "4200"),
+		Path:   "password-reset",
+	}
+	q := u.Query()
+	q.Set("token", token)
+	u.RawQuery = q.Encode()
 	subject := "パスワード再設定のご案内"
 	body := fmt.Sprintf("いつも Reci-pin をご利用いただきありがとうございます。\n"+
 		"パスワード再設定のリクエストを受け付けました。\n\n"+
@@ -60,16 +66,16 @@ func (s *Client) SendPasswordReset(to string, token string) error {
 		"Reci-pin 運営事務局\n"+
 		"お問い合わせ: support@reci-pin.com\n"+
 		"プライバシーポリシー: https://reci-pin.com/privacy\n"+
-		"--------------------------------------------------", resetURL)
+		"--------------------------------------------------", u.String())
 
 	msg := fmt.Sprintf("From: %s\r\n"+
 		"To: %s\r\n"+
 		"Subject: %s\r\n"+
 		"\r\n"+
-		"%s\r\n", s.from, to, subject, body)
+		"%s\r\n", s.cfg.From, to, subject, body)
 
-	addr := fmt.Sprintf("%s:%d", s.host, s.port)
-	if err := smtp.SendMail(addr, nil, s.from, []string{to}, []byte(msg)); err != nil {
+	addr := net.JoinHostPort(s.cfg.Host, s.cfg.Port)
+	if err := smtp.SendMail(addr, nil, s.cfg.From, []string{to}, []byte(msg)); err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
 	}
 

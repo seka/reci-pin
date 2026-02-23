@@ -8,8 +8,9 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
+	sdkconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/seka/reci-pin/backend/config"
 	"github.com/seka/reci-pin/backend/internal/domain/storage"
 )
 
@@ -23,32 +24,38 @@ type client struct {
 }
 
 // NewClient creates a new StorageService backed by S3
-func NewClient(ctx context.Context, bucket string, endpoint string, publicBaseURL string) (storage.Storage, error) {
-	cfg, err := config.LoadDefaultConfig(ctx)
+func NewClient(ctx context.Context, cfg config.Storage) (storage.Client, error) {
+	awsCfg, err := sdkconfig.LoadDefaultConfig(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load SDK config: %w", err)
 	}
 
-	s3Client := s3.NewFromConfig(cfg, func(o *s3.Options) {
-		if endpoint != "" {
-			o.BaseEndpoint = aws.String(endpoint)
+	s3Client := s3.NewFromConfig(awsCfg, func(o *s3.Options) {
+		if cfg.Endpoint != "" {
+			o.BaseEndpoint = aws.String(cfg.Endpoint)
 			o.UsePathStyle = true // Required for LocalStack
 		}
 	})
 
-	parsedPublic, err := url.Parse(publicBaseURL)
-	if err != nil && publicBaseURL != "" {
-		return nil, fmt.Errorf("invalid public base URL: %w", err)
+	var parsedPublic *url.URL
+	if cfg.PublicBaseURL != "" {
+		parsedPublic, err = url.Parse(cfg.PublicBaseURL)
+		if err != nil {
+			return nil, fmt.Errorf("invalid public base URL: %w", err)
+		}
 	}
 
-	parsedInternal, err := url.Parse(endpoint)
-	if err != nil && endpoint != "" {
-		return nil, fmt.Errorf("invalid internal endpoint: %w", err)
+	var parsedInternal *url.URL
+	if cfg.Endpoint != "" {
+		parsedInternal, err = url.Parse(cfg.Endpoint)
+		if err != nil {
+			return nil, fmt.Errorf("invalid internal endpoint: %w", err)
+		}
 	}
 
 	var internalPathPrefix string
 	if parsedInternal != nil {
-		internalPathPrefix = parsedInternal.JoinPath(bucket).Path
+		internalPathPrefix = parsedInternal.JoinPath(cfg.Bucket).Path
 		if !strings.HasPrefix(internalPathPrefix, "/") {
 			internalPathPrefix = "/" + internalPathPrefix
 		}
@@ -60,11 +67,15 @@ func NewClient(ctx context.Context, bucket string, endpoint string, publicBaseUR
 	return &client{
 		client:             s3Client,
 		presignClient:      s3.NewPresignClient(s3Client),
-		bucket:             bucket,
+		bucket:             cfg.Bucket,
 		publicBaseURL:      parsedPublic,
 		internalEndpoint:   parsedInternal,
 		internalPathPrefix: internalPathPrefix,
 	}, nil
+}
+
+func (c *client) GetPublicURL() *url.URL {
+	return c.publicBaseURL
 }
 
 func (c *client) GeneratePresignedURL(ctx context.Context, key string, contentType string, contentLength int64, expires time.Duration) (string, error) {
