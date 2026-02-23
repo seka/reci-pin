@@ -35,7 +35,7 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
           [maxLength]="VALIDATION_RULES.EMAIL.MAX_LENGTH"
         ></app-input>
 
-        <div style="margin-top: var(--spacing-2);">
+        <div class="form-group">
           <app-input
             [label]="'AUTH.PASSWORD' | translate"
             type="password"
@@ -69,6 +69,9 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
   `,
   styles: [
     `
+      .form-group {
+        margin-top: var(--spacing-2);
+      }
       .actions {
         margin-top: var(--spacing-3);
         margin-bottom: var(--spacing-2);

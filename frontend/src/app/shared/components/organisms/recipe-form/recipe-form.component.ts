@@ -168,10 +168,6 @@ export interface RecipeFormSubmitEvent {
       .form-group {
         margin-bottom: var(--spacing-2);
       }
-      .full-width {
-        width: 100%;
-        margin-bottom: var(--spacing-1);
-      }
       .actions {
         display: flex;
         justify-content: flex-end;

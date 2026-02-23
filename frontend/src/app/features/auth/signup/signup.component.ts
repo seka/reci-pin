@@ -35,7 +35,7 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
             [errorMessage]="fieldErrors['name']"
           ></app-input>
 
-        <div style="margin-top: var(--spacing-2);">
+        <div class="form-group">
           <app-input
             [label]="'AUTH.EMAIL' | translate"
             type="email"
@@ -47,7 +47,7 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
           ></app-input>
         </div>
 
-        <div class="margin-top-2">
+        <div class="form-group">
           <app-input
             [label]="'AUTH.PASSWORD' | translate"
             type="password"
@@ -77,7 +77,7 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
   `,
   styles: [
     `
-      .margin-top-2 {
+      .form-group {
         margin-top: var(--spacing-2);
       }
       .footer-actions {
