@@ -37,11 +37,6 @@ func init() {
 		cfg.SearchEngine.Addresses = parseAddresses(v)
 		return nil
 	})
-
-	// Storage configuration
-	flag.StringVar(&cfg.Storage.Bucket, "storage-bucket", "recipin-bucket", "S3 bucket name")
-	flag.StringVar(&cfg.Storage.Endpoint, "storage-endpoint", "", "S3 endpoint URL (for LocalStack)")
-	flag.StringVar(&cfg.Storage.PublicBaseURL, "storage-public-url", "", "Base URL for public access")
 }
 
 func main() {

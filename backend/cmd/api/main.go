@@ -35,6 +35,7 @@ func init() {
 	flag.StringVar(&cfg.ApiServer.Port, "port", "8080", "Server port")
 	flag.StringVar(&cfg.ApiServer.JWT.Secret, "jwt-secret", "change-me", "JWT secret key")
 	flag.IntVar(&cfg.ApiServer.JWT.ExpirationHours, "jwt-expiration", 24, "JWT expiration hours")
+	flag.IntVar(&cfg.ApiServer.JWT.RefreshTokenExpirationDays, "jwt-refresh-expiration", 30, "JWT refresh token expiration days")
 
 	// Database configuration
 	flag.StringVar(&cfg.Database.Host, "db-host", "localhost", "Database host")

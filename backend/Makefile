@@ -44,6 +44,7 @@ ES_PORT ?= 9200
 # JWT settings
 JWT_SECRET ?= change-me
 JWT_EXPIRATION ?= 24
+JWT_REFRESH_EXPIRATION ?= 30
 
 # Storage settings
 STORAGE_BUCKET ?= recipin-bucket
@@ -76,6 +77,7 @@ app.run: ## Run the API server with default settings
 		-db-sslmode $(DB_SSLMODE) \
 		-jwt-secret $(JWT_SECRET) \
 		-jwt-expiration $(JWT_EXPIRATION) \
+		-jwt-refresh-expiration $(JWT_REFRESH_EXPIRATION) \
 		-es-host $(ES_HOST) \
 		-es-port $(ES_PORT) \
 		-storage-bucket $(STORAGE_BUCKET) \

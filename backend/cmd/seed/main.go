@@ -31,11 +31,6 @@ func init() {
 	flag.StringVar(&cfg.Database.DBName, "db-name", "recipin_dev", "Database name")
 	flag.StringVar(&cfg.Database.SSLMode, "db-sslmode", "disable", "Database SSL mode")
 	flag.BoolVar(&doClean, "clean", false, "Clean existing data before seeing")
-
-	// Storage configuration
-	flag.StringVar(&cfg.Storage.Bucket, "storage-bucket", "recipin-bucket", "S3 bucket name")
-	flag.StringVar(&cfg.Storage.Endpoint, "storage-endpoint", "", "S3 endpoint URL (for LocalStack)")
-	flag.StringVar(&cfg.Storage.PublicBaseURL, "storage-public-url", "", "Base URL for public access")
 }
 
 func main() {
