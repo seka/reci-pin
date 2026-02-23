@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	mock_postgres "github.com/seka/reci-pin/backend/internal/infrastructure/database/mock"
+	mockPostgres "github.com/seka/reci-pin/backend/internal/infrastructure/database/mock"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -17,7 +17,7 @@ func TestTagRepository_Create(t *testing.T) {
 		tag *model.Tag
 	}
 	type mocks struct {
-		setup func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows)
+		setup func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows)
 	}
 	tests := []struct {
 		name    string
@@ -29,7 +29,7 @@ func TestTagRepository_Create(t *testing.T) {
 			name: "Success",
 			args: args{tag: &model.Tag{Name: "Vegan"}},
 			mocks: mocks{
-				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
+				setup: func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows) {
 					r.EXPECT().Next().Return(true)
 					r.EXPECT().Scan(gomock.Any()).DoAndReturn(
 						func(dest ...any) error {
@@ -47,7 +47,7 @@ func TestTagRepository_Create(t *testing.T) {
 			name: "DB Error",
 			args: args{tag: &model.Tag{Name: "Vegan"}},
 			mocks: mocks{
-				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
+				setup: func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows) {
 					m.EXPECT().Query(gomock.Any(), gomock.Any(), "Vegan").Return(nil, errors.New("db error"))
 				},
 			},
@@ -60,8 +60,8 @@ func TestTagRepository_Create(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockDB := mock_postgres.NewMockDatabase(ctrl)
-			mockRows := mock_postgres.NewMockRows(ctrl)
+			mockDB := mockPostgres.NewMockDatabase(ctrl)
+			mockRows := mockPostgres.NewMockRows(ctrl)
 			tt.mocks.setup(mockDB, mockRows)
 
 			repo := postgres.NewTagRepository(mockDB)
@@ -79,7 +79,7 @@ func TestTagRepository_Create(t *testing.T) {
 
 func TestTagRepository_GetAll(t *testing.T) {
 	type mocks struct {
-		setup func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows)
+		setup func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows)
 	}
 	tests := []struct {
 		name    string
@@ -90,7 +90,7 @@ func TestTagRepository_GetAll(t *testing.T) {
 		{
 			name: "Success",
 			mocks: mocks{
-				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
+				setup: func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows) {
 					r.EXPECT().Next().Return(true)
 					r.EXPECT().Scan(gomock.Any(), gomock.Any()).DoAndReturn(
 						func(dest ...any) error {
@@ -115,8 +115,8 @@ func TestTagRepository_GetAll(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockDB := mock_postgres.NewMockDatabase(ctrl)
-			mockRows := mock_postgres.NewMockRows(ctrl)
+			mockDB := mockPostgres.NewMockDatabase(ctrl)
+			mockRows := mockPostgres.NewMockRows(ctrl)
 			tt.mocks.setup(mockDB, mockRows)
 
 			repo := postgres.NewTagRepository(mockDB)

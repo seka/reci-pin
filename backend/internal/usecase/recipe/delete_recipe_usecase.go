@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
+	"github.com/seka/reci-pin/backend/internal/domain/searcher"
 )
 
 type DeleteRecipeUseCase interface {
@@ -14,12 +15,12 @@ type DeleteRecipeUseCase interface {
 
 type deleteRecipeInteractor struct {
 	recipeRepo repository.RecipeRepository
-	searchRepo repository.RecipeSearchRepository
+	searchRepo searcher.RecipeSearcher
 }
 
 func NewDeleteRecipeUseCase(
 	recipeRepo repository.RecipeRepository,
-	searchRepo repository.RecipeSearchRepository,
+	searchRepo searcher.RecipeSearcher,
 ) DeleteRecipeUseCase {
 	return &deleteRecipeInteractor{
 		recipeRepo: recipeRepo,

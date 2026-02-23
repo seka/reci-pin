@@ -7,6 +7,7 @@ import (
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
+	"github.com/seka/reci-pin/backend/internal/domain/searcher"
 	"github.com/seka/reci-pin/backend/internal/domain/storage"
 	"github.com/seka/reci-pin/backend/internal/domain/validation"
 )
@@ -18,20 +19,20 @@ type UpdateRecipeUseCase interface {
 type updateRecipeInteractor struct {
 	recipeRepo      repository.RecipeRepository
 	recipeImageRepo repository.RecipeImageRepository
-	searchRepo      repository.RecipeSearchRepository
+	recipeSearcher  searcher.RecipeSearcher
 	storageService  storage.Client
 }
 
 func NewUpdateRecipeUseCase(
 	recipeRepo repository.RecipeRepository,
 	recipeImageRepo repository.RecipeImageRepository,
-	searchRepo repository.RecipeSearchRepository,
+	recipeSearcher searcher.RecipeSearcher,
 	storageService storage.Client,
 ) UpdateRecipeUseCase {
 	return &updateRecipeInteractor{
 		recipeRepo:      recipeRepo,
 		recipeImageRepo: recipeImageRepo,
-		searchRepo:      searchRepo,
+		recipeSearcher:  recipeSearcher,
 		storageService:  storageService,
 	}
 }
@@ -96,7 +97,7 @@ func (uc *updateRecipeInteractor) Execute(ctx context.Context, input UpdateRecip
 	}
 
 	// Update index
-	if err := uc.searchRepo.Index(ctx, recipe); err != nil {
+	if err := uc.recipeSearcher.Index(ctx, recipe); err != nil {
 		fmt.Printf("failed to update recipe index: %v\n", err)
 	}
 

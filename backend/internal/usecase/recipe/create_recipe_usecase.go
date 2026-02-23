@@ -6,6 +6,7 @@ import (
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
+	"github.com/seka/reci-pin/backend/internal/domain/searcher"
 	"github.com/seka/reci-pin/backend/internal/domain/validation"
 )
 
@@ -15,12 +16,12 @@ type CreateRecipeUseCase interface {
 
 type createRecipeInteractor struct {
 	recipeRepo repository.RecipeRepository
-	searchRepo repository.RecipeSearchRepository
+	searchRepo searcher.RecipeSearcher
 }
 
 func NewCreateRecipeUseCase(
 	recipeRepo repository.RecipeRepository,
-	searchRepo repository.RecipeSearchRepository,
+	searchRepo searcher.RecipeSearcher,
 ) CreateRecipeUseCase {
 	return &createRecipeInteractor{
 		recipeRepo: recipeRepo,

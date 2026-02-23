@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	mock_postgres "github.com/seka/reci-pin/backend/internal/infrastructure/database/mock"
+	mockPostgres "github.com/seka/reci-pin/backend/internal/infrastructure/database/mock"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -18,7 +18,7 @@ func TestUserEmailCredentialRepository_Create(t *testing.T) {
 		credential *model.UserEmailCredential
 	}
 	type mocks struct {
-		setup func(m *mock_postgres.MockDatabase)
+		setup func(m *mockPostgres.MockDatabase)
 	}
 	tests := []struct {
 		name    string
@@ -36,7 +36,7 @@ func TestUserEmailCredentialRepository_Create(t *testing.T) {
 				},
 			},
 			mocks: mocks{
-				setup: func(m *mock_postgres.MockDatabase) {
+				setup: func(m *mockPostgres.MockDatabase) {
 					m.EXPECT().Execute(gomock.Any(), gomock.Any(), int64(1), "test@example.com", "hash", gomock.Any(), gomock.Any(), gomock.Any()).
 						Return(int64(1), nil)
 				},
@@ -47,7 +47,7 @@ func TestUserEmailCredentialRepository_Create(t *testing.T) {
 			name: "DB Error",
 			args: args{credential: &model.UserEmailCredential{UserID: 1, Email: "test@example.com"}},
 			mocks: mocks{
-				setup: func(m *mock_postgres.MockDatabase) {
+				setup: func(m *mockPostgres.MockDatabase) {
 					m.EXPECT().Execute(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 						Return(int64(0), errors.New("db error"))
 				},
@@ -61,7 +61,7 @@ func TestUserEmailCredentialRepository_Create(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockDB := mock_postgres.NewMockDatabase(ctrl)
+			mockDB := mockPostgres.NewMockDatabase(ctrl)
 			tt.mocks.setup(mockDB)
 
 			repo := postgres.NewUserEmailCredentialRepository(mockDB)
@@ -81,7 +81,7 @@ func TestUserEmailCredentialRepository_GetByEmail(t *testing.T) {
 		email string
 	}
 	type mocks struct {
-		setup func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows)
+		setup func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows)
 	}
 	tests := []struct {
 		name    string
@@ -94,7 +94,7 @@ func TestUserEmailCredentialRepository_GetByEmail(t *testing.T) {
 			name: "Success",
 			args: args{email: "test@example.com"},
 			mocks: mocks{
-				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
+				setup: func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows) {
 					r.EXPECT().Next().Return(true)
 					parsedTime := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 					r.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
@@ -131,7 +131,7 @@ func TestUserEmailCredentialRepository_GetByEmail(t *testing.T) {
 			name: "Not Found",
 			args: args{email: "test@example.com"},
 			mocks: mocks{
-				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
+				setup: func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows) {
 					r.EXPECT().Next().Return(false)
 					r.EXPECT().Close()
 					m.EXPECT().Query(gomock.Any(), gomock.Any(), "test@example.com").Return(r, nil)
@@ -147,8 +147,8 @@ func TestUserEmailCredentialRepository_GetByEmail(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockDB := mock_postgres.NewMockDatabase(ctrl)
-			mockRows := mock_postgres.NewMockRows(ctrl)
+			mockDB := mockPostgres.NewMockDatabase(ctrl)
+			mockRows := mockPostgres.NewMockRows(ctrl)
 			tt.mocks.setup(mockDB, mockRows)
 
 			repo := postgres.NewUserEmailCredentialRepository(mockDB)
@@ -174,7 +174,7 @@ func TestUserEmailCredentialRepository_Update(t *testing.T) {
 		credential *model.UserEmailCredential
 	}
 	type mocks struct {
-		setup func(m *mock_postgres.MockDatabase)
+		setup func(m *mockPostgres.MockDatabase)
 	}
 	tests := []struct {
 		name    string
@@ -188,7 +188,7 @@ func TestUserEmailCredentialRepository_Update(t *testing.T) {
 				credential: &model.UserEmailCredential{UserID: 1, Email: "new@example.com"},
 			},
 			mocks: mocks{
-				setup: func(m *mock_postgres.MockDatabase) {
+				setup: func(m *mockPostgres.MockDatabase) {
 					m.EXPECT().Execute(gomock.Any(), gomock.Any(), int64(1), "new@example.com", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 						Return(int64(1), nil)
 				},
@@ -202,7 +202,7 @@ func TestUserEmailCredentialRepository_Update(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockDB := mock_postgres.NewMockDatabase(ctrl)
+			mockDB := mockPostgres.NewMockDatabase(ctrl)
 			tt.mocks.setup(mockDB)
 
 			repo := postgres.NewUserEmailCredentialRepository(mockDB)

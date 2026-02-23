@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	mock_postgres "github.com/seka/reci-pin/backend/internal/infrastructure/database/mock"
+	mockPostgres "github.com/seka/reci-pin/backend/internal/infrastructure/database/mock"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -18,7 +18,7 @@ func TestUserRepository_Create(t *testing.T) {
 		user *model.User
 	}
 	type mocks struct {
-		setup func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows)
+		setup func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows)
 	}
 	tests := []struct {
 		name    string
@@ -32,7 +32,7 @@ func TestUserRepository_Create(t *testing.T) {
 				user: &model.User{Name: "Test User"},
 			},
 			mocks: mocks{
-				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
+				setup: func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows) {
 					// Mock Rows for RETURNING clause
 					r.EXPECT().Next().Return(true)
 					r.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
@@ -56,7 +56,7 @@ func TestUserRepository_Create(t *testing.T) {
 				user: &model.User{Name: "Test User"},
 			},
 			mocks: mocks{
-				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
+				setup: func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows) {
 					m.EXPECT().Query(gomock.Any(), gomock.Any(), "Test User").Return(nil, errors.New("db error"))
 				},
 			},
@@ -69,8 +69,8 @@ func TestUserRepository_Create(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockDB := mock_postgres.NewMockDatabase(ctrl)
-			mockRows := mock_postgres.NewMockRows(ctrl)
+			mockDB := mockPostgres.NewMockDatabase(ctrl)
+			mockRows := mockPostgres.NewMockRows(ctrl)
 			tt.mocks.setup(mockDB, mockRows)
 
 			repo := postgres.NewUserRepository(mockDB)
@@ -91,7 +91,7 @@ func TestUserRepository_GetByID(t *testing.T) {
 		id int64
 	}
 	type mocks struct {
-		setup func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows)
+		setup func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows)
 	}
 	tests := []struct {
 		name    string
@@ -104,7 +104,7 @@ func TestUserRepository_GetByID(t *testing.T) {
 			name: "Success",
 			args: args{id: 1},
 			mocks: mocks{
-				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
+				setup: func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows) {
 					r.EXPECT().Next().Return(true)
 					r.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
 						func(dest ...any) error {
@@ -127,7 +127,7 @@ func TestUserRepository_GetByID(t *testing.T) {
 			name: "Not Found",
 			args: args{id: 999},
 			mocks: mocks{
-				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
+				setup: func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows) {
 					r.EXPECT().Next().Return(false)
 					r.EXPECT().Close()
 
@@ -144,8 +144,8 @@ func TestUserRepository_GetByID(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockDB := mock_postgres.NewMockDatabase(ctrl)
-			mockRows := mock_postgres.NewMockRows(ctrl)
+			mockDB := mockPostgres.NewMockDatabase(ctrl)
+			mockRows := mockPostgres.NewMockRows(ctrl)
 			tt.mocks.setup(mockDB, mockRows)
 
 			repo := postgres.NewUserRepository(mockDB)

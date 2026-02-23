@@ -1,11 +1,9 @@
 package registry
 
 import (
-	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
-	es "github.com/seka/reci-pin/backend/internal/infrastructure/database/elasticsearch"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
+	postgres "github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 )
 
 // Repository defines the interface for creating repositories
@@ -16,21 +14,18 @@ type Repository interface {
 	NewRecipeImageRepository() repository.RecipeImageRepository
 	NewUserEmailCredentialRepository() repository.UserEmailCredentialRepository
 	NewPasswordResetTokenRepository() repository.PasswordResetTokenRepository
-	NewRecipeSearchRepository() repository.RecipeSearchRepository
 	NewRefreshTokenRepository() repository.RefreshTokenRepository
 }
 
 // repositoryRegistry implements the Repository interface
 type repositoryRegistry struct {
-	db           database.Database
-	searchEngine *elasticsearch.TypedClient
+	db database.Database
 }
 
 // NewRepository creates a new Repository registry
-func NewRepository(db database.Database, searchEngine *elasticsearch.TypedClient) Repository {
+func NewRepository(db database.Database) Repository {
 	return &repositoryRegistry{
-		db:           db,
-		searchEngine: searchEngine,
+		db: db,
 	}
 }
 
@@ -56,10 +51,6 @@ func (r *repositoryRegistry) NewUserEmailCredentialRepository() repository.UserE
 
 func (r *repositoryRegistry) NewPasswordResetTokenRepository() repository.PasswordResetTokenRepository {
 	return postgres.NewPasswordResetTokenRepository(r.db)
-}
-
-func (r *repositoryRegistry) NewRecipeSearchRepository() repository.RecipeSearchRepository {
-	return es.NewRecipeSearcher(r.searchEngine)
 }
 
 func (r *repositoryRegistry) NewRefreshTokenRepository() repository.RefreshTokenRepository {

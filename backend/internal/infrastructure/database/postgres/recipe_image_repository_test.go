@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	mock_postgres "github.com/seka/reci-pin/backend/internal/infrastructure/database/mock"
+	mockPostgres "github.com/seka/reci-pin/backend/internal/infrastructure/database/mock"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -18,7 +18,7 @@ func TestRecipeImageRepository_Create(t *testing.T) {
 		image *model.RecipeImage
 	}
 	type mocks struct {
-		setup func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows)
+		setup func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows)
 	}
 	tests := []struct {
 		name    string
@@ -30,7 +30,7 @@ func TestRecipeImageRepository_Create(t *testing.T) {
 			name: "Success",
 			args: args{image: &model.RecipeImage{RecipeID: 100, ImagePath: "/path/to/image.jpg"}},
 			mocks: mocks{
-				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
+				setup: func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows) {
 					r.EXPECT().Next().Return(true)
 					r.EXPECT().Scan(gomock.Any(), gomock.Any()).DoAndReturn(
 						func(dest ...any) error {
@@ -49,7 +49,7 @@ func TestRecipeImageRepository_Create(t *testing.T) {
 			name: "DB Error",
 			args: args{image: &model.RecipeImage{RecipeID: 100, ImagePath: "/path/to/image.jpg"}},
 			mocks: mocks{
-				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
+				setup: func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows) {
 					m.EXPECT().Query(gomock.Any(), gomock.Any(), int64(100), "/path/to/image.jpg").
 						Return(nil, errors.New("db error"))
 				},
@@ -63,8 +63,8 @@ func TestRecipeImageRepository_Create(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockDB := mock_postgres.NewMockDatabase(ctrl)
-			mockRows := mock_postgres.NewMockRows(ctrl)
+			mockDB := mockPostgres.NewMockDatabase(ctrl)
+			mockRows := mockPostgres.NewMockRows(ctrl)
 			tt.mocks.setup(mockDB, mockRows)
 
 			repo := postgres.NewRecipeImageRepository(mockDB)
@@ -85,7 +85,7 @@ func TestRecipeImageRepository_GetByRecipeID(t *testing.T) {
 		recipeID int64
 	}
 	type mocks struct {
-		setup func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows)
+		setup func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows)
 	}
 	tests := []struct {
 		name    string
@@ -98,7 +98,7 @@ func TestRecipeImageRepository_GetByRecipeID(t *testing.T) {
 			name: "Success",
 			args: args{recipeID: 100},
 			mocks: mocks{
-				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
+				setup: func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows) {
 					r.EXPECT().Next().Return(true)
 					r.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
 						func(dest ...any) error {
@@ -122,7 +122,7 @@ func TestRecipeImageRepository_GetByRecipeID(t *testing.T) {
 			name: "Error",
 			args: args{recipeID: 100},
 			mocks: mocks{
-				setup: func(m *mock_postgres.MockDatabase, r *mock_postgres.MockRows) {
+				setup: func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows) {
 					m.EXPECT().Query(gomock.Any(), gomock.Any(), int64(100)).Return(nil, errors.New("db error"))
 				},
 			},
@@ -135,8 +135,8 @@ func TestRecipeImageRepository_GetByRecipeID(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockDB := mock_postgres.NewMockDatabase(ctrl)
-			mockRows := mock_postgres.NewMockRows(ctrl)
+			mockDB := mockPostgres.NewMockDatabase(ctrl)
+			mockRows := mockPostgres.NewMockRows(ctrl)
 			tt.mocks.setup(mockDB, mockRows)
 
 			repo := postgres.NewRecipeImageRepository(mockDB)
@@ -157,7 +157,7 @@ func TestRecipeImageRepository_Delete(t *testing.T) {
 		id int64
 	}
 	type mocks struct {
-		setup func(m *mock_postgres.MockDatabase)
+		setup func(m *mockPostgres.MockDatabase)
 	}
 	tests := []struct {
 		name    string
@@ -169,7 +169,7 @@ func TestRecipeImageRepository_Delete(t *testing.T) {
 			name: "Success",
 			args: args{id: 1},
 			mocks: mocks{
-				setup: func(m *mock_postgres.MockDatabase) {
+				setup: func(m *mockPostgres.MockDatabase) {
 					m.EXPECT().Execute(gomock.Any(), gomock.Any(), int64(1)).Return(int64(1), nil)
 				},
 			},
@@ -179,7 +179,7 @@ func TestRecipeImageRepository_Delete(t *testing.T) {
 			name: "Error",
 			args: args{id: 1},
 			mocks: mocks{
-				setup: func(m *mock_postgres.MockDatabase) {
+				setup: func(m *mockPostgres.MockDatabase) {
 					m.EXPECT().Execute(gomock.Any(), gomock.Any(), int64(1)).Return(int64(0), errors.New("failed"))
 				},
 			},
@@ -192,7 +192,7 @@ func TestRecipeImageRepository_Delete(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockDB := mock_postgres.NewMockDatabase(ctrl)
+			mockDB := mockPostgres.NewMockDatabase(ctrl)
 			tt.mocks.setup(mockDB)
 
 			repo := postgres.NewRecipeImageRepository(mockDB)
