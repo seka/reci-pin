@@ -27,66 +27,8 @@ import { Observable, startWith, map } from 'rxjs';
       multi: true,
     },
   ],
-  template: `
-    <div class="tags-section">
-      <span class="section-label" id="tag-select-label">タグ選択</span>
-      <p class="helper-text">タグを入力して検索、またはEnterで新規作成できます。</p>
-
-      <mat-form-field class="tag-chip-list" appearance="outline">
-        <mat-label>タグ</mat-label>
-        <mat-chip-grid #chipGrid aria-label="Tag selection">
-          @for (tagId of selectedTagIds; track tagId) {
-            <mat-chip-row (removed)="remove(tagId)">
-              {{ getTagName(tagId) }}
-              <button matChipRemove [attr.aria-label]="'remove ' + getTagName(tagId)">
-                <mat-icon>cancel</mat-icon>
-              </button>
-            </mat-chip-row>
-          }
-          <input
-            placeholder="新しいタグ..."
-            #tagInput
-            [formControl]="tagCtrl"
-            [matChipInputFor]="chipGrid"
-            [matAutocomplete]="auto"
-            [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-            (matChipInputTokenEnd)="add($event)"
-          />
-        </mat-chip-grid>
-        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
-          @for (tag of filteredTags | async; track tag.id) {
-            <mat-option [value]="tag">
-              {{ tag.name }}
-            </mat-option>
-          }
-        </mat-autocomplete>
-      </mat-form-field>
-    </div>
-  `,
-  styles: [
-    `
-      .tags-section {
-        margin-top: 16px;
-        margin-bottom: 8px;
-      }
-      .section-label {
-        font-size: 1rem;
-        font-weight: 500;
-        color: rgba(0, 0, 0, 0.6);
-        display: block;
-        margin-bottom: 8px;
-      }
-      .helper-text {
-        font-size: 0.85em;
-        color: #666;
-        margin-bottom: 12px;
-        margin-top: 0;
-      }
-      .tag-chip-list {
-        width: 100%;
-      }
-    `,
-  ],
+  templateUrl: './tag-select.component.html',
+  styleUrl: './tag-select.component.scss',
 })
 export class TagSelectComponent implements ControlValueAccessor, OnInit {
   @Input() tags: Tag[] = [];

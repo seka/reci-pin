@@ -1,0 +1,34 @@
+<div class="tags-section">
+  <span class="section-label" id="tag-select-label">タグ選択</span>
+  <p class="helper-text">タグを入力して検索、またはEnterで新規作成できます。</p>
+
+  <mat-form-field class="tag-chip-list" appearance="outline">
+    <mat-label>タグ</mat-label>
+    <mat-chip-grid #chipGrid aria-label="Tag selection">
+      @for (tagId of selectedTagIds; track tagId) {
+        <mat-chip-row (removed)="remove(tagId)">
+          {{ getTagName(tagId) }}
+          <button matChipRemove [attr.aria-label]="'remove ' + getTagName(tagId)">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip-row>
+      }
+      <input
+        placeholder="新しいタグ..."
+        #tagInput
+        [formControl]="tagCtrl"
+        [matChipInputFor]="chipGrid"
+        [matAutocomplete]="auto"
+        [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+        (matChipInputTokenEnd)="add($event)"
+      />
+    </mat-chip-grid>
+    <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
+      @for (tag of filteredTags | async; track tag.id) {
+        <mat-option [value]="tag">
+          {{ tag.name }}
+        </mat-option>
+      }
+    </mat-autocomplete>
+  </mat-form-field>
+</div>
