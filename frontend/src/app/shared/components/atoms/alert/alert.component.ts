@@ -5,38 +5,8 @@ import { CommonModule } from '@angular/common';
   selector: 'app-alert',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    @if (message) {
-      <div [ngClass]="['alert', type]">
-        <ng-content></ng-content>
-        {{ message }}
-      </div>
-    }
-  `,
-  styles: [
-    `
-      :host {
-        display: block;
-        width: 100%;
-      }
-      .alert {
-        margin-top: var(--spacing-2);
-        padding: var(--spacing-2);
-        border-radius: var(--radius-1);
-        text-align: center;
-        font-size: var(--font-size-2);
-      }
-      .alert.error {
-        color: var(--color-error);
-      }
-      .alert.success {
-        color: var(--color-success);
-      }
-      .alert.info {
-        color: var(--color-primary);
-      }
-    `,
-  ],
+  templateUrl: './alert.component.html',
+  styleUrl: './alert.component.scss',
 })
 export class AlertComponent {
   @Input() type: 'error' | 'success' | 'info' = 'info';

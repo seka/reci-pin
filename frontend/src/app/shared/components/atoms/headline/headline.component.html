@@ -1,0 +1,22 @@
+<ng-template #content><ng-content></ng-content></ng-template>
+
+@switch (variant) {
+  @case ('h1') {
+    <h1 class="h1"><ng-container *ngTemplateOutlet="content"></ng-container></h1>
+  }
+  @case ('h2') {
+    <h2 class="h2"><ng-container *ngTemplateOutlet="content"></ng-container></h2>
+  }
+  @case ('h3') {
+    <h3 class="h3"><ng-container *ngTemplateOutlet="content"></ng-container></h3>
+  }
+  @case ('h4') {
+    <h4 class="h4"><ng-container *ngTemplateOutlet="content"></ng-container></h4>
+  }
+  @case ('h5') {
+    <h5 class="h5"><ng-container *ngTemplateOutlet="content"></ng-container></h5>
+  }
+  @case ('h6') {
+    <h6 class="h6"><ng-container *ngTemplateOutlet="content"></ng-container></h6>
+  }
+}

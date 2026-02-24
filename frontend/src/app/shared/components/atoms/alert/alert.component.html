@@ -1,0 +1,6 @@
+@if (message) {
+  <div [ngClass]="['alert', type]">
+    <ng-content></ng-content>
+    {{ message }}
+  </div>
+}

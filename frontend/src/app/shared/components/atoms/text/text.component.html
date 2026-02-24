@@ -1,0 +1,13 @@
+<ng-template #content><ng-content></ng-content></ng-template>
+
+@switch (variant) {
+  @case ('body') {
+    <p class="body"><ng-container *ngTemplateOutlet="content"></ng-container></p>
+  }
+  @case ('caption') {
+    <span class="caption"><ng-container *ngTemplateOutlet="content"></ng-container></span>
+  }
+  @case ('label') {
+    <span class="label"><ng-container *ngTemplateOutlet="content"></ng-container></span>
+  }
+}
