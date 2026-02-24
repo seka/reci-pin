@@ -6,7 +6,7 @@
         <mat-icon class="add-icon">add</mat-icon>
         {{ 'RECIPE.ADD_NEW' | translate }}
       </app-button>
-      <a routerLink="/settings" class="settings-link" title="設定">
+      <a routerLink="/settings" class="settings-link" [title]="'COMMON.SETTINGS' | translate">
         <mat-icon>settings</mat-icon>
       </a>
     </div>
@@ -22,9 +22,9 @@
         <app-input
           [(ngModel)]="searchQuery"
           (keyup.enter)="search()"
-          label="キーワードで絞り込み"
+          [label]="'RECIPE.SEARCH_KEYWORD_LABEL' | translate"
           floatLabel="always"
-          placeholder="キーワードで検索..."
+          [placeholder]="'RECIPE.SEARCH_KEYWORD_PLACEHOLDER' | translate"
           class="search-input"
         ></app-input>
       </app-search-bar>
@@ -33,7 +33,7 @@
     @if (searchMode === 'tag') {
       <app-search-bar (searchSubmit)="search()">
         <mat-form-field class="tag-chip-list" appearance="outline" floatLabel="always">
-          <mat-label>タグで絞り込み</mat-label>
+          <mat-label>{{ 'RECIPE.SEARCH_TAG_LABEL' | translate }}</mat-label>
           <mat-chip-grid #chipGrid aria-label="Tag selection">
             @for (tagId of selectedTagIds; track tagId) {
               <mat-chip-row (removed)="removeTag(tagId)">
@@ -44,7 +44,7 @@
               </mat-chip-row>
             }
             <input
-              placeholder="タグを選択..."
+              [placeholder]="'RECIPE.SEARCH_TAG_PLACEHOLDER' | translate"
               #tagInput
               [formControl]="tagCtrl"
               [matChipInputFor]="chipGrid"

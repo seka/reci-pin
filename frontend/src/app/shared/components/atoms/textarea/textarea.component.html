@@ -26,10 +26,10 @@
     }
     @if (!errorMessage && control?.invalid && (control?.dirty || control?.touched)) {
       @if (control?.errors?.['required']) {
-        <div class="error-line">必須項目です</div>
+        <div class="error-line">{{ 'VALIDATION.REQUIRED' | translate }}</div>
       }
       @if (control?.errors?.['maxlength']) {
-        <div class="error-line">{{ maxLength }}文字以内で入力してください</div>
+        <div class="error-line">{{ 'VALIDATION.MAX_LENGTH' | translate: { max: maxLength } }}</div>
       }
     }
   </div>

@@ -1,9 +1,9 @@
 <div class="tags-section">
-  <span class="section-label" id="tag-select-label">タグ選択</span>
-  <p class="helper-text">タグを入力して検索、またはEnterで新規作成できます。</p>
+  <span class="section-label" id="tag-select-label">{{ 'TAG.SELECT_LABEL' | translate }}</span>
+  <p class="helper-text">{{ 'TAG.SELECT_HELPER' | translate }}</p>
 
   <mat-form-field class="tag-chip-list" appearance="outline">
-    <mat-label>タグ</mat-label>
+    <mat-label>{{ 'COMMON.TAG' | translate }}</mat-label>
     <mat-chip-grid #chipGrid aria-label="Tag selection">
       @for (tagId of selectedTagIds; track tagId) {
         <mat-chip-row (removed)="remove(tagId)">
@@ -14,7 +14,7 @@
         </mat-chip-row>
       }
       <input
-        placeholder="新しいタグ..."
+        [placeholder]="'TAG.NEW_PLACEHOLDER' | translate"
         #tagInput
         [formControl]="tagCtrl"
         [matChipInputFor]="chipGrid"

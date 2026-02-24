@@ -1,4 +1,4 @@
 <mat-button-toggle-group [ngModel]="value" (ngModelChange)="onValueChange($event)">
-  <mat-button-toggle value="keyword">キーワード</mat-button-toggle>
-  <mat-button-toggle value="tag">タグ</mat-button-toggle>
+  <mat-button-toggle value="keyword">{{ 'COMMON.KEYWORD' | translate }}</mat-button-toggle>
+  <mat-button-toggle value="tag">{{ 'COMMON.TAG' | translate }}</mat-button-toggle>
 </mat-button-toggle-group>
