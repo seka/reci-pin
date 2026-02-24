@@ -11,15 +11,7 @@ import {
   selector: 'app-recipe-create',
   standalone: true,
   imports: [CommonModule, RecipeFormComponent],
-  template: `
-    <app-recipe-form
-      titleKey="RECIPE.NEW_TITLE"
-      submitLabelKey="RECIPE.SAVE"
-      submittingLabelKey="RECIPE.SAVING"
-      [isSubmitting]="isSubmitting"
-      (save)="onSave($event)"
-    ></app-recipe-form>
-  `,
+  templateUrl: './recipe-create.component.html',
 })
 export class RecipeCreateComponent {
   private readonly recipeService = inject(RecipeService);

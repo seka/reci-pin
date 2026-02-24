@@ -7,10 +7,7 @@ import { HeaderComponent } from './shared/components/organisms/header/header.com
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet, HeaderComponent],
-  template: `
-    <app-header></app-header>
-    <router-outlet></router-outlet>
-  `,
+  templateUrl: './app.html',
   styleUrl: './app.scss',
 })
 export class App {
