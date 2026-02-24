@@ -10,7 +10,11 @@
     "JAPANESE": "日本語",
     "ENGLISH": "英語",
     "SEND": "送信する",
-    "SENDING": "送信中..."
+    "SENDING": "送信中...",
+    "SETTINGS": "設定",
+    "KEYWORD": "キーワード",
+    "TAG": "タグ",
+    "SEARCH": "検索"
   },
   "AUTH": {
     "EMAIL": "メールアドレス",
@@ -77,17 +81,30 @@
     "ADD_NEW": "新規レシピ追加",
     "DELETE_CONFIRMATION": "本当にこのレシピを削除しますか？\nこの操作は取り消せません。",
     "IMAGE": "画像",
-    "IMAGE_DROP_HINT": "クリックまたはドラッグ＆ドロップで画像を追加"
+    "IMAGE_DROP_HINT": "クリックまたはドラッグ＆ドロップで画像を追加",
+    "IMAGE_FORMAT_HINT": "JPEG, PNG, WebP (最大 50MB)",
+    "SEARCH_KEYWORD_LABEL": "キーワードで絞り込み",
+    "SEARCH_KEYWORD_PLACEHOLDER": "キーワードで検索...",
+    "SEARCH_TAG_LABEL": "タグで絞り込み",
+    "SEARCH_TAG_PLACEHOLDER": "タグを選択...",
+    "EMPTY_TITLE": "レシピがありません",
+    "EMPTY_MESSAGE": "新しいレシピを追加してみましょう！"
+  },
+  "TAG": {
+    "SELECT_LABEL": "タグ選択",
+    "SELECT_HELPER": "タグを入力して検索、またはEnterで新規作成できます。",
+    "NEW_PLACEHOLDER": "新しいタグ..."
   },
   "VALIDATION": {
-    "REQUIRED": "この項目は必須です",
+    "REQUIRED": "必須項目です",
     "INVALID_EMAIL": "有効なメールアドレスを入力してください",
     "MIN_LENGTH": "{{min}}文字以上で入力してください",
     "MAX_LENGTH": "{{max}}文字以内で入力してください",
     "PASSWORD_MISMATCH": "パスワードが一致しません",
     "INVALID_URL": "URLの形式が正しくありません",
     "INVALID_INPUT": "入力内容が正しくありません",
-    "PASSWORD_NO_ALPHA": "パスワードには少なくとも1つの英字を含める必要があります",
-    "PASSWORD_NO_NUMERIC": "パスワードには少なくとも1つの数字を含める必要があります"
+    "PATTERN": "形式が正しくありません",
+    "PASSWORD_NO_ALPHA": "英字を含めてください",
+    "PASSWORD_NO_NUMERIC": "数字を含めてください"
   }
 }
