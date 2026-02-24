@@ -1,5 +1,11 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
@@ -40,8 +46,18 @@ export class LoginComponent implements OnInit {
 
   ngOnInit() {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email, Validators.maxLength(VALIDATION_RULES.EMAIL.MAX_LENGTH)]],
-      password: ['', [Validators.required, Validators.maxLength(VALIDATION_RULES.PASSWORD.MAX_LENGTH)]],
+      email: [
+        '',
+        [
+          Validators.required,
+          Validators.email,
+          Validators.maxLength(VALIDATION_RULES.EMAIL.MAX_LENGTH),
+        ],
+      ],
+      password: [
+        '',
+        [Validators.required, Validators.maxLength(VALIDATION_RULES.PASSWORD.MAX_LENGTH)],
+      ],
     });
   }
 

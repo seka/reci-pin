@@ -10,21 +10,30 @@
 
     @if (currentUser$ | async; as user) {
       <div class="user-info">
-        <p><strong>{{ 'SETTINGS.NAME' | translate }}:</strong> {{ user.name }}</p>
-        <p><strong>{{ 'SETTINGS.EMAIL' | translate }}:</strong> {{ user.email }}</p>
+        <p>
+          <strong>{{ 'SETTINGS.NAME' | translate }}:</strong> {{ user.name }}
+        </p>
+        <p>
+          <strong>{{ 'SETTINGS.EMAIL' | translate }}:</strong> {{ user.email }}
+        </p>
       </div>
     }
     <div class="account-actions">
-      <app-button routerLink="/settings/password" variant="outline">{{ 'SETTINGS.CHANGE_PASSWORD_BUTTON' | translate }}</app-button>
+      <app-button routerLink="/settings/password" variant="outline">{{
+        'SETTINGS.CHANGE_PASSWORD_BUTTON' | translate
+      }}</app-button>
     </div>
   </section>
 
   <section class="settings-section danger-zone">
     <app-headline level="2">{{ 'SETTINGS.WITHDRAW_TITLE' | translate }}</app-headline>
-    <p class="warning-text" [innerHTML]="'SETTINGS.WITHDRAW_WARNING' | translate">
-    </p>
+    <p class="warning-text" [innerHTML]="'SETTINGS.WITHDRAW_WARNING' | translate"></p>
     <app-button variant="warn" (click)="onWithdraw()" [disabled]="isProcessing">
-      {{ isProcessing ? ('SETTINGS.WITHDRAWING' | translate) : ('SETTINGS.WITHDRAW_BUTTON' | translate) }}
+      {{
+        isProcessing
+          ? ('SETTINGS.WITHDRAWING' | translate)
+          : ('SETTINGS.WITHDRAW_BUTTON' | translate)
+      }}
     </app-button>
   </section>
 </div>

@@ -47,7 +47,10 @@ export class ChangePasswordComponent {
 
   form = this.fb.group(
     {
-      currentPassword: ['', [Validators.required, Validators.maxLength(VALIDATION_RULES.PASSWORD.MAX_LENGTH)]],
+      currentPassword: [
+        '',
+        [Validators.required, Validators.maxLength(VALIDATION_RULES.PASSWORD.MAX_LENGTH)],
+      ],
       newPassword: [
         '',
         [
@@ -56,9 +59,12 @@ export class ChangePasswordComponent {
           Validators.maxLength(VALIDATION_RULES.PASSWORD.MAX_LENGTH),
         ],
       ],
-      confirmNewPassword: ['', [Validators.required, Validators.maxLength(VALIDATION_RULES.PASSWORD.MAX_LENGTH)]],
+      confirmNewPassword: [
+        '',
+        [Validators.required, Validators.maxLength(VALIDATION_RULES.PASSWORD.MAX_LENGTH)],
+      ],
     },
-    { validators: this.passwordMatchValidator }
+    { validators: this.passwordMatchValidator },
   );
 
   private passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
@@ -72,9 +78,13 @@ export class ChangePasswordComponent {
     if (control?.touched && control?.errors) {
       if (control.errors['required']) return this.translate.instant('VALIDATION.REQUIRED');
       if (control.errors['minlength'])
-        return this.translate.instant('VALIDATION.MIN_LENGTH', { min: VALIDATION_RULES.PASSWORD.MIN_LENGTH });
+        return this.translate.instant('VALIDATION.MIN_LENGTH', {
+          min: VALIDATION_RULES.PASSWORD.MIN_LENGTH,
+        });
       if (control.errors['maxlength'])
-        return this.translate.instant('VALIDATION.MAX_LENGTH', { max: VALIDATION_RULES.PASSWORD.MAX_LENGTH });
+        return this.translate.instant('VALIDATION.MAX_LENGTH', {
+          max: VALIDATION_RULES.PASSWORD.MAX_LENGTH,
+        });
       if (controlName === 'confirmNewPassword' && this.form.errors?.['mismatch']) {
         return this.translate.instant('VALIDATION.PASSWORD_MISMATCH');
       }

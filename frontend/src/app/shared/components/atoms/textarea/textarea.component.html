@@ -1,27 +1,36 @@
 <mat-form-field appearance="outline" class="full-width">
   @if (label) {
-  <mat-label>{{ label }}</mat-label>
+    <mat-label>{{ label }}</mat-label>
   }
-  <textarea matInput [rows]="rows" [placeholder]="placeholder" [value]="value" [disabled]="disabled"
-    [required]="required" [attr.maxlength]="maxLength" (input)="onInput($event)" (blur)="onBlur()"></textarea>
+  <textarea
+    matInput
+    [rows]="rows"
+    [placeholder]="placeholder"
+    [value]="value"
+    [disabled]="disabled"
+    [required]="required"
+    [attr.maxlength]="maxLength"
+    (input)="onInput($event)"
+    (blur)="onBlur()"
+  ></textarea>
   @if (showCounter && maxLength) {
-  <mat-hint align="end">{{ currentLength }} / {{ maxLength }}</mat-hint>
+    <mat-hint align="end">{{ currentLength }} / {{ maxLength }}</mat-hint>
   }
 </mat-form-field>
 
 <!-- Validation error messages (rendered outside to force visibility) -->
 @if (errorMessages.length > 0 || (control?.invalid && (control?.dirty || control?.touched))) {
-<div class="custom-error">
-  @for (msg of errorMessages; track msg) {
-  <div class="error-line">{{ msg }}</div>
-  }
-  @if (!errorMessage && control?.invalid && (control?.dirty || control?.touched)) {
-  @if (control?.errors?.['required']) {
-  <div class="error-line">必須項目です</div>
-  }
-  @if (control?.errors?.['maxlength']) {
-  <div class="error-line">{{ maxLength }}文字以内で入力してください</div>
-  }
-  }
-</div>
+  <div class="custom-error">
+    @for (msg of errorMessages; track msg) {
+      <div class="error-line">{{ msg }}</div>
+    }
+    @if (!errorMessage && control?.invalid && (control?.dirty || control?.touched)) {
+      @if (control?.errors?.['required']) {
+        <div class="error-line">必須項目です</div>
+      }
+      @if (control?.errors?.['maxlength']) {
+        <div class="error-line">{{ maxLength }}文字以内で入力してください</div>
+      }
+    }
+  </div>
 }

@@ -1,14 +1,14 @@
 <app-auth-card [title]="'AUTH.SIGNUP_TITLE' | translate">
   <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
-      <app-input
-        [label]="'AUTH.NAME' | translate"
-        type="text"
-        formControlName="name"
-        [required]="true"
-        [maxLength]="VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH"
-        [showCounter]="true"
-        [errorMessage]="fieldErrors['name']"
-      ></app-input>
+    <app-input
+      [label]="'AUTH.NAME' | translate"
+      type="text"
+      formControlName="name"
+      [required]="true"
+      [maxLength]="VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH"
+      [showCounter]="true"
+      [errorMessage]="fieldErrors['name']"
+    ></app-input>
 
     <div class="form-group">
       <app-input
@@ -35,7 +35,13 @@
     </div>
 
     <div class="actions">
-      <app-button variant="primary" type="submit" class="submit-btn" [disabled]="signupForm.invalid">{{ 'AUTH.REGISTER' | translate }}</app-button>
+      <app-button
+        variant="primary"
+        type="submit"
+        class="submit-btn"
+        [disabled]="signupForm.invalid"
+        >{{ 'AUTH.REGISTER' | translate }}</app-button
+      >
     </div>
 
     <app-alert type="error" [message]="errorMessage" class="signup-alert"></app-alert>
@@ -43,9 +49,7 @@
 
   <div footer>
     <div class="footer-actions">
-      <app-link routerLink="/login"
-        >{{ 'AUTH.LOGIN_LINK' | translate }}</app-link
-      >
+      <app-link routerLink="/login">{{ 'AUTH.LOGIN_LINK' | translate }}</app-link>
     </div>
   </div>
 </app-auth-card>

@@ -13,7 +13,14 @@ import { ConfirmDialogComponent } from '../../molecules/confirm-dialog/confirm-d
 @Component({
   selector: 'app-recipe-card',
   standalone: true,
-  imports: [MatCardModule, MatButtonModule, MatIconModule, MatChipsModule, TranslatePipe, RouterModule],
+  imports: [
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatChipsModule,
+    TranslatePipe,
+    RouterModule,
+  ],
   templateUrl: './recipe-card.component.html',
   styleUrl: './recipe-card.component.scss',
 })
@@ -68,4 +75,3 @@ export class RecipeCardComponent {
     return 'https://' + url;
   }
 }
-

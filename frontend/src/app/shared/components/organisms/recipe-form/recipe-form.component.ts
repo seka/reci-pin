@@ -1,4 +1,13 @@
-import { Component, EventEmitter, inject, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -71,8 +80,17 @@ export class RecipeFormComponent implements OnInit, OnChanges {
 
   constructor() {
     this.recipeForm = this.fb.group({
-      name: ['', [Validators.required, Validators.maxLength(VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH)]],
-      url: ['', [Validators.required, Validators.pattern(/^https?:\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}.*|^https?:\/\/localhost.*/)]],
+      name: [
+        '',
+        [Validators.required, Validators.maxLength(VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH)],
+      ],
+      url: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern(/^https?:\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}.*|^https?:\/\/localhost.*/),
+        ],
+      ],
       memo: ['', Validators.maxLength(VALIDATION_RULES.RECIPE.MEMO_MAX_LENGTH)],
       tagIds: [[]],
     });
@@ -172,7 +190,7 @@ export class RecipeFormComponent implements OnInit, OnChanges {
     if (this.recipeForm.valid) {
       this.save.emit({
         formData: this.recipeForm.value as RecipeFormData,
-        file: this.selectedFile
+        file: this.selectedFile,
       });
     }
   }

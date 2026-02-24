@@ -11,46 +11,46 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
 import { AlertComponent } from '../../../shared/components/atoms/alert/alert.component';
 
 @Component({
-    selector: 'app-request-password-reset',
-    standalone: true,
-    imports: [
-        CommonModule,
-        FormsModule,
-        RouterModule,
-        TranslatePipe,
-        AuthCardComponent,
-        InputComponent,
-        ButtonComponent,
-        AlertComponent,
-    ],
-    templateUrl: './request-password-reset.component.html',
-    styleUrls: ['./request-password-reset.component.scss'],
+  selector: 'app-request-password-reset',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    TranslatePipe,
+    AuthCardComponent,
+    InputComponent,
+    ButtonComponent,
+    AlertComponent,
+  ],
+  templateUrl: './request-password-reset.component.html',
+  styleUrls: ['./request-password-reset.component.scss'],
 })
 export class RequestPasswordResetComponent {
-    private readonly authService = inject(AuthService);
-    private readonly translate = inject(TranslateService);
+  private readonly authService = inject(AuthService);
+  private readonly translate = inject(TranslateService);
 
-    email = '';
-    message = '';
-    errorMessage = '';
-    isLoading = false;
-    protected readonly VALIDATION_RULES = VALIDATION_RULES;
+  email = '';
+  message = '';
+  errorMessage = '';
+  isLoading = false;
+  protected readonly VALIDATION_RULES = VALIDATION_RULES;
 
-    onSubmit() {
-        this.isLoading = true;
-        this.message = '';
-        this.errorMessage = '';
+  onSubmit() {
+    this.isLoading = true;
+    this.message = '';
+    this.errorMessage = '';
 
-        this.authService.requestPasswordReset(this.email).subscribe({
-            next: (res) => {
-                this.message = res.message;
-                this.isLoading = false;
-            },
-            error: (err) => {
-                this.errorMessage = this.translate.instant('AUTH.REQUEST_FAILED');
-                this.isLoading = false;
-                console.error(err);
-            },
-        });
-    }
+    this.authService.requestPasswordReset(this.email).subscribe({
+      next: (res) => {
+        this.message = res.message;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.errorMessage = this.translate.instant('AUTH.REQUEST_FAILED');
+        this.isLoading = false;
+        console.error(err);
+      },
+    });
+  }
 }

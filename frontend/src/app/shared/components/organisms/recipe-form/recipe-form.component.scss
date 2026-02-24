@@ -39,7 +39,9 @@ mat-card-title {
   padding: var(--spacing-3);
   text-align: center;
   cursor: pointer;
-  transition: border-color 0.2s, background-color 0.2s;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
   display: flex;
   flex-direction: column;
   align-items: center;

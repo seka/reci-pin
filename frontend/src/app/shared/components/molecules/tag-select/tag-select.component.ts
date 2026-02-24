@@ -1,9 +1,17 @@
 import { Component, Input, forwardRef, inject, ElementRef, ViewChild, OnInit } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormControl, ReactiveFormsModule } from '@angular/forms';
+import {
+  ControlValueAccessor,
+  NG_VALUE_ACCESSOR,
+  FormControl,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { Tag, RecipeService } from '../../../../core/services/recipe.service';
 import { CommonModule } from '@angular/common';
 import { MatChipsModule, MatChipInputEvent } from '@angular/material/chips';
-import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import {
+  MatAutocompleteModule,
+  MatAutocompleteSelectedEvent,
+} from '@angular/material/autocomplete';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
@@ -44,14 +52,14 @@ export class TagSelectComponent implements ControlValueAccessor, OnInit {
   private readonly recipeService = inject(RecipeService);
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  onChange: (value: number[]) => void = () => { };
+  onChange: (value: number[]) => void = () => {};
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  onTouched: () => void = () => { };
+  onTouched: () => void = () => {};
 
   constructor() {
     this.filteredTags = this.tagCtrl.valueChanges.pipe(
       startWith(null),
-      map((tag: string | null) => (tag ? this.filter(tag) : this.getUnselectedTags()))
+      map((tag: string | null) => (tag ? this.filter(tag) : this.getUnselectedTags())),
     );
   }
 
@@ -65,7 +73,7 @@ export class TagSelectComponent implements ControlValueAccessor, OnInit {
   }
 
   private getUnselectedTags(): Tag[] {
-    return this.tags.filter(tag => !this.selectedTagIds.includes(tag.id));
+    return this.tags.filter((tag) => !this.selectedTagIds.includes(tag.id));
   }
 
   add(event: MatChipInputEvent): void {
@@ -92,7 +100,7 @@ export class TagSelectComponent implements ControlValueAccessor, OnInit {
             event.chipInput!.clear();
             this.tagCtrl.setValue(null);
           },
-          error: (err) => console.error('Failed to create tag', err)
+          error: (err) => console.error('Failed to create tag', err),
         });
         return; // Return early to avoid clearing input before async op completes (though we clear it in subscribe)
       }
@@ -126,9 +134,9 @@ export class TagSelectComponent implements ControlValueAccessor, OnInit {
     // If value is a Tag object (from autocomplete selection), use its name, otherwise use the string
     const filterValue = (typeof value === 'string' ? value : value?.name || '').toLowerCase();
 
-    return this.tags.filter((tag) =>
-      tag.name.toLowerCase().includes(filterValue) &&
-      !this.selectedTagIds.includes(tag.id)
+    return this.tags.filter(
+      (tag) =>
+        tag.name.toLowerCase().includes(filterValue) && !this.selectedTagIds.includes(tag.id),
     );
   }
 

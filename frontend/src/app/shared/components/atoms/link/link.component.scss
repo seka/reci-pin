@@ -4,7 +4,9 @@
 .link {
   color: var(--color-primary);
   text-decoration: none;
-  transition: text-decoration 0.2s, color 0.2s;
+  transition:
+    text-decoration 0.2s,
+    color 0.2s;
   cursor: pointer;
 }
 .link:hover {

@@ -11,8 +11,7 @@ const meta: Meta<TagSelectComponent> = {
       imports: [BrowserAnimationsModule],
     }),
   ],
-  argTypes: {
-  },
+  argTypes: {},
 };
 
 export default meta;

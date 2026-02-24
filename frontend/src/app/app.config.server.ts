@@ -11,9 +11,9 @@ const serverConfig: ApplicationConfig = {
     provideServerRendering(withRoutes(serverRoutes)),
     {
       provide: TranslateLoader,
-      useClass: TranslateServerLoader
-    }
-  ]
+      useClass: TranslateServerLoader,
+    },
+  ],
 };
 
 export const config = mergeApplicationConfig(appConfig, serverConfig);

@@ -10,7 +10,14 @@ import { LinkComponent } from '../../shared/components/atoms/link/link.component
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [AsyncPipe, RouterModule, TranslatePipe, ButtonComponent, HeadlineComponent, LinkComponent],
+  imports: [
+    AsyncPipe,
+    RouterModule,
+    TranslatePipe,
+    ButtonComponent,
+    HeadlineComponent,
+    LinkComponent,
+  ],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
 })

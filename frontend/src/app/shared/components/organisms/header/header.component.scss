@@ -37,8 +37,9 @@
   color: inherit;
   font-weight: 500;
   transition: color 0.2s;
-  
-  &.active, &:hover {
+
+  &.active,
+  &:hover {
     color: #333;
     font-weight: 700;
   }

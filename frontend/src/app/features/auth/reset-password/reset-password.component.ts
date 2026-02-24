@@ -11,66 +11,66 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
 import { AlertComponent } from '../../../shared/components/atoms/alert/alert.component';
 
 @Component({
-    selector: 'app-reset-password',
-    standalone: true,
-    imports: [
-        CommonModule,
-        FormsModule,
-        RouterModule,
-        TranslatePipe,
-        AuthCardComponent,
-        InputComponent,
-        ButtonComponent,
-        AlertComponent,
-    ],
-    templateUrl: './reset-password.component.html',
-    styleUrls: ['./reset-password.component.scss'],
+  selector: 'app-reset-password',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    TranslatePipe,
+    AuthCardComponent,
+    InputComponent,
+    ButtonComponent,
+    AlertComponent,
+  ],
+  templateUrl: './reset-password.component.html',
+  styleUrls: ['./reset-password.component.scss'],
 })
 export class ResetPasswordComponent implements OnInit {
-    private readonly authService = inject(AuthService);
-    private readonly route = inject(ActivatedRoute);
-    private readonly router = inject(Router);
-    private readonly translate = inject(TranslateService);
+  private readonly authService = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly translate = inject(TranslateService);
 
-    token = '';
-    newPassword = '';
-    message = '';
-    errorMessage = '';
-    isLoading = false;
-    protected readonly VALIDATION_RULES = VALIDATION_RULES;
+  token = '';
+  newPassword = '';
+  message = '';
+  errorMessage = '';
+  isLoading = false;
+  protected readonly VALIDATION_RULES = VALIDATION_RULES;
 
-    ngOnInit() {
-        this.route.queryParams.subscribe((params) => {
-            this.token = params['token'] || '';
-            if (!this.token) {
-                this.errorMessage = this.translate.instant('AUTH.INVALID_LINK');
-            }
-        });
+  ngOnInit() {
+    this.route.queryParams.subscribe((params) => {
+      this.token = params['token'] || '';
+      if (!this.token) {
+        this.errorMessage = this.translate.instant('AUTH.INVALID_LINK');
+      }
+    });
+  }
+
+  onSubmit() {
+    if (!this.token) {
+      this.errorMessage = this.translate.instant('AUTH.MISSING_TOKEN');
+      return;
     }
 
-    onSubmit() {
-        if (!this.token) {
-            this.errorMessage = this.translate.instant('AUTH.MISSING_TOKEN');
-            return;
-        }
+    this.isLoading = true;
+    this.message = '';
+    this.errorMessage = '';
 
-        this.isLoading = true;
-        this.message = '';
-        this.errorMessage = '';
-
-        this.authService.resetPassword(this.token, this.newPassword).subscribe({
-            next: (res) => {
-                this.message = res.message;
-                this.isLoading = false;
-                setTimeout(() => {
-                    this.router.navigate(['/login']);
-                }, 3000);
-            },
-            error: (err) => {
-                this.errorMessage = this.translate.instant('AUTH.RESET_FAILED_EXPIRED');
-                this.isLoading = false;
-                console.error(err);
-            },
-        });
-    }
+    this.authService.resetPassword(this.token, this.newPassword).subscribe({
+      next: (res) => {
+        this.message = res.message;
+        this.isLoading = false;
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 3000);
+      },
+      error: (err) => {
+        this.errorMessage = this.translate.instant('AUTH.RESET_FAILED_EXPIRED');
+        this.isLoading = false;
+        console.error(err);
+      },
+    });
+  }
 }

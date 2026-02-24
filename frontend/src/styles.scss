@@ -4,53 +4,63 @@
 @include mat.core();
 
 // Define a custom typography config that applies the global font
-$pop-typography: mat.m2-define-typography-config($font-family: "'M PLUS Rounded 1c', sans-serif",
-    $headline-1: mat.m2-define-typography-level(112px,
+$pop-typography: mat.m2-define-typography-config(
+  $font-family: "'M PLUS Rounded 1c', sans-serif",
+  $headline-1: mat.m2-define-typography-level(
+      112px,
       112px,
       300,
       $font-family: "'M PLUS Rounded 1c', sans-serif"
     ),
-    $headline-2: mat.m2-define-typography-level(56px,
+  $headline-2: mat.m2-define-typography-level(
+      56px,
       56px,
       400,
       $font-family: "'M PLUS Rounded 1c', sans-serif"
     ),
-    $headline-3: mat.m2-define-typography-level(45px,
+  $headline-3: mat.m2-define-typography-level(
+      45px,
       48px,
       400,
       $font-family: "'M PLUS Rounded 1c', sans-serif"
     ),
-    $headline-4: mat.m2-define-typography-level(34px,
+  $headline-4: mat.m2-define-typography-level(
+      34px,
       40px,
       400,
       $font-family: "'M PLUS Rounded 1c', sans-serif"
     ),
-    $headline-5: mat.m2-define-typography-level(24px,
+  $headline-5: mat.m2-define-typography-level(
+      24px,
       32px,
       400,
       $font-family: "'M PLUS Rounded 1c', sans-serif"
     ),
-    $headline-6: mat.m2-define-typography-level(20px,
+  $headline-6: mat.m2-define-typography-level(
+      20px,
       32px,
       400,
       $font-family: "'M PLUS Rounded 1c', sans-serif"
     ),
-    $subtitle-1: mat.m2-define-typography-level(16px,
+  $subtitle-1: mat.m2-define-typography-level(
+      16px,
       28px,
       400,
       $font-family: "'M PLUS Rounded 1c', sans-serif"
     ),
-    $body-1: mat.m2-define-typography-level(14px,
+  $body-1: mat.m2-define-typography-level(
+      14px,
       20px,
       400,
       $font-family: "'M PLUS Rounded 1c', sans-serif"
     ),
-    $button: mat.m2-define-typography-level(14px,
+  $button: mat.m2-define-typography-level(
+      14px,
       36px,
       500,
       $font-family: "'M PLUS Rounded 1c', sans-serif"
     ),
-  );
+);
 
 // Define your application's custom theme.
 // Define your application's custom theme.
@@ -73,7 +83,8 @@ $terracotta-palette: (
   A200: #ffeae6,
   A400: #ffb8b3,
   A700: #ff9e99,
-  contrast: (50: #000000,
+  contrast: (
+    50: #000000,
     100: #000000,
     200: #000000,
     300: #000000,
@@ -107,7 +118,8 @@ $teal-pop-palette: (
   A200: #eafff8,
   A400: #b7ffdf,
   A700: #9dffd3,
-  contrast: (50: #000000,
+  contrast: (
+    50: #000000,
     100: #000000,
     200: #000000,
     300: #000000,
@@ -128,13 +140,17 @@ $pop-primary: mat.m2-define-palette($terracotta-palette, 500);
 $pop-accent: mat.m2-define-palette($teal-pop-palette, 500, A200, A400);
 $pop-warn: mat.m2-define-palette(mat.$m2-red-palette);
 
-$pop-theme: mat.m2-define-light-theme((color: (primary: $pop-primary,
-        accent: $pop-accent,
-        warn: $pop-warn,
-      ),
-      typography: $pop-typography,
-      density: 0,
-    ));
+$pop-theme: mat.m2-define-light-theme(
+  (
+    color: (
+      primary: $pop-primary,
+      accent: $pop-accent,
+      warn: $pop-warn,
+    ),
+    typography: $pop-typography,
+    density: 0,
+  )
+);
 
 // Apply the theme to the Angular Material components
 @include mat.all-component-themes($pop-theme);

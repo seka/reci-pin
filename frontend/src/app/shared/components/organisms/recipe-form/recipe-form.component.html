@@ -42,11 +42,7 @@
           ></app-textarea>
         </div>
 
-        <app-tag-select
-          [tags]="tags"
-          formControlName="tagIds"
-        >
-        </app-tag-select>
+        <app-tag-select [tags]="tags" formControlName="tagIds"> </app-tag-select>
 
         <!-- Image Upload -->
         <div class="image-upload-section">
@@ -60,16 +56,8 @@
             (click)="fileInput.click()"
           >
             @if (imagePreview) {
-              <img
-                [src]="imagePreview"
-                alt="Preview"
-                class="preview-image"
-              />
-              <button
-                type="button"
-                class="remove-btn"
-                (click)="removeImage($event)"
-              >
+              <img [src]="imagePreview" alt="Preview" class="preview-image" />
+              <button type="button" class="remove-btn" (click)="removeImage($event)">
                 <mat-icon>close</mat-icon>
               </button>
             } @else {
@@ -91,9 +79,9 @@
         </div>
 
         <div class="actions">
-          <app-button type="button" routerLink="/recipes" variant="warn" class="action-btn"
-            >{{ 'COMMON.CANCEL' | translate }}</app-button
-          >
+          <app-button type="button" routerLink="/recipes" variant="warn" class="action-btn">{{
+            'COMMON.CANCEL' | translate
+          }}</app-button>
           <app-button
             type="submit"
             variant="primary"

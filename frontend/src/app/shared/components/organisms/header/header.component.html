@@ -3,9 +3,13 @@
     <app-logo size="medium"></app-logo>
     <div class="actions">
       <div class="lang-switcher">
-        <button class="lang-btn" [class.active]="currentLang === 'ja'" (click)="switchLang('ja')">JP</button>
+        <button class="lang-btn" [class.active]="currentLang === 'ja'" (click)="switchLang('ja')">
+          JP
+        </button>
         <span class="divider">/</span>
-        <button class="lang-btn" [class.active]="currentLang === 'en'" (click)="switchLang('en')">EN</button>
+        <button class="lang-btn" [class.active]="currentLang === 'en'" (click)="switchLang('en')">
+          EN
+        </button>
       </div>
       @if (currentUser$ | async; as user) {
         <div class="user-actions">

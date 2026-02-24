@@ -18,7 +18,7 @@ export class App {
 
   constructor(
     private translate: TranslateService,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
   ) {
     this.translate.addLangs(['ja', 'en']);
     this.translate.setDefaultLang('ja');

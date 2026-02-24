@@ -5,7 +5,10 @@ import { CommonModule, AsyncPipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { SearchModeToggleComponent } from '../../shared/components/molecules/search-mode-toggle/search-mode-toggle.component';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import {
+  MatAutocompleteModule,
+  MatAutocompleteSelectedEvent,
+} from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Observable, startWith, map } from 'rxjs';
@@ -39,7 +42,7 @@ import { EmptyStateComponent } from '../../shared/components/molecules/empty-sta
     ButtonComponent,
     InputComponent,
     SearchBarComponent,
-    EmptyStateComponent
+    EmptyStateComponent,
   ],
   templateUrl: './recipes.component.html',
   styleUrl: './recipes.component.scss',
@@ -66,9 +69,9 @@ export class RecipesComponent implements OnInit {
       startWith(null),
       map((tag: string | null | Tag) => {
         // Handle both string input and Tag object selection
-        const filterValue = typeof tag === 'string' ? tag : (tag?.name || '');
+        const filterValue = typeof tag === 'string' ? tag : tag?.name || '';
         return filterValue ? this.filterTags(filterValue) : this.getUnselectedTags();
-      })
+      }),
     );
   }
 
@@ -91,25 +94,25 @@ export class RecipesComponent implements OnInit {
     });
   }
 
-
-
   search() {
     const query = this.searchMode === 'keyword' ? this.searchQuery : '';
     const tagIds = this.searchMode === 'tag' ? this.selectedTagIds : [];
 
-    this.recipeService.searchRecipes({
-      query: query || '',
-      tagIds: tagIds,
-    }).subscribe({
-      next: (recipes) => (this.recipes = recipes),
-      error: (err: Error) => console.error('Failed to search recipes', err),
-    });
+    this.recipeService
+      .searchRecipes({
+        query: query || '',
+        tagIds: tagIds,
+      })
+      .subscribe({
+        next: (recipes) => (this.recipes = recipes),
+        error: (err: Error) => console.error('Failed to search recipes', err),
+      });
   }
 
   onDeleteRecipe(id: number): void {
     this.recipeService.deleteRecipe(id).subscribe({
       next: () => {
-        this.recipes = this.recipes.filter(r => r.id !== id);
+        this.recipes = this.recipes.filter((r) => r.id !== id);
       },
       error: (err: Error) => console.error('Failed to delete recipe', err),
     });
@@ -123,7 +126,7 @@ export class RecipesComponent implements OnInit {
     // If matches an existing tag, select it
     if (value) {
       const existingTag = this.availableTags.find(
-        tag => tag.name.toLowerCase() === value.toLowerCase()
+        (tag) => tag.name.toLowerCase() === value.toLowerCase(),
       );
 
       if (existingTag && !this.selectedTagIds.includes(existingTag.id)) {
@@ -160,13 +163,13 @@ export class RecipesComponent implements OnInit {
 
   private filterTags(value: string): Tag[] {
     const filterValue = value.toLowerCase();
-    return this.availableTags.filter((tag) =>
-      tag.name.toLowerCase().includes(filterValue) &&
-      !this.selectedTagIds.includes(tag.id)
+    return this.availableTags.filter(
+      (tag) =>
+        tag.name.toLowerCase().includes(filterValue) && !this.selectedTagIds.includes(tag.id),
     );
   }
 
   private getUnselectedTags(): Tag[] {
-    return this.availableTags.filter(tag => !this.selectedTagIds.includes(tag.id));
+    return this.availableTags.filter((tag) => !this.selectedTagIds.includes(tag.id));
   }
 }

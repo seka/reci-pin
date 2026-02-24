@@ -26,19 +26,23 @@ describe('guestGuard', () => {
 
   it('should return true if user is not logged in', () => {
     mockAuthService.isLoggedIn.mockReturnValue(false);
-    
+
     // Injector のコンテキスト内で guard を実行
-    const result = runInInjectionContext(injector, () => guestGuard(undefined as any, undefined as any));
-    
+    const result = runInInjectionContext(injector, () =>
+      guestGuard(undefined as any, undefined as any),
+    );
+
     expect(result).toBe(true);
     expect(mockRouter.navigate).not.toHaveBeenCalled();
   });
 
   it('should return false and navigate to /recipes if user is logged in', () => {
     mockAuthService.isLoggedIn.mockReturnValue(true);
-    
-    const result = runInInjectionContext(injector, () => guestGuard(undefined as any, undefined as any));
-    
+
+    const result = runInInjectionContext(injector, () =>
+      guestGuard(undefined as any, undefined as any),
+    );
+
     expect(result).toBe(false);
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/recipes']);
   });
