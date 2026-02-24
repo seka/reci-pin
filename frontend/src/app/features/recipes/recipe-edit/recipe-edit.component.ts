@@ -11,7 +11,7 @@ import { RecipeFormComponent, RecipeFormSubmitEvent, RecipeFormData } from '../.
     imports: [CommonModule, RecipeFormComponent],
     template: `
     @if (isLoading) {
-      <div style="text-align: center; padding: 2rem;">Loading...</div>
+      <div class="loading-container">Loading...</div>
     } @else {
       <app-recipe-form
         titleKey="RECIPE.EDIT_TITLE"
@@ -24,6 +24,14 @@ import { RecipeFormComponent, RecipeFormSubmitEvent, RecipeFormData } from '../.
       ></app-recipe-form>
     }
   `,
+  styles: [
+    `
+      .loading-container {
+        text-align: center;
+        padding: var(--spacing-4);
+      }
+    `,
+  ],
 })
 export class RecipeEditComponent implements OnInit {
     private readonly recipeService = inject(RecipeService);

@@ -7,6 +7,7 @@ import { AuthCardComponent } from '../../../shared/components/organisms/auth-car
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
 import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
 import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
+import { AlertComponent } from '../../../shared/components/atoms/alert/alert.component';
 
 @Component({
   selector: 'app-signup',
@@ -19,6 +20,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
     AuthCardComponent,
     InputComponent,
     ButtonComponent,
+    AlertComponent,
   ],
   template: `
     <app-auth-card [title]="'AUTH.SIGNUP_TITLE' | translate">
@@ -33,7 +35,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
             [errorMessage]="fieldErrors['name']"
           ></app-input>
 
-        <div style="margin-top: var(--spacing-2);">
+        <div class="form-group">
           <app-input
             [label]="'AUTH.EMAIL' | translate"
             type="email"
@@ -45,7 +47,7 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
           ></app-input>
         </div>
 
-        <div style="margin-top: var(--spacing-2);">
+        <div class="form-group">
           <app-input
             [label]="'AUTH.PASSWORD' | translate"
             type="password"
@@ -61,22 +63,26 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
           <app-button variant="primary" type="submit" class="submit-btn" [disabled]="signupForm.invalid">{{ 'AUTH.REGISTER' | translate }}</app-button>
         </div>
 
-        @if (errorMessage) {
-          <p class="error">{{ errorMessage }}</p>
-        }
+        <app-alert type="error" [message]="errorMessage" class="signup-alert"></app-alert>
       </form>
 
       <div footer>
-        <a routerLink="/login" style="text-decoration: none;">
-          <app-button variant="accent" type="button" class="full-width-btn"
-            >{{ 'AUTH.LOGIN_LINK' | translate }}</app-button
+        <div class="footer-actions">
+          <app-link routerLink="/login"
+            >{{ 'AUTH.LOGIN_LINK' | translate }}</app-link
           >
-        </a>
+        </div>
       </div>
     </app-auth-card>
   `,
   styles: [
     `
+      .form-group {
+        margin-top: var(--spacing-2);
+      }
+      .footer-actions {
+        margin-top: var(--spacing-2);
+      }
       .actions {
         margin-top: var(--spacing-3);
         margin-bottom: var(--spacing-2);
@@ -91,11 +97,8 @@ import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
       .full-width-btn {
         width: 100%;
       }
-      .error {
-        color: var(--color-error);
-        margin-top: var(--spacing-2);
-        text-align: left !important;
-        width: 100%;
+      .signup-alert {
+        text-align: left;
       }
     `,
   ],

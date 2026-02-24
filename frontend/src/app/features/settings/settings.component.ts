@@ -5,15 +5,16 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { ButtonComponent } from '../../shared/components/atoms/button/button.component';
 import { HeadlineComponent } from '../../shared/components/atoms/headline/headline.component';
+import { LinkComponent } from '../../shared/components/atoms/link/link.component';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [AsyncPipe, RouterModule, TranslatePipe, ButtonComponent, HeadlineComponent],
+  imports: [AsyncPipe, RouterModule, TranslatePipe, ButtonComponent, HeadlineComponent, LinkComponent],
   template: `
     <div class="settings-container">
       <div class="back-link">
-        <a routerLink="/recipes">{{ 'SETTINGS.BACK_TO_RECIPES' | translate }}</a>
+        <app-link routerLink="/recipes">{{ 'SETTINGS.BACK_TO_RECIPES' | translate }}</app-link>
       </div>
 
       <app-headline level="1">{{ 'SETTINGS.TITLE' | translate }}</app-headline>
@@ -28,9 +29,7 @@ import { HeadlineComponent } from '../../shared/components/atoms/headline/headli
           </div>
         }
         <div class="account-actions">
-          <a routerLink="/settings/password" style="text-decoration: none;">
-            <app-button variant="outline">{{ 'SETTINGS.CHANGE_PASSWORD_BUTTON' | translate }}</app-button>
-          </a>
+          <app-button routerLink="/settings/password" variant="outline">{{ 'SETTINGS.CHANGE_PASSWORD_BUTTON' | translate }}</app-button>
         </div>
       </section>
 
@@ -81,15 +80,6 @@ import { HeadlineComponent } from '../../shared/components/atoms/headline/headli
 
       .back-link {
         margin-bottom: var(--spacing-2);
-      }
-
-      .back-link a {
-        color: var(--color-primary);
-        text-decoration: none;
-      }
-
-      .back-link a:hover {
-        text-decoration: underline;
       }
     `,
   ],

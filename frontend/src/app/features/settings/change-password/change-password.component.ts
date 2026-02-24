@@ -14,6 +14,8 @@ import { ButtonComponent } from '../../../shared/components/atoms/button/button.
 import { HeadlineComponent } from '../../../shared/components/atoms/headline/headline.component';
 import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { LinkComponent } from '../../../shared/components/atoms/link/link.component';
+import { AlertComponent } from '../../../shared/components/atoms/alert/alert.component';
 
 @Component({
   selector: 'app-change-password',
@@ -26,11 +28,13 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
     ButtonComponent,
     HeadlineComponent,
     TranslatePipe,
+    LinkComponent,
+    AlertComponent,
   ],
   template: `
     <div class="change-password-container">
       <div class="back-link">
-        <a routerLink="/settings">{{ 'SETTINGS.BACK_TO_SETTINGS' | translate }}</a>
+        <app-link routerLink="/settings">{{ 'SETTINGS.BACK_TO_SETTINGS' | translate }}</app-link>
       </div>
 
       <app-headline level="1">{{ 'SETTINGS.CHANGE_PASSWORD_TITLE' | translate }}</app-headline>
@@ -45,7 +49,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
           [maxLength]="VALIDATION_RULES.PASSWORD.MAX_LENGTH"
         ></app-input>
         <p class="forgot-password-link">
-          <a routerLink="/password-reset/request">{{ 'AUTH.FORGOT_PASSWORD' | translate }}</a>
+          <app-link routerLink="/password-reset/request">{{ 'AUTH.FORGOT_PASSWORD' | translate }}</app-link>
         </p>
 
         <app-input
@@ -74,7 +78,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
           </app-button>
         </div>
 
-        <p *ngIf="errorMessage" class="error-global">{{ errorMessage }}</p>
+        <app-alert type="error" [message]="errorMessage"></app-alert>
       </form>
     </div>
   `,
@@ -88,15 +92,6 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
       .back-link {
         margin-bottom: var(--spacing-2);
-      }
-
-      .back-link a {
-        color: var(--color-primary);
-        text-decoration: none;
-      }
-
-      .back-link a:hover {
-        text-decoration: underline;
       }
 
       .password-form {
@@ -124,23 +119,8 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
         text-align: left;
       }
 
-      .forgot-password-link a {
-        color: var(--color-primary);
-        text-decoration: none;
-      }
-
-      .forgot-password-link a:hover {
-        text-decoration: underline;
-      }
-
       .actions {
         margin-top: var(--spacing-1);
-      }
-
-      .error-global {
-        color: var(--color-error);
-        margin-top: var(--spacing-1_5);
-        font-weight: bold;
       }
     `,
   ],
