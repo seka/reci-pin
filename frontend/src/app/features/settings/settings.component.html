@@ -1,0 +1,30 @@
+<div class="settings-container">
+  <div class="back-link">
+    <app-link routerLink="/recipes">{{ 'SETTINGS.BACK_TO_RECIPES' | translate }}</app-link>
+  </div>
+
+  <app-headline level="1">{{ 'SETTINGS.TITLE' | translate }}</app-headline>
+
+  <section class="settings-section">
+    <app-headline level="2">{{ 'SETTINGS.ACCOUNT' | translate }}</app-headline>
+
+    @if (currentUser$ | async; as user) {
+      <div class="user-info">
+        <p><strong>{{ 'SETTINGS.NAME' | translate }}:</strong> {{ user.name }}</p>
+        <p><strong>{{ 'SETTINGS.EMAIL' | translate }}:</strong> {{ user.email }}</p>
+      </div>
+    }
+    <div class="account-actions">
+      <app-button routerLink="/settings/password" variant="outline">{{ 'SETTINGS.CHANGE_PASSWORD_BUTTON' | translate }}</app-button>
+    </div>
+  </section>
+
+  <section class="settings-section danger-zone">
+    <app-headline level="2">{{ 'SETTINGS.WITHDRAW_TITLE' | translate }}</app-headline>
+    <p class="warning-text" [innerHTML]="'SETTINGS.WITHDRAW_WARNING' | translate">
+    </p>
+    <app-button variant="warn" (click)="onWithdraw()" [disabled]="isProcessing">
+      {{ isProcessing ? ('SETTINGS.WITHDRAWING' | translate) : ('SETTINGS.WITHDRAW_BUTTON' | translate) }}
+    </app-button>
+  </section>
+</div>
