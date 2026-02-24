@@ -1,18 +1,18 @@
-<app-auth-card [title]="'AUTH.SIGNUP_TITLE' | translate">
+<app-auth-card [title]="'FEATURES.AUTH.SIGNUP.TITLE' | translate">
   <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
     <app-input
-      [label]="'AUTH.NAME' | translate"
+      [label]="'FEATURES.AUTH.SIGNUP.NAME' | translate"
       type="text"
       formControlName="name"
       [required]="true"
-      [maxLength]="VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH"
+      [maxLength]="VALIDATION_RULES.COMPONENTS.ORGANISMS.RECIPE_FORM.NAME_MAX_LENGTH"
       [showCounter]="true"
       [errorMessage]="fieldErrors['name']"
     ></app-input>
 
     <div class="form-group">
       <app-input
-        [label]="'AUTH.EMAIL' | translate"
+        [label]="'FEATURES.AUTH.SIGNUP.EMAIL' | translate"
         type="email"
         formControlName="email"
         [required]="true"
@@ -24,7 +24,7 @@
 
     <div class="form-group">
       <app-input
-        [label]="'AUTH.PASSWORD' | translate"
+        [label]="'FEATURES.AUTH.SIGNUP.PASSWORD' | translate"
         type="password"
         formControlName="password"
         [required]="true"
@@ -40,7 +40,7 @@
         type="submit"
         class="submit-btn"
         [disabled]="signupForm.invalid"
-        >{{ 'AUTH.REGISTER' | translate }}</app-button
+        >{{ 'FEATURES.AUTH.SIGNUP.SUBMIT' | translate }}</app-button
       >
     </div>
 
@@ -49,7 +49,7 @@
 
   <div footer>
     <div class="footer-actions">
-      <app-link routerLink="/login">{{ 'AUTH.LOGIN_LINK' | translate }}</app-link>
+      <app-link routerLink="/login">{{ 'FEATURES.AUTH.SIGNUP.GO_TO_LOGIN' | translate }}</app-link>
     </div>
   </div>
 </app-auth-card>

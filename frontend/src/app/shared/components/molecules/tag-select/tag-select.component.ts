@@ -16,6 +16,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { Observable, startWith, map } from 'rxjs';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-tag-select',
@@ -27,6 +28,7 @@ import { Observable, startWith, map } from 'rxjs';
     MatAutocompleteModule,
     MatIconModule,
     MatFormFieldModule,
+    TranslatePipe,
   ],
   providers: [
     {

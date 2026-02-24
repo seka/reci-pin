@@ -29,18 +29,18 @@ export class SettingsComponent {
   isProcessing = false;
 
   onWithdraw(): void {
-    if (!confirm(this.translate.instant('SETTINGS.WITHDRAW_CONFIRM'))) {
+    if (!confirm(this.translate.instant('FEATURES.SETTINGS.SETTINGS.WITHDRAW_CONFIRM'))) {
       return;
     }
 
     this.isProcessing = true;
     this.authService.withdraw().subscribe({
       next: () => {
-        alert(this.translate.instant('SETTINGS.WITHDRAW_SUCCESS'));
+        alert(this.translate.instant('FEATURES.SETTINGS.SETTINGS.WITHDRAW_SUCCESS'));
       },
       error: (err: Error) => {
         this.isProcessing = false;
-        alert(this.translate.instant('SETTINGS.WITHDRAW_FAILED'));
+        alert(this.translate.instant('FEATURES.SETTINGS.SETTINGS.WITHDRAW_FAILED'));
         console.error('Withdraw error:', err);
       },
     });

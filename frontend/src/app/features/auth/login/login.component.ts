@@ -71,7 +71,7 @@ export class LoginComponent implements OnInit {
         this.router.navigate(['/recipes']);
       },
       error: () => {
-        this.errorMessage = this.translate.instant('AUTH.LOGIN_FAILED');
+        this.errorMessage = this.translate.instant('FEATURES.AUTH.LOGIN.FAILED');
       },
     });
   }

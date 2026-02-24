@@ -43,14 +43,14 @@ export class ResetPasswordComponent implements OnInit {
     this.route.queryParams.subscribe((params) => {
       this.token = params['token'] || '';
       if (!this.token) {
-        this.errorMessage = this.translate.instant('AUTH.INVALID_LINK');
+        this.errorMessage = this.translate.instant('FEATURES.AUTH.RESET_PASSWORD.INVALID_LINK');
       }
     });
   }
 
   onSubmit() {
     if (!this.token) {
-      this.errorMessage = this.translate.instant('AUTH.MISSING_TOKEN');
+      this.errorMessage = this.translate.instant('FEATURES.AUTH.RESET_PASSWORD.MISSING_TOKEN');
       return;
     }
 
@@ -67,7 +67,7 @@ export class ResetPasswordComponent implements OnInit {
         }, 3000);
       },
       error: (err) => {
-        this.errorMessage = this.translate.instant('AUTH.RESET_FAILED_EXPIRED');
+        this.errorMessage = this.translate.instant('FEATURES.AUTH.RESET_PASSWORD.FAILED_EXPIRED');
         this.isLoading = false;
         console.error(err);
       },

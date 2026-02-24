@@ -1,6 +1,6 @@
 <div class="tags-section">
-  <span class="section-label" id="tag-select-label">{{ 'TAG.SELECT_LABEL' | translate }}</span>
-  <p class="helper-text">{{ 'TAG.SELECT_HELPER' | translate }}</p>
+  <span class="section-label" id="tag-select-label">{{ 'COMPONENTS.MOLECULES.TAG_SELECT.LABEL' | translate }}</span>
+  <p class="helper-text">{{ 'COMPONENTS.MOLECULES.TAG_SELECT.HELPER' | translate }}</p>
 
   <mat-form-field class="tag-chip-list" appearance="outline">
     <mat-label>{{ 'COMMON.TAG' | translate }}</mat-label>
@@ -14,7 +14,7 @@
         </mat-chip-row>
       }
       <input
-        [placeholder]="'TAG.NEW_PLACEHOLDER' | translate"
+        [placeholder]="'COMPONENTS.MOLECULES.TAG_SELECT.NEW_PLACEHOLDER' | translate"
         #tagInput
         [formControl]="tagCtrl"
         [matChipInputFor]="chipGrid"

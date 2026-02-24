@@ -109,16 +109,16 @@ export class ChangePasswordComponent {
       })
       .subscribe({
         next: () => {
-          alert(this.translate.instant('SETTINGS.PASSWORD_CHANGED'));
+          alert(this.translate.instant('FEATURES.SETTINGS.CHANGE_PASSWORD.SUCCESS'));
           this.router.navigate(['/settings']);
         },
         error: (err) => {
           this.isProcessing = false;
           // Backend returns bad request for incorrect password or validation errors
           if (err.status === 400 || err.status === 401) {
-            this.errorMessage = this.translate.instant('SETTINGS.CHANGE_FAILED_INVALID');
+            this.errorMessage = this.translate.instant('FEATURES.SETTINGS.CHANGE_PASSWORD.FAILED_INVALID');
           } else {
-            this.errorMessage = this.translate.instant('SETTINGS.CHANGE_FAILED_ERROR');
+            this.errorMessage = this.translate.instant('FEATURES.SETTINGS.CHANGE_PASSWORD.FAILED_ERROR');
           }
           console.error(err);
         },

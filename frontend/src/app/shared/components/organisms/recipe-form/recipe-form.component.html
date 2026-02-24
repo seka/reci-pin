@@ -9,9 +9,9 @@
       <form [formGroup]="recipeForm" (ngSubmit)="onSubmit()">
         <div class="form-group">
           <app-input
-            [label]="'RECIPE.NAME' | translate"
+            [label]="'COMPONENTS.ORGANISMS.RECIPE_FORM.NAME' | translate"
             formControlName="name"
-            [placeholder]="'RECIPE.NAME_PLACEHOLDER' | translate"
+            [placeholder]="'COMPONENTS.ORGANISMS.RECIPE_FORM.NAME_PLACEHOLDER' | translate"
             [required]="true"
             [maxLength]="VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH"
             [showCounter]="true"
@@ -32,9 +32,9 @@
 
         <div class="form-group">
           <app-textarea
-            [label]="'RECIPE.MEMO' | translate"
+            [label]="'COMPONENTS.ORGANISMS.RECIPE_FORM.MEMO' | translate"
             formControlName="memo"
-            [placeholder]="'RECIPE.MEMO_PLACEHOLDER' | translate"
+            [placeholder]="'COMPONENTS.ORGANISMS.RECIPE_FORM.MEMO_PLACEHOLDER' | translate"
             [rows]="4"
             [maxLength]="VALIDATION_RULES.RECIPE.MEMO_MAX_LENGTH"
             [showCounter]="true"
@@ -46,7 +46,7 @@
 
         <!-- Image Upload -->
         <div class="image-upload-section">
-          <label class="upload-label">{{ 'RECIPE.IMAGE' | translate }}</label>
+          <label class="upload-label">{{ 'COMPONENTS.ORGANISMS.RECIPE_FORM.IMAGE' | translate }}</label>
           <div
             class="dropzone"
             [class.dragover]="isDragover"
@@ -62,8 +62,8 @@
               </button>
             } @else {
               <mat-icon class="upload-icon">cloud_upload</mat-icon>
-              <p class="upload-text">{{ 'RECIPE.IMAGE_DROP_HINT' | translate }}</p>
-              <p class="upload-subtext">{{ 'RECIPE.IMAGE_FORMAT_HINT' | translate }}</p>
+              <p class="upload-text">{{ 'COMPONENTS.ORGANISMS.RECIPE_FORM.IMAGE_DROP_HINT' | translate }}</p>
+              <p class="upload-subtext">{{ 'COMPONENTS.ORGANISMS.RECIPE_FORM.IMAGE_FORMAT_HINT' | translate }}</p>
             }
           </div>
           <input

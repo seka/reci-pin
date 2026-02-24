@@ -47,7 +47,7 @@ export class RequestPasswordResetComponent {
         this.isLoading = false;
       },
       error: (err) => {
-        this.errorMessage = this.translate.instant('AUTH.REQUEST_FAILED');
+        this.errorMessage = this.translate.instant('FEATURES.AUTH.REQUEST_PASSWORD_RESET.FAILED');
         this.isLoading = false;
         console.error(err);
       },

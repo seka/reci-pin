@@ -1,9 +1,9 @@
 {
-  "HELLO": "こんにちは",
-  "WELCOME": "ようこそ",
-  "LOGIN": "ログイン",
-  "LOGOUT": "ログアウト",
   "COMMON": {
+    "HELLO": "こんにちは",
+    "WELCOME": "ようこそ",
+    "LOGIN": "ログイン",
+    "LOGOUT": "ログアウト",
     "CANCEL": "キャンセル",
     "DELETE": "削除",
     "CONFIRM_DELETE": "削除の確認",
@@ -16,85 +16,6 @@
     "TAG": "タグ",
     "SEARCH": "検索"
   },
-  "AUTH": {
-    "EMAIL": "メールアドレス",
-    "PASSWORD": "パスワード",
-    "LOGIN_BUTTON": "ログイン",
-    "FORGOT_PASSWORD": "パスワードを忘れた場合",
-    "CREATE_ACCOUNT": "アカウント作成はこちら",
-    "LOGIN_FAILED": "ログインに失敗しました",
-    "RESET_PASSWORD_TITLE": "パスワード再設定",
-    "RESET_PASSWORD_REQUEST_DESC": "登録済みのメールアドレスを入力してください。<br>パスワード再設定用のリンクをお送りします。",
-    "RESET_PASSWORD_NEW_TITLE": "新しいパスワードの設定",
-    "RESET_PASSWORD_NEW_DESC": "新しいパスワードを入力してください。",
-    "NEW_PASSWORD": "新しいパスワード",
-    "SET_PASSWORD": "パスワードを設定する",
-    "SETTING_PASSWORD": "設定中...",
-    "REDIRECTING_LOGIN": "ログイン画面へ移動します...",
-    "SIGNUP_TITLE": "アカウント作成",
-    "NAME": "名前",
-    "REGISTER": "登録",
-    "LOGIN_LINK": "ログインページへ",
-    "SIGNUP_FAILED": "登録に失敗しました",
-    "BACK_TO_LOGIN": "ログイン画面へ戻る",
-    "REQUEST_FAILED": "リクエストの送信に失敗しました。",
-    "INVALID_LINK": "無効なリンクです。",
-    "MISSING_TOKEN": "トークンが不足しています。",
-    "RESET_FAILED_EXPIRED": "パスワードの再設定に失敗しました。リンクの有効期限が切れている可能性があります。"
-  },
-  "SETTINGS": {
-    "CHANGE_PASSWORD_TITLE": "パスワード変更",
-    "CURRENT_PASSWORD": "現在のパスワード",
-    "NEW_PASSWORD": "新しいパスワード",
-    "NEW_PASSWORD_CONFIRM": "新しいパスワード（確認）",
-    "CHANGE_PASSWORD_BUTTON": "パスワードを変更する",
-    "CHANGING_PASSWORD": "変更中...",
-    "BACK_TO_SETTINGS": "← 設定に戻る",
-    "PASSWORD_HINT": "{{min}}文字以上の英数字を入力してください。",
-    "PASSWORD_CHANGED": "パスワードを変更しました。",
-    "CHANGE_FAILED_INVALID": "現在のパスワードが間違っているか、新しいパスワードが無効です。",
-    "CHANGE_FAILED_ERROR": "パスワードの変更に失敗しました。時間をおいて再度お試しください。",
-    "TITLE": "設定",
-    "ACCOUNT": "アカウント",
-    "NAME": "名前",
-    "EMAIL": "メールアドレス",
-    "WITHDRAW_TITLE": "退会",
-    "WITHDRAW_WARNING": "アカウントを削除すると、すべてのレシピやデータが完全に削除されます。<br>この操作は取り消せません。",
-    "WITHDRAW_BUTTON": "アカウントを削除する",
-    "WITHDRAWING": "処理中...",
-    "WITHDRAW_CONFIRM": "本当に退会しますか？\\n\\nすべてのデータが削除され、この操作は取り消せません。",
-    "WITHDRAW_SUCCESS": "退会が完了しました。ご利用ありがとうございました。",
-    "WITHDRAW_FAILED": "退会処理に失敗しました。しばらくしてから再度お試しください。",
-    "BACK_TO_RECIPES": "← レシピ一覧に戻る"
-  },
-  "RECIPE": {
-    "EDIT_TITLE": "レシピの編集",
-    "NEW_TITLE": "新規レシピ作成",
-    "NAME": "レシピ名",
-    "NAME_PLACEHOLDER": "例: オムライス",
-    "MEMO": "メモ",
-    "MEMO_PLACEHOLDER": "メモを入力",
-    "SAVE": "保存",
-    "SAVING": "保存中...",
-    "VIEW_DETAILS": "レシピを見る",
-    "MY_RECIPES": "マイレシピ",
-    "ADD_NEW": "新規レシピ追加",
-    "DELETE_CONFIRMATION": "本当にこのレシピを削除しますか？\nこの操作は取り消せません。",
-    "IMAGE": "画像",
-    "IMAGE_DROP_HINT": "クリックまたはドラッグ＆ドロップで画像を追加",
-    "IMAGE_FORMAT_HINT": "JPEG, PNG, WebP (最大 50MB)",
-    "SEARCH_KEYWORD_LABEL": "キーワードで絞り込み",
-    "SEARCH_KEYWORD_PLACEHOLDER": "キーワードで検索...",
-    "SEARCH_TAG_LABEL": "タグで絞り込み",
-    "SEARCH_TAG_PLACEHOLDER": "タグを選択...",
-    "EMPTY_TITLE": "レシピがありません",
-    "EMPTY_MESSAGE": "新しいレシピを追加してみましょう！"
-  },
-  "TAG": {
-    "SELECT_LABEL": "タグ選択",
-    "SELECT_HELPER": "タグを入力して検索、またはEnterで新規作成できます。",
-    "NEW_PLACEHOLDER": "新しいタグ..."
-  },
   "VALIDATION": {
     "REQUIRED": "必須項目です",
     "INVALID_EMAIL": "有効なメールアドレスを入力してください",
@@ -106,5 +27,120 @@
     "PATTERN": "形式が正しくありません",
     "PASSWORD_NO_ALPHA": "英字を含めてください",
     "PASSWORD_NO_NUMERIC": "数字を含めてください"
+  },
+  "FEATURES": {
+    "AUTH": {
+      "LOGIN": {
+        "TITLE": "ログイン",
+        "EMAIL": "メールアドレス",
+        "PASSWORD": "パスワード",
+        "SUBMIT": "ログイン",
+        "GO_TO_SIGNUP": "アカウント作成はこちら",
+        "FAILED": "ログインに失敗しました"
+      },
+      "SIGNUP": {
+        "TITLE": "アカウント作成",
+        "NAME": "名前",
+        "EMAIL": "メールアドレス",
+        "PASSWORD": "パスワード",
+        "SUBMIT": "登録",
+        "GO_TO_LOGIN": "ログインページへ",
+        "FAILED": "登録に失敗しました"
+      },
+      "REQUEST_PASSWORD_RESET": {
+        "TITLE": "パスワードを忘れた場合",
+        "DESC": "登録済みのメールアドレスを入力してください。<br>パスワード再設定用のリンクをお送りします。",
+        "SUBMIT": "送信する",
+        "FAILED": "リクエストの送信に失敗しました。"
+      },
+      "RESET_PASSWORD": {
+        "TITLE": "パスワード再設定",
+        "NEW_TITLE": "新しいパスワードの設定",
+        "DESC": "新しいパスワードを入力してください。",
+        "NEW_PASSWORD": "新しいパスワード",
+        "NEW_PASSWORD_CONFIRM": "新しいパスワード（確認）",
+        "SUBMIT": "パスワードを設定する",
+        "SETTING_PASSWORD": "設定中...",
+        "REDIRECTING_LOGIN": "ログイン画面へ移動します...",
+        "BACK_TO_LOGIN": "ログイン画面へ戻る",
+        "INVALID_LINK": "無効なリンクです。",
+        "MISSING_TOKEN": "トークンが不足しています。",
+        "FAILED_EXPIRED": "パスワードの再設定に失敗しました。リンクの有効期限が切れている可能性があります。"
+      }
+    },
+    "RECIPES": {
+      "RECIPES": {
+        "MY_RECIPES": "マイレシピ",
+        "ADD_NEW": "新規レシピ追加",
+        "SEARCH_KEYWORD_LABEL": "キーワードで絞り込み",
+        "SEARCH_KEYWORD_PLACEHOLDER": "キーワードで検索...",
+        "SEARCH_TAG_LABEL": "タグで絞り込み",
+        "SEARCH_TAG_PLACEHOLDER": "タグを選択...",
+        "EMPTY_TITLE": "レシピがありません",
+        "EMPTY_MESSAGE": "新しいレシピを追加してみましょう！"
+      },
+      "RECIPE_CREATE": {
+        "TITLE": "新規レシピ作成"
+      },
+      "RECIPE_EDIT": {
+        "TITLE": "レシピの編集"
+      }
+    },
+    "SETTINGS": {
+      "SETTINGS": {
+        "TITLE": "設定",
+        "ACCOUNT": "アカウント",
+        "NAME": "名前",
+        "EMAIL": "メールアドレス",
+        "WITHDRAW_TITLE": "退会",
+        "WITHDRAW_WARNING": "アカウントを削除すると、すべてのレシピやデータが完全に削除されます。<br>この操作は取り消せません。",
+        "WITHDRAW_BUTTON": "アカウントを削除する",
+        "WITHDRAWING": "処理中...",
+        "WITHDRAW_CONFIRM": "本当に退会しますか？\\n\\nすべてのデータが削除され、この操作は取り消せません。",
+        "WITHDRAW_SUCCESS": "退会が完了しました。ご利用ありがとうございました。",
+        "WITHDRAW_FAILED": "退会処理に失敗しました。しばらくしてから再度お試しください。",
+        "BACK_TO_RECIPES": "← レシピ一覧に戻る"
+      },
+      "CHANGE_PASSWORD": {
+        "TITLE": "パスワード変更",
+        "CURRENT_PASSWORD": "現在のパスワード",
+        "NEW_PASSWORD": "新しいパスワード",
+        "NEW_PASSWORD_CONFIRM": "新しいパスワード（確認）",
+        "SUBMIT": "パスワードを変更する",
+        "CHANGING": "変更中...",
+        "BACK_TO_SETTINGS": "← 設定に戻る",
+        "HINT": "{{min}}文字以上の英数字を入力してください。",
+        "SUCCESS": "パスワードを変更しました。",
+        "FAILED_INVALID": "現在のパスワードが間違っているか、新しいパスワードが無効です。",
+        "FAILED_ERROR": "パスワードの変更に失敗しました。時間をおいて再度お試しください。"
+      }
+    }
+  },
+  "COMPONENTS": {
+    "ATOMS": {},
+    "MOLECULES": {
+      "TAG_SELECT": {
+        "LABEL": "タグ選択",
+        "HELPER": "タグを入力して検索、またはEnterで新規作成できます。",
+        "NEW_PLACEHOLDER": "新しいタグ..."
+      }
+    },
+    "ORGANISMS": {
+      "RECIPE_FORM": {
+        "NAME": "レシピ名",
+        "NAME_PLACEHOLDER": "例: オムライス",
+        "MEMO": "メモ",
+        "MEMO_PLACEHOLDER": "メモを入力",
+        "IMAGE": "画像",
+        "IMAGE_DROP_HINT": "クリックまたはドラッグ＆ドロップで画像を追加",
+        "IMAGE_FORMAT_HINT": "JPEG, PNG, WebP (最大 50MB)",
+        "SAVE": "保存",
+        "SAVING": "保存中..."
+      },
+      "RECIPE_CARD": {
+        "VIEW_DETAILS": "レシピを見る",
+        "DELETE_CONFIRMATION": "本当にこのレシピを削除しますか？\nこの操作は取り消せません。"
+      }
+    }
   }
 }

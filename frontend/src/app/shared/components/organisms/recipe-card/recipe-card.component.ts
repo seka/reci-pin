@@ -35,7 +35,7 @@ export class RecipeCardComponent {
       width: '400px',
       data: {
         title: 'COMMON.CONFIRM_DELETE',
-        message: 'RECIPE.DELETE_CONFIRMATION',
+        message: 'COMPONENTS.ORGANISMS.RECIPE_CARD.DELETE_CONFIRMATION',
       },
     });
 

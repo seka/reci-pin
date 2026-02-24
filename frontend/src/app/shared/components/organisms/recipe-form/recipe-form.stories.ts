@@ -48,9 +48,9 @@ type Story = StoryObj<RecipeFormComponent>;
 
 export const CreateRecipe: Story = {
   args: {
-    titleKey: 'RECIPE.NEW_TITLE',
-    submitLabelKey: 'RECIPE.SAVE',
-    submittingLabelKey: 'RECIPE.SAVING',
+    titleKey: 'FEATURES.RECIPES.RECIPE_CREATE.TITLE',
+    submitLabelKey: 'COMPONENTS.ORGANISMS.RECIPE_FORM.SAVE',
+    submittingLabelKey: 'COMPONENTS.ORGANISMS.RECIPE_FORM.SAVING',
     isSubmitting: false,
     initialData: {},
   },
@@ -58,9 +58,9 @@ export const CreateRecipe: Story = {
 
 export const EditRecipe: Story = {
   args: {
-    titleKey: 'RECIPE.EDIT_TITLE',
-    submitLabelKey: 'RECIPE.UPDATE',
-    submittingLabelKey: 'RECIPE.UPDATING',
+    titleKey: 'FEATURES.RECIPES.RECIPE_EDIT.TITLE',
+    submitLabelKey: 'COMPONENTS.ORGANISMS.RECIPE_FORM.SAVE',
+    submittingLabelKey: 'COMPONENTS.ORGANISMS.RECIPE_FORM.SAVING',
     isSubmitting: false,
     initialData: {
       name: 'Sample Recipe',

@@ -58,9 +58,9 @@ export class RecipeFormComponent implements OnInit, OnChanges {
   private readonly recipeService = inject(RecipeService);
   private readonly translate = inject(TranslateService);
 
-  @Input() titleKey: string = 'RECIPE.NEW_TITLE';
-  @Input() submitLabelKey: string = 'RECIPE.SAVE';
-  @Input() submittingLabelKey: string = 'RECIPE.SAVING';
+  @Input() titleKey: string = 'FEATURES.RECIPES.RECIPE_CREATE.TITLE';
+  @Input() submitLabelKey: string = 'COMPONENTS.ORGANISMS.RECIPE_FORM.SAVE';
+  @Input() submittingLabelKey: string = 'COMPONENTS.ORGANISMS.RECIPE_FORM.SAVING';
 
   @Input() isSubmitting = false;
   @Input() initialData: Partial<RecipeFormData> = {};

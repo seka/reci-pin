@@ -122,7 +122,7 @@ export class SignupComponent implements OnInit {
             return;
           }
         }
-        this.errorMessage = this.translate.instant('AUTH.SIGNUP_FAILED');
+        this.errorMessage = this.translate.instant('FEATURES.AUTH.SIGNUP.FAILED');
       },
     });
   }

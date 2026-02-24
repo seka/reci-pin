@@ -1,10 +1,10 @@
 <div class="recipes-container">
   <div class="header">
-    <app-headline variant="h2">{{ 'RECIPE.MY_RECIPES' | translate }}</app-headline>
+    <app-headline variant="h2">{{ 'FEATURES.RECIPES.RECIPES.MY_RECIPES' | translate }}</app-headline>
     <div class="header-actions">
       <app-button routerLink="/recipes/new" variant="primary" class="add-btn">
         <mat-icon class="add-icon">add</mat-icon>
-        {{ 'RECIPE.ADD_NEW' | translate }}
+        {{ 'FEATURES.RECIPES.RECIPES.ADD_NEW' | translate }}
       </app-button>
       <a routerLink="/settings" class="settings-link" [title]="'COMMON.SETTINGS' | translate">
         <mat-icon>settings</mat-icon>
@@ -22,9 +22,9 @@
         <app-input
           [(ngModel)]="searchQuery"
           (keyup.enter)="search()"
-          [label]="'RECIPE.SEARCH_KEYWORD_LABEL' | translate"
+          [label]="'FEATURES.RECIPES.RECIPES.SEARCH_KEYWORD_LABEL' | translate"
           floatLabel="always"
-          [placeholder]="'RECIPE.SEARCH_KEYWORD_PLACEHOLDER' | translate"
+          [placeholder]="'FEATURES.RECIPES.RECIPES.SEARCH_KEYWORD_PLACEHOLDER' | translate"
           class="search-input"
         ></app-input>
       </app-search-bar>
@@ -33,7 +33,7 @@
     @if (searchMode === 'tag') {
       <app-search-bar (searchSubmit)="search()">
         <mat-form-field class="tag-chip-list" appearance="outline" floatLabel="always">
-          <mat-label>{{ 'RECIPE.SEARCH_TAG_LABEL' | translate }}</mat-label>
+          <mat-label>{{ 'FEATURES.RECIPES.RECIPES.SEARCH_TAG_LABEL' | translate }}</mat-label>
           <mat-chip-grid #chipGrid aria-label="Tag selection">
             @for (tagId of selectedTagIds; track tagId) {
               <mat-chip-row (removed)="removeTag(tagId)">
@@ -44,7 +44,7 @@
               </mat-chip-row>
             }
             <input
-              [placeholder]="'RECIPE.SEARCH_TAG_PLACEHOLDER' | translate"
+              [placeholder]="'FEATURES.RECIPES.RECIPES.SEARCH_TAG_PLACEHOLDER' | translate"
               #tagInput
               [formControl]="tagCtrl"
               [matChipInputFor]="chipGrid"
@@ -78,12 +78,12 @@
   } @else {
     <app-empty-state
       icon="receipt_long"
-      [title]="'RECIPE.EMPTY_TITLE' | translate"
-      [message]="'RECIPE.EMPTY_MESSAGE' | translate"
+      [title]="'FEATURES.RECIPES.RECIPES.EMPTY_TITLE' | translate"
+      [message]="'FEATURES.RECIPES.RECIPES.EMPTY_MESSAGE' | translate"
     >
       <app-button routerLink="/recipes/new" variant="primary">
         <mat-icon class="add-icon">add</mat-icon>
-        {{ 'RECIPE.ADD_NEW' | translate }}
+        {{ 'FEATURES.RECIPES.RECIPES.ADD_NEW' | translate }}
       </app-button>
     </app-empty-state>
   }
