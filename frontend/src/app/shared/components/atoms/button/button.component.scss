@@ -1,0 +1,17 @@
+:host {
+  display: inline-block;
+}
+button {
+  width: 100%;
+  min-width: 120px;
+  font-weight: bold;
+}
+
+/* Ensure white text for accent (secondary) filled buttons in MDC */
+:host ::ng-deep .mat-mdc-unelevated-button.mat-accent {
+  --mdc-filled-button-label-text-color: var(--color-surface);
+  color: var(--color-surface) !important;
+}
+:host ::ng-deep .mat-mdc-unelevated-button.mat-accent .mdc-button__label {
+  color: var(--color-surface) !important;
+}

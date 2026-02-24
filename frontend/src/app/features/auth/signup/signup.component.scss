@@ -1,0 +1,23 @@
+.form-group {
+  margin-top: var(--spacing-2);
+}
+.footer-actions {
+  margin-top: var(--spacing-2);
+}
+.actions {
+  margin-top: var(--spacing-3);
+  margin-bottom: var(--spacing-2);
+}
+.submit-btn {
+  width: 100%;
+}
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.full-width-btn {
+  width: 100%;
+}
+.signup-alert {
+  text-align: left;
+}

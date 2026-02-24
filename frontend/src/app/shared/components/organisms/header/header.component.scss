@@ -1,0 +1,56 @@
+.app-header {
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+.header-content {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.lang-switcher {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.9rem;
+  color: #888;
+}
+.lang-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: inherit;
+  font-weight: 500;
+  transition: color 0.2s;
+
+  &.active,
+  &:hover {
+    color: #333;
+    font-weight: 700;
+  }
+}
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.username {
+  color: #555;
+  font-weight: 500;
+  font-size: 1rem;
+}

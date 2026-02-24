@@ -9,69 +9,73 @@ import { AuthService, User, AuthResponse } from './auth.service';
 import { vi, expect, describe, it, beforeEach, afterEach } from 'vitest';
 
 describe('AuthService', () => {
-    let service: AuthService;
-    let httpMock: HttpTestingController;
-    let routerMock: any;
+  let service: AuthService;
+  let httpMock: HttpTestingController;
+  let routerMock: any;
 
-    const mockUser: User = {
-        id: 1, email: 'test@example.com', name: 'Test User', createdAt: '', updatedAt: ''
-    };
+  const mockUser: User = {
+    id: 1,
+    email: 'test@example.com',
+    name: 'Test User',
+    createdAt: '',
+    updatedAt: '',
+  };
 
-    function initTestBed() {
-        TestBed.resetTestingModule();
-        routerMock = { navigate: vi.fn() };
-        TestBed.configureTestingModule({
-            imports: [HttpClientTestingModule],
-            providers: [
-                AuthService,
-                { provide: Router, useValue: routerMock },
-                { provide: PLATFORM_ID, useValue: 'browser' }
-            ]
-        });
-        service = TestBed.inject(AuthService);
-        httpMock = TestBed.inject(HttpTestingController);
+  function initTestBed() {
+    TestBed.resetTestingModule();
+    routerMock = { navigate: vi.fn() };
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers: [
+        AuthService,
+        { provide: Router, useValue: routerMock },
+        { provide: PLATFORM_ID, useValue: 'browser' },
+      ],
+    });
+    service = TestBed.inject(AuthService);
+    httpMock = TestBed.inject(HttpTestingController);
+  }
+
+  beforeEach(() => {
+    // Clear cookies before each test
+    document.cookie = 'auth_user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  });
+
+  afterEach(() => {
+    if (httpMock) {
+      httpMock.verify();
     }
+  });
 
-    beforeEach(() => {
-        // Clear cookies before each test
-        document.cookie = 'auth_user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  it('should restore user from cookie on initialization', () => {
+    const userString = encodeURIComponent(JSON.stringify(mockUser));
+    document.cookie = `auth_user=${userString}; path=/;`;
+
+    initTestBed();
+    expect(service.currentUserValue).toEqual(mockUser);
+  });
+
+  it('should login and set current user', () => {
+    initTestBed();
+    const mockResponse: AuthResponse = { token: '', user: mockUser };
+
+    service.login({ email: 'test@example.com', password: 'password' }).subscribe((res) => {
+      expect(res.user).toEqual(mockUser);
     });
 
-    afterEach(() => {
-        if (httpMock) {
-            httpMock.verify();
-        }
-    });
+    const req = httpMock.expectOne('/api/auth/login');
+    req.flush(mockResponse);
+    expect(service.currentUserValue).toEqual(mockUser);
+  });
 
-    it('should restore user from cookie on initialization', () => {
-        const userString = encodeURIComponent(JSON.stringify(mockUser));
-        document.cookie = `auth_user=${userString}; path=/;`;
+  it('should logout and clear state', () => {
+    initTestBed();
+    service.logout();
 
-        initTestBed();
-        expect(service.currentUserValue).toEqual(mockUser);
-    });
+    const req = httpMock.expectOne('/api/auth/logout');
+    req.flush({});
 
-    it('should login and set current user', () => {
-        initTestBed();
-        const mockResponse: AuthResponse = { token: '', user: mockUser };
-
-        service.login({ email: 'test@example.com', password: 'password' }).subscribe(res => {
-            expect(res.user).toEqual(mockUser);
-        });
-
-        const req = httpMock.expectOne('/api/auth/login');
-        req.flush(mockResponse);
-        expect(service.currentUserValue).toEqual(mockUser);
-    });
-
-    it('should logout and clear state', () => {
-        initTestBed();
-        service.logout();
-
-        const req = httpMock.expectOne('/api/auth/logout');
-        req.flush({});
-
-        expect(service.currentUserValue).toBeNull();
-        expect(routerMock.navigate).toHaveBeenCalledWith(['/login']);
-    });
+    expect(service.currentUserValue).toBeNull();
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/login']);
+  });
 });

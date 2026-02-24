@@ -12,7 +12,6 @@ import { provideClientHydration, withEventReplay } from '@angular/platform-brows
 
 import { TranslateHttpLoader, TRANSLATE_HTTP_LOADER_CONFIG } from '@ngx-translate/http-loader';
 
-
 // TranslateServerLoader is removed from here to avoid bundling 'fs' in browser
 // It will be provided in app.config.server.ts
 export function httpLoaderFactory() {
@@ -29,8 +28,8 @@ export const appConfig: ApplicationConfig = {
       provide: TRANSLATE_HTTP_LOADER_CONFIG,
       useValue: {
         prefix: '/assets/i18n/',
-        suffix: '.json'
-      }
+        suffix: '.json',
+      },
     },
     provideTranslateService({
       defaultLanguage: 'ja',

@@ -1,0 +1,61 @@
+.recipes-container {
+  padding: var(--spacing-3);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-3);
+}
+.search-section {
+  background-color: var(--color-surface);
+  padding: var(--spacing-3);
+  border-radius: var(--radius-2);
+  margin-bottom: var(--spacing-3);
+  box-shadow: var(--shadow-1);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+.search-mode-toggle {
+  display: flex;
+  justify-content: flex-start;
+}
+.search-input {
+  width: 100%;
+}
+.tag-chip-list {
+  width: 100%;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+.add-btn {
+  width: auto;
+}
+.add-icon {
+  vertical-align: middle;
+  margin-right: 4px;
+}
+.settings-link {
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+.settings-link:hover {
+  color: var(--color-primary);
+}
+.recipes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--spacing-3);
+}
+.recipe-card-item {
+  height: 100%;
+  display: block;
+}

@@ -1,0 +1,21 @@
+.search-bar {
+  display: flex;
+  gap: var(--spacing-2);
+  align-items: center;
+  width: 100%;
+}
+.search-input-wrapper {
+  flex: 1;
+  width: 100%;
+}
+.search-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+/* Prevent layout shift for inputs inside search bar */
+::ng-deep .search-input-wrapper .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}

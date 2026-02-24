@@ -1,0 +1,13 @@
+@if (isLoading) {
+  <div class="loading-container">Loading...</div>
+} @else {
+  <app-recipe-form
+    titleKey="RECIPE.EDIT_TITLE"
+    submitLabelKey="RECIPE.SAVE"
+    submittingLabelKey="RECIPE.SAVING"
+    [isSubmitting]="isSubmitting"
+    [initialData]="initialData"
+    [initialImagePreview]="initialImagePreview"
+    (save)="onSave($event)"
+  ></app-recipe-form>
+}

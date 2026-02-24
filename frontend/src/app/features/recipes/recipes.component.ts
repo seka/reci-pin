@@ -5,7 +5,10 @@ import { CommonModule, AsyncPipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { SearchModeToggleComponent } from '../../shared/components/molecules/search-mode-toggle/search-mode-toggle.component';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import {
+  MatAutocompleteModule,
+  MatAutocompleteSelectedEvent,
+} from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Observable, startWith, map } from 'rxjs';
@@ -39,160 +42,10 @@ import { EmptyStateComponent } from '../../shared/components/molecules/empty-sta
     ButtonComponent,
     InputComponent,
     SearchBarComponent,
-    EmptyStateComponent
+    EmptyStateComponent,
   ],
-  template: `
-    <div class="recipes-container">
-      <div class="header">
-        <app-headline variant="h2">{{ 'RECIPE.MY_RECIPES' | translate }}</app-headline>
-        <div class="header-actions">
-          <app-button routerLink="/recipes/new" variant="primary" class="add-btn">
-            <mat-icon class="add-icon">add</mat-icon>
-            {{ 'RECIPE.ADD_NEW' | translate }}
-          </app-button>
-          <a routerLink="/settings" class="settings-link" title="設定">
-            <mat-icon>settings</mat-icon>
-          </a>
-        </div>
-      </div>
-
-      <div class="search-section">
-        <div class="search-mode-toggle">
-          <app-search-mode-toggle [(value)]="searchMode"></app-search-mode-toggle>
-        </div>
-
-        @if (searchMode === 'keyword') {
-        <app-search-bar (searchSubmit)="search()">
-          <app-input
-            [(ngModel)]="searchQuery"
-            (keyup.enter)="search()"
-            label="キーワードで絞り込み"
-            floatLabel="always"
-            placeholder="キーワードで検索..."
-            class="search-input"
-          ></app-input>
-        </app-search-bar>
-        }
-
-        @if (searchMode === 'tag') {
-        <app-search-bar (searchSubmit)="search()">
-           <mat-form-field class="tag-chip-list" appearance="outline" floatLabel="always">
-            <mat-label>タグで絞り込み</mat-label>
-            <mat-chip-grid #chipGrid aria-label="Tag selection">
-              @for (tagId of selectedTagIds; track tagId) {
-                <mat-chip-row (removed)="removeTag(tagId)">
-                  {{ getTagName(tagId) }}
-                  <button matChipRemove [attr.aria-label]="'remove ' + getTagName(tagId)">
-                    <mat-icon>cancel</mat-icon>
-                  </button>
-                </mat-chip-row>
-              }
-              <input
-                placeholder="タグを選択..."
-                #tagInput
-                [formControl]="tagCtrl"
-                [matChipInputFor]="chipGrid"
-                [matAutocomplete]="auto"
-                [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-                (matChipInputTokenEnd)="appendTag($event)"
-              />
-            </mat-chip-grid>
-            <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectedTag($event)">
-              @for (tag of filteredTags | async; track tag.id) {
-                <mat-option [value]="tag">
-                  {{ tag.name }}
-                </mat-option>
-              }
-            </mat-autocomplete>
-          </mat-form-field>
-        </app-search-bar>
-        }
-      </div>
-
-      @if (recipes.length > 0) {
-        <div class="recipes-grid">
-          @for (recipe of recipes; track recipe.id) {
-            <app-recipe-card [recipe]="recipe" (delete)="onDeleteRecipe($event)" class="recipe-card-item"></app-recipe-card>
-          }
-        </div>
-      } @else {
-        <app-empty-state 
-          icon="receipt_long" 
-          [title]="'RECIPE.EMPTY_TITLE' | translate" 
-          [message]="'RECIPE.EMPTY_MESSAGE' | translate">
-          <app-button routerLink="/recipes/new" variant="primary">
-            <mat-icon class="add-icon">add</mat-icon>
-            {{ 'RECIPE.ADD_NEW' | translate }}
-          </app-button>
-        </app-empty-state>
-      }
-    </div>
-  `,
-  styles: [
-    `
-      .recipes-container {
-        padding: var(--spacing-3);
-        max-width: 1200px;
-        margin: 0 auto;
-      }
-      .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--spacing-3);
-      }
-      .search-section {
-        background-color: var(--color-surface);
-        padding: var(--spacing-3);
-        border-radius: var(--radius-2);
-        margin-bottom: var(--spacing-3);
-        box-shadow: var(--shadow-1);
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacing-2);
-      }
-      .search-mode-toggle {
-        display: flex;
-        justify-content: flex-start;
-      }
-      .search-input {
-        width: 100%;
-      }
-      .tag-chip-list {
-        width: 100%;
-      }
-      .header-actions {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-2);
-      }
-      .add-btn {
-        width: auto;
-      }
-      .add-icon {
-        vertical-align: middle;
-        margin-right: 4px;
-      }
-      .settings-link {
-        color: var(--color-text-secondary);
-        display: flex;
-        align-items: center;
-        transition: color 0.2s;
-      }
-      .settings-link:hover {
-        color: var(--color-primary);
-      }
-      .recipes-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: var(--spacing-3);
-      }
-      .recipe-card-item {
-        height: 100%;
-        display: block;
-      }
-    `,
-  ],
+  templateUrl: './recipes.component.html',
+  styleUrl: './recipes.component.scss',
 })
 export class RecipesComponent implements OnInit {
   private readonly recipeService = inject(RecipeService);
@@ -216,9 +69,9 @@ export class RecipesComponent implements OnInit {
       startWith(null),
       map((tag: string | null | Tag) => {
         // Handle both string input and Tag object selection
-        const filterValue = typeof tag === 'string' ? tag : (tag?.name || '');
+        const filterValue = typeof tag === 'string' ? tag : tag?.name || '';
         return filterValue ? this.filterTags(filterValue) : this.getUnselectedTags();
-      })
+      }),
     );
   }
 
@@ -241,25 +94,25 @@ export class RecipesComponent implements OnInit {
     });
   }
 
-
-
   search() {
     const query = this.searchMode === 'keyword' ? this.searchQuery : '';
     const tagIds = this.searchMode === 'tag' ? this.selectedTagIds : [];
 
-    this.recipeService.searchRecipes({
-      query: query || '',
-      tagIds: tagIds,
-    }).subscribe({
-      next: (recipes) => (this.recipes = recipes),
-      error: (err: Error) => console.error('Failed to search recipes', err),
-    });
+    this.recipeService
+      .searchRecipes({
+        query: query || '',
+        tagIds: tagIds,
+      })
+      .subscribe({
+        next: (recipes) => (this.recipes = recipes),
+        error: (err: Error) => console.error('Failed to search recipes', err),
+      });
   }
 
   onDeleteRecipe(id: number): void {
     this.recipeService.deleteRecipe(id).subscribe({
       next: () => {
-        this.recipes = this.recipes.filter(r => r.id !== id);
+        this.recipes = this.recipes.filter((r) => r.id !== id);
       },
       error: (err: Error) => console.error('Failed to delete recipe', err),
     });
@@ -273,7 +126,7 @@ export class RecipesComponent implements OnInit {
     // If matches an existing tag, select it
     if (value) {
       const existingTag = this.availableTags.find(
-        tag => tag.name.toLowerCase() === value.toLowerCase()
+        (tag) => tag.name.toLowerCase() === value.toLowerCase(),
       );
 
       if (existingTag && !this.selectedTagIds.includes(existingTag.id)) {
@@ -310,13 +163,13 @@ export class RecipesComponent implements OnInit {
 
   private filterTags(value: string): Tag[] {
     const filterValue = value.toLowerCase();
-    return this.availableTags.filter((tag) =>
-      tag.name.toLowerCase().includes(filterValue) &&
-      !this.selectedTagIds.includes(tag.id)
+    return this.availableTags.filter(
+      (tag) =>
+        tag.name.toLowerCase().includes(filterValue) && !this.selectedTagIds.includes(tag.id),
     );
   }
 
   private getUnselectedTags(): Tag[] {
-    return this.availableTags.filter(tag => !this.selectedTagIds.includes(tag.id));
+    return this.availableTags.filter((tag) => !this.selectedTagIds.includes(tag.id));
   }
 }

@@ -23,11 +23,11 @@ describe.skip('App', () => {
           useValue: {
             currentUser$: of(null),
             refreshTokenSubject: new BehaviorSubject(null),
-            isRefreshing: false
-          }
-        }
+            isRefreshing: false,
+          },
+        },
       ],
-      schemas: [NO_ERRORS_SCHEMA]
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
 

@@ -1,0 +1,90 @@
+<div class="recipes-container">
+  <div class="header">
+    <app-headline variant="h2">{{ 'RECIPE.MY_RECIPES' | translate }}</app-headline>
+    <div class="header-actions">
+      <app-button routerLink="/recipes/new" variant="primary" class="add-btn">
+        <mat-icon class="add-icon">add</mat-icon>
+        {{ 'RECIPE.ADD_NEW' | translate }}
+      </app-button>
+      <a routerLink="/settings" class="settings-link" title="設定">
+        <mat-icon>settings</mat-icon>
+      </a>
+    </div>
+  </div>
+
+  <div class="search-section">
+    <div class="search-mode-toggle">
+      <app-search-mode-toggle [(value)]="searchMode"></app-search-mode-toggle>
+    </div>
+
+    @if (searchMode === 'keyword') {
+      <app-search-bar (searchSubmit)="search()">
+        <app-input
+          [(ngModel)]="searchQuery"
+          (keyup.enter)="search()"
+          label="キーワードで絞り込み"
+          floatLabel="always"
+          placeholder="キーワードで検索..."
+          class="search-input"
+        ></app-input>
+      </app-search-bar>
+    }
+
+    @if (searchMode === 'tag') {
+      <app-search-bar (searchSubmit)="search()">
+        <mat-form-field class="tag-chip-list" appearance="outline" floatLabel="always">
+          <mat-label>タグで絞り込み</mat-label>
+          <mat-chip-grid #chipGrid aria-label="Tag selection">
+            @for (tagId of selectedTagIds; track tagId) {
+              <mat-chip-row (removed)="removeTag(tagId)">
+                {{ getTagName(tagId) }}
+                <button matChipRemove [attr.aria-label]="'remove ' + getTagName(tagId)">
+                  <mat-icon>cancel</mat-icon>
+                </button>
+              </mat-chip-row>
+            }
+            <input
+              placeholder="タグを選択..."
+              #tagInput
+              [formControl]="tagCtrl"
+              [matChipInputFor]="chipGrid"
+              [matAutocomplete]="auto"
+              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+              (matChipInputTokenEnd)="appendTag($event)"
+            />
+          </mat-chip-grid>
+          <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectedTag($event)">
+            @for (tag of filteredTags | async; track tag.id) {
+              <mat-option [value]="tag">
+                {{ tag.name }}
+              </mat-option>
+            }
+          </mat-autocomplete>
+        </mat-form-field>
+      </app-search-bar>
+    }
+  </div>
+
+  @if (recipes.length > 0) {
+    <div class="recipes-grid">
+      @for (recipe of recipes; track recipe.id) {
+        <app-recipe-card
+          [recipe]="recipe"
+          (delete)="onDeleteRecipe($event)"
+          class="recipe-card-item"
+        ></app-recipe-card>
+      }
+    </div>
+  } @else {
+    <app-empty-state
+      icon="receipt_long"
+      [title]="'RECIPE.EMPTY_TITLE' | translate"
+      [message]="'RECIPE.EMPTY_MESSAGE' | translate"
+    >
+      <app-button routerLink="/recipes/new" variant="primary">
+        <mat-icon class="add-icon">add</mat-icon>
+        {{ 'RECIPE.ADD_NEW' | translate }}
+      </app-button>
+    </app-empty-state>
+  }
+</div>

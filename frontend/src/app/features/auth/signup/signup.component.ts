@@ -1,5 +1,11 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
@@ -22,86 +28,8 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
     ButtonComponent,
     AlertComponent,
   ],
-  template: `
-    <app-auth-card [title]="'AUTH.SIGNUP_TITLE' | translate">
-      <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
-          <app-input
-            [label]="'AUTH.NAME' | translate"
-            type="text"
-            formControlName="name"
-            [required]="true"
-            [maxLength]="VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH"
-            [showCounter]="true"
-            [errorMessage]="fieldErrors['name']"
-          ></app-input>
-
-        <div class="form-group">
-          <app-input
-            [label]="'AUTH.EMAIL' | translate"
-            type="email"
-            formControlName="email"
-            [required]="true"
-            [maxLength]="VALIDATION_RULES.EMAIL.MAX_LENGTH"
-            [showCounter]="true"
-            [errorMessage]="fieldErrors['email']"
-          ></app-input>
-        </div>
-
-        <div class="form-group">
-          <app-input
-            [label]="'AUTH.PASSWORD' | translate"
-            type="password"
-            formControlName="password"
-            [required]="true"
-            [maxLength]="VALIDATION_RULES.PASSWORD.MAX_LENGTH"
-            [showCounter]="true"
-            [errorMessage]="fieldErrors['password']"
-          ></app-input>
-        </div>
-
-        <div class="actions">
-          <app-button variant="primary" type="submit" class="submit-btn" [disabled]="signupForm.invalid">{{ 'AUTH.REGISTER' | translate }}</app-button>
-        </div>
-
-        <app-alert type="error" [message]="errorMessage" class="signup-alert"></app-alert>
-      </form>
-
-      <div footer>
-        <div class="footer-actions">
-          <app-link routerLink="/login"
-            >{{ 'AUTH.LOGIN_LINK' | translate }}</app-link
-          >
-        </div>
-      </div>
-    </app-auth-card>
-  `,
-  styles: [
-    `
-      .form-group {
-        margin-top: var(--spacing-2);
-      }
-      .footer-actions {
-        margin-top: var(--spacing-2);
-      }
-      .actions {
-        margin-top: var(--spacing-3);
-        margin-bottom: var(--spacing-2);
-      }
-      .submit-btn {
-        width: 100%;
-      }
-      .submit-btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-      .full-width-btn {
-        width: 100%;
-      }
-      .signup-alert {
-        text-align: left;
-      }
-    `,
-  ],
+  templateUrl: './signup.component.html',
+  styleUrl: './signup.component.scss',
 })
 export class SignupComponent implements OnInit {
   private readonly authService = inject(AuthService);
@@ -117,15 +45,28 @@ export class SignupComponent implements OnInit {
 
   ngOnInit() {
     this.signupForm = this.fb.group({
-      name: ['', [Validators.required, Validators.maxLength(VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH)]],
-      email: ['', [Validators.required, Validators.email, Validators.maxLength(VALIDATION_RULES.EMAIL.MAX_LENGTH)]],
-      password: ['', [
-        Validators.required,
-        Validators.minLength(VALIDATION_RULES.PASSWORD.MIN_LENGTH),
-        Validators.maxLength(VALIDATION_RULES.PASSWORD.MAX_LENGTH),
-        Validators.pattern(/[a-zA-Z]/),
-        Validators.pattern(/[0-9]/)
-      ]],
+      name: [
+        '',
+        [Validators.required, Validators.maxLength(VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH)],
+      ],
+      email: [
+        '',
+        [
+          Validators.required,
+          Validators.email,
+          Validators.maxLength(VALIDATION_RULES.EMAIL.MAX_LENGTH),
+        ],
+      ],
+      password: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(VALIDATION_RULES.PASSWORD.MIN_LENGTH),
+          Validators.maxLength(VALIDATION_RULES.PASSWORD.MAX_LENGTH),
+          Validators.pattern(/[a-zA-Z]/),
+          Validators.pattern(/[0-9]/),
+        ],
+      ],
     });
   }
 
@@ -147,13 +88,17 @@ export class SignupComponent implements OnInit {
           const details = err.error.error.details;
 
           // 各フィールドのエラーをマッピング
-          Object.keys(details).forEach(field => {
+          Object.keys(details).forEach((field) => {
             const messages = (details as any)[field].map((d: any) => {
               switch (d.code) {
                 case 'PASSWORD_TOO_SHORT':
-                  return this.translate.instant('VALIDATION.MIN_LENGTH', { min: d.params?.min || 8 });
+                  return this.translate.instant('VALIDATION.MIN_LENGTH', {
+                    min: d.params?.min || 8,
+                  });
                 case 'PASSWORD_TOO_LONG':
-                  return this.translate.instant('VALIDATION.MAX_LENGTH', { max: d.params?.max || VALIDATION_RULES.PASSWORD.MAX_LENGTH });
+                  return this.translate.instant('VALIDATION.MAX_LENGTH', {
+                    max: d.params?.max || VALIDATION_RULES.PASSWORD.MAX_LENGTH,
+                  });
                 case 'PASSWORD_NO_ALPHA':
                   return this.translate.instant('VALIDATION.PASSWORD_NO_ALPHA');
                 case 'PASSWORD_NO_NUMERIC':
@@ -161,7 +106,9 @@ export class SignupComponent implements OnInit {
                 case 'EMAIL_INVALID_FORMAT':
                   return this.translate.instant('VALIDATION.INVALID_EMAIL');
                 case 'EMAIL_TOO_LONG':
-                  return this.translate.instant('VALIDATION.MAX_LENGTH', { max: d.params?.max || VALIDATION_RULES.EMAIL.MAX_LENGTH });
+                  return this.translate.instant('VALIDATION.MAX_LENGTH', {
+                    max: d.params?.max || VALIDATION_RULES.EMAIL.MAX_LENGTH,
+                  });
                 case 'REQUIRED':
                   return this.translate.instant('VALIDATION.REQUIRED');
                 default:

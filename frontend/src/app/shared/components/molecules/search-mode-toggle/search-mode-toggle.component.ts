@@ -6,23 +6,8 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
   selector: 'app-search-mode-toggle',
   standalone: true,
   imports: [FormsModule, MatButtonToggleModule],
-  template: `
-    <mat-button-toggle-group [ngModel]="value" (ngModelChange)="onValueChange($event)">
-      <mat-button-toggle value="keyword">キーワード</mat-button-toggle>
-      <mat-button-toggle value="tag">タグ</mat-button-toggle>
-    </mat-button-toggle-group>
-  `,
-  styles: [
-    `
-      :host {
-        display: block;
-      }
-      mat-button-toggle-group {
-        width: 100%;
-        max-width: fit-content;
-      }
-    `,
-  ],
+  templateUrl: './search-mode-toggle.component.html',
+  styleUrl: './search-mode-toggle.component.scss',
 })
 export class SearchModeToggleComponent {
   @Input() value: 'keyword' | 'tag' = 'keyword';

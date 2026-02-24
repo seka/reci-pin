@@ -1,9 +1,17 @@
 import { Component, Input, forwardRef, inject, ElementRef, ViewChild, OnInit } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormControl, ReactiveFormsModule } from '@angular/forms';
+import {
+  ControlValueAccessor,
+  NG_VALUE_ACCESSOR,
+  FormControl,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { Tag, RecipeService } from '../../../../core/services/recipe.service';
 import { CommonModule } from '@angular/common';
 import { MatChipsModule, MatChipInputEvent } from '@angular/material/chips';
-import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import {
+  MatAutocompleteModule,
+  MatAutocompleteSelectedEvent,
+} from '@angular/material/autocomplete';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
@@ -27,66 +35,8 @@ import { Observable, startWith, map } from 'rxjs';
       multi: true,
     },
   ],
-  template: `
-    <div class="tags-section">
-      <span class="section-label" id="tag-select-label">タグ選択</span>
-      <p class="helper-text">タグを入力して検索、またはEnterで新規作成できます。</p>
-
-      <mat-form-field class="tag-chip-list" appearance="outline">
-        <mat-label>タグ</mat-label>
-        <mat-chip-grid #chipGrid aria-label="Tag selection">
-          @for (tagId of selectedTagIds; track tagId) {
-            <mat-chip-row (removed)="remove(tagId)">
-              {{ getTagName(tagId) }}
-              <button matChipRemove [attr.aria-label]="'remove ' + getTagName(tagId)">
-                <mat-icon>cancel</mat-icon>
-              </button>
-            </mat-chip-row>
-          }
-          <input
-            placeholder="新しいタグ..."
-            #tagInput
-            [formControl]="tagCtrl"
-            [matChipInputFor]="chipGrid"
-            [matAutocomplete]="auto"
-            [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-            (matChipInputTokenEnd)="add($event)"
-          />
-        </mat-chip-grid>
-        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
-          @for (tag of filteredTags | async; track tag.id) {
-            <mat-option [value]="tag">
-              {{ tag.name }}
-            </mat-option>
-          }
-        </mat-autocomplete>
-      </mat-form-field>
-    </div>
-  `,
-  styles: [
-    `
-      .tags-section {
-        margin-top: 16px;
-        margin-bottom: 8px;
-      }
-      .section-label {
-        font-size: 1rem;
-        font-weight: 500;
-        color: rgba(0, 0, 0, 0.6);
-        display: block;
-        margin-bottom: 8px;
-      }
-      .helper-text {
-        font-size: 0.85em;
-        color: #666;
-        margin-bottom: 12px;
-        margin-top: 0;
-      }
-      .tag-chip-list {
-        width: 100%;
-      }
-    `,
-  ],
+  templateUrl: './tag-select.component.html',
+  styleUrl: './tag-select.component.scss',
 })
 export class TagSelectComponent implements ControlValueAccessor, OnInit {
   @Input() tags: Tag[] = [];
@@ -102,14 +52,14 @@ export class TagSelectComponent implements ControlValueAccessor, OnInit {
   private readonly recipeService = inject(RecipeService);
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  onChange: (value: number[]) => void = () => { };
+  onChange: (value: number[]) => void = () => {};
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  onTouched: () => void = () => { };
+  onTouched: () => void = () => {};
 
   constructor() {
     this.filteredTags = this.tagCtrl.valueChanges.pipe(
       startWith(null),
-      map((tag: string | null) => (tag ? this.filter(tag) : this.getUnselectedTags()))
+      map((tag: string | null) => (tag ? this.filter(tag) : this.getUnselectedTags())),
     );
   }
 
@@ -123,7 +73,7 @@ export class TagSelectComponent implements ControlValueAccessor, OnInit {
   }
 
   private getUnselectedTags(): Tag[] {
-    return this.tags.filter(tag => !this.selectedTagIds.includes(tag.id));
+    return this.tags.filter((tag) => !this.selectedTagIds.includes(tag.id));
   }
 
   add(event: MatChipInputEvent): void {
@@ -150,7 +100,7 @@ export class TagSelectComponent implements ControlValueAccessor, OnInit {
             event.chipInput!.clear();
             this.tagCtrl.setValue(null);
           },
-          error: (err) => console.error('Failed to create tag', err)
+          error: (err) => console.error('Failed to create tag', err),
         });
         return; // Return early to avoid clearing input before async op completes (though we clear it in subscribe)
       }
@@ -184,9 +134,9 @@ export class TagSelectComponent implements ControlValueAccessor, OnInit {
     // If value is a Tag object (from autocomplete selection), use its name, otherwise use the string
     const filterValue = (typeof value === 'string' ? value : value?.name || '').toLowerCase();
 
-    return this.tags.filter((tag) =>
-      tag.name.toLowerCase().includes(filterValue) &&
-      !this.selectedTagIds.includes(tag.id)
+    return this.tags.filter(
+      (tag) =>
+        tag.name.toLowerCase().includes(filterValue) && !this.selectedTagIds.includes(tag.id),
     );
   }
 
