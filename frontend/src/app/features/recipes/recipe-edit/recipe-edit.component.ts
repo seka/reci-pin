@@ -9,29 +9,8 @@ import { RecipeFormComponent, RecipeFormSubmitEvent, RecipeFormData } from '../.
     selector: 'app-recipe-edit',
     standalone: true,
     imports: [CommonModule, RecipeFormComponent],
-    template: `
-    @if (isLoading) {
-      <div class="loading-container">Loading...</div>
-    } @else {
-      <app-recipe-form
-        titleKey="RECIPE.EDIT_TITLE"
-        submitLabelKey="RECIPE.SAVE"
-        submittingLabelKey="RECIPE.SAVING"
-        [isSubmitting]="isSubmitting"
-        [initialData]="initialData"
-        [initialImagePreview]="initialImagePreview"
-        (save)="onSave($event)"
-      ></app-recipe-form>
-    }
-  `,
-  styles: [
-    `
-      .loading-container {
-        text-align: center;
-        padding: var(--spacing-4);
-      }
-    `,
-  ],
+  templateUrl: './recipe-edit.component.html',
+  styleUrl: './recipe-edit.component.scss',
 })
 export class RecipeEditComponent implements OnInit {
     private readonly recipeService = inject(RecipeService);
