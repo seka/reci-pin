@@ -1,0 +1,52 @@
+<mat-card class="recipe-card">
+  <div class="action-buttons">
+    <a
+      mat-icon-button
+      class="action-btn"
+      [routerLink]="['/recipes', recipe.id, 'edit']"
+      [attr.aria-label]="'COMMON.EDIT' | translate"
+    >
+      <mat-icon>edit</mat-icon>
+    </a>
+    <button
+      mat-icon-button
+      color="warn"
+      class="action-btn"
+      (click)="openDeleteDialog()"
+      [attr.aria-label]="'COMMON.DELETE' | translate"
+    >
+      <mat-icon>delete</mat-icon>
+    </button>
+  </div>
+  @if (thumbnailUrl) {
+    <div class="card-image">
+      <img [src]="thumbnailUrl" [alt]="recipe.name" />
+    </div>
+  }
+  <mat-card-header>
+    <mat-card-title>{{ recipe.name }}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <p>{{ recipe.memo }}</p>
+    @if (recipe.tags && recipe.tags.length > 0) {
+      <mat-chip-set>
+        @for (tag of recipe.tags; track tag.id) {
+          <mat-chip>{{ tag.name }}</mat-chip>
+        }
+      </mat-chip-set>
+    }
+  </mat-card-content>
+  <mat-card-actions align="end">
+    @if (recipe.url) {
+      <a
+        mat-button
+        color="accent"
+        [href]="getExternalUrl(recipe.url)"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {{ 'RECIPE.VIEW_DETAILS' | translate }}
+      </a>
+    }
+  </mat-card-actions>
+</mat-card>
