@@ -1,7 +1,7 @@
 import { Component, Inject, PLATFORM_ID, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { HeaderComponent } from './shared/components/organisms/header/header.component';
 
 @Component({
@@ -14,15 +14,12 @@ export class App {
   protected readonly title = signal('frontend');
 
   constructor(
-    private translate: TranslateService,
+    private translate: TranslocoService,
     @Inject(PLATFORM_ID) private platformId: Object,
   ) {
-    this.translate.addLangs(['ja', 'en']);
-    this.translate.setDefaultLang('ja');
-
     if (isPlatformBrowser(this.platformId)) {
       const savedLang = localStorage.getItem('lang');
-      const browserLang = this.translate.getBrowserLang();
+      const browserLang = typeof window !== 'undefined' ? window.navigator.language : 'ja';
 
       // Normalize language code (e.g. 'en-US' -> 'en')
       let langToUse = 'ja';
@@ -34,9 +31,9 @@ export class App {
         langToUse = 'ja';
       }
 
-      this.translate.use(langToUse);
+      this.translate.setActiveLang(langToUse);
     } else {
-      this.translate.use('ja');
+      this.translate.setActiveLang('ja');
     }
   }
 }

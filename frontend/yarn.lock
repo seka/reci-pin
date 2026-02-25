@@ -3550,6 +3550,37 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@jsverse/transloco-utils@npm:^8.2.1":
+  version: 8.2.1
+  resolution: "@jsverse/transloco-utils@npm:8.2.1"
+  dependencies:
+    cosmiconfig: "npm:^8.1.3"
+    tslib: "npm:^2.3.0"
+  checksum: 10c0/4d83e82e38cf03a6f5a13eb7cfc2598baf5ab9ea6c06f2b4fd11aa228aca96c8e80181a46f3954ad3801c4f408bb0667c3bae1f1dbad36dcc51e5a3b9a23a986
+  languageName: node
+  linkType: hard
+
+"@jsverse/transloco@npm:^8.2.1":
+  version: 8.2.1
+  resolution: "@jsverse/transloco@npm:8.2.1"
+  dependencies:
+    "@jsverse/transloco-utils": "npm:^8.2.1"
+    "@jsverse/utils": "npm:1.0.0-beta.5"
+    tslib: "npm:^2.2.0"
+  peerDependencies:
+    "@angular/core": ">=16.0.0"
+    rxjs: ">=6.0.0"
+  checksum: 10c0/e2a8c0151e83ddeac6f92b97432187193d517c879b63def2201584bb1572a948b08292cf88d80b9e92eab9d33448bb4819db72f9a108d3a4c6b6994343a7ddbf
+  languageName: node
+  linkType: hard
+
+"@jsverse/utils@npm:1.0.0-beta.5":
+  version: 1.0.0-beta.5
+  resolution: "@jsverse/utils@npm:1.0.0-beta.5"
+  checksum: 10c0/caa2fca550a56a7f5311de5c298d47295d279781b91551a8ab86032dbc57eac9f32d5592356ef2d13803a582a7fe5e9241dd63b87bd0c151af04ccc4d05c127d
+  languageName: node
+  linkType: hard
+
 "@leichtgewicht/ip-codec@npm:^2.0.1":
   version: 2.0.5
   resolution: "@leichtgewicht/ip-codec@npm:2.0.5"
@@ -3902,30 +3933,6 @@ __metadata:
     typescript: ">=5.9 <6.0"
     webpack: ^5.54.0
   checksum: 10c0/ef96203b11a17788258318f5069e5bee12e11f4d83f125517235548f5b317f9f691401501e9d31d3db3f1675aa8c847f80ae5843f574d3feae35201a782455b9
-  languageName: node
-  linkType: hard
-
-"@ngx-translate/core@npm:^17.0.0":
-  version: 17.0.0
-  resolution: "@ngx-translate/core@npm:17.0.0"
-  dependencies:
-    tslib: "npm:^2.3.0"
-  peerDependencies:
-    "@angular/common": ">=16"
-    "@angular/core": ">=16"
-  checksum: 10c0/c1f51c788c76081c5e13d7b504fe2e9a868d965e2f67d60b45260104f45096984f2a21bab62136754f51b70d41a01f30dced6f8518393a8d1f910ab7082923e3
-  languageName: node
-  linkType: hard
-
-"@ngx-translate/http-loader@npm:^17.0.0":
-  version: 17.0.0
-  resolution: "@ngx-translate/http-loader@npm:17.0.0"
-  dependencies:
-    tslib: "npm:^2.3.0"
-  peerDependencies:
-    "@angular/common": ">=16"
-    "@angular/core": ">=16"
-  checksum: 10c0/88bfc4c965a990c807d730082619a7ea6ab01673feb16b6edd1a9ae2b3155d325677cb1f14bbc55979fd703d5b9932db62f2338295486a80150503d299e0d364
   languageName: node
   linkType: hard
 
@@ -6681,7 +6688,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cosmiconfig@npm:^8.2.0":
+"cosmiconfig@npm:^8.1.3, cosmiconfig@npm:^8.2.0":
   version: 8.3.6
   resolution: "cosmiconfig@npm:8.3.6"
   dependencies:
@@ -8175,8 +8182,7 @@ __metadata:
     "@babel/runtime": "npm:^7.26.0"
     "@compodoc/compodoc": "npm:^1.2.1"
     "@eslint/js": "npm:^9.0.0"
-    "@ngx-translate/core": "npm:^17.0.0"
-    "@ngx-translate/http-loader": "npm:^17.0.0"
+    "@jsverse/transloco": "npm:^8.2.1"
     "@storybook/addon-a11y": "npm:^10.2.7"
     "@storybook/addon-docs": "npm:^10.2.7"
     "@storybook/angular": "npm:^10.2.7"
@@ -12574,7 +12580,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:2.8.1, tslib@npm:^2.0.0, tslib@npm:^2.0.1, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.4.0":
+"tslib@npm:2.8.1, tslib@npm:^2.0.0, tslib@npm:^2.0.1, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.2.0, tslib@npm:^2.3.0, tslib@npm:^2.4.0":
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
   checksum: 10c0/9c4759110a19c53f992d9aae23aac5ced636e99887b51b9e61def52611732872ff7668757d4e4c61f19691e36f4da981cd9485e869b4a7408d689f6bf1f14e62
