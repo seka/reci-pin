@@ -4,30 +4,9 @@ import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
-
-export interface User {
-  id: number;
-  email: string;
-  name: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface AuthResponse {
-  token: string;
-  user: User;
-}
-
-export interface SignupRequest {
-  email: string;
-  password: string;
-  name: string;
-}
-
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
+import { User } from '../models/user.model';
+import { SignupRequest, LoginRequest } from './requests/auth.request';
+import { AuthResponse, MessageResponse } from './responses/auth.response';
 
 export type RefreshState = 'success' | 'error' | null;
 
@@ -212,8 +191,4 @@ export class AuthService {
       .post<AuthResponse>(`${this.API_URL}/auth/refresh`, {})
       .pipe(tap((response) => this.handleAuthResponse(response)));
   }
-}
-
-export interface MessageResponse {
-  message: string;
 }

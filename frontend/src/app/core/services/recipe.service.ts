@@ -1,59 +1,14 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, switchMap, from } from 'rxjs';
-
-export interface Recipe {
-  id: number;
-  userId: number;
-  name: string;
-  url: string;
-  memo: string;
-  createdAt: string;
-  updatedAt: string;
-  tags?: Tag[];
-  images?: RecipeImage[];
-}
-
-export interface Tag {
-  id: number;
-  name: string;
-}
-
-export interface RecipeImage {
-  id: number;
-  recipeId: number;
-  imageUrl: string;
-  createdAt: string;
-}
-
-export interface CreateRecipeRequest {
-  name: string;
-  url: string;
-  memo: string;
-  tagIds: number[];
-}
-
-export interface UpdateRecipeRequest {
-  name: string;
-  url: string;
-  memo: string;
-}
-
-export interface SearchRecipeRequest {
-  query: string;
-  tagIds: number[];
-}
-
-export interface CreateRecipeImageRequest {
-  filename: string;
-  contentType: string;
-  size: number;
-}
-
-export interface CreateRecipeImageResponse {
-  image: RecipeImage;
-  uploadUrl: string;
-}
+import { Recipe, Tag, RecipeImage } from '../models/recipe.model';
+import {
+  CreateRecipeRequest,
+  UpdateRecipeRequest,
+  SearchRecipeRequest,
+  CreateRecipeImageRequest,
+} from './requests/recipe.request';
+import { CreateRecipeImageResponse } from './responses/recipe.response';
 
 @Injectable({
   providedIn: 'root',

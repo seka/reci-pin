@@ -6,7 +6,9 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
 import { PLATFORM_ID } from '@angular/core';
-import { AuthService, User, AuthResponse } from './auth.service';
+import { AuthService } from './auth.service';
+import { User } from '../models/user.model';
+import { AuthResponse } from './responses/auth.response';
 import { vi, expect, describe, it, beforeEach, afterEach } from 'vitest';
 
 describe('AuthService', () => {
