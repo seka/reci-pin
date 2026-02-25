@@ -13,7 +13,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { RecipeService, Tag } from '../../../../core/services/recipe.service';
 import { TagSelectComponent } from '../../molecules/tag-select/tag-select.component';
 import { ButtonComponent } from '../../atoms/button/button.component';
@@ -43,7 +43,7 @@ export interface RecipeFormSubmitEvent {
     RouterModule,
     MatCardModule,
     MatIconModule,
-    TranslatePipe,
+    TranslocoPipe,
     TagSelectComponent,
     ButtonComponent,
     HeadlineComponent,
@@ -56,7 +56,7 @@ export interface RecipeFormSubmitEvent {
 export class RecipeFormComponent implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
   private readonly recipeService = inject(RecipeService);
-  private readonly translate = inject(TranslateService);
+  private readonly translate = inject(TranslocoService);
 
   @Input() titleKey: string = 'FEATURES.RECIPES.RECIPE_CREATE.TITLE';
   @Input() submitLabelKey: string = 'COMPONENTS.ORGANISMS.RECIPE_FORM.SAVE';
@@ -204,13 +204,13 @@ export class RecipeFormComponent implements OnInit, OnChanges {
         const messages = (details as any)[field].map((d: any) => {
           switch (d.code) {
             case 'REQUIRED':
-              return this.translate.instant('VALIDATION.REQUIRED');
+              return this.translate.translate('VALIDATION.REQUIRED');
             case 'TEXT_TOO_LONG':
-              return this.translate.instant('VALIDATION.MAX_LENGTH', { max: d.params?.max });
+              return this.translate.translate('VALIDATION.MAX_LENGTH', { max: d.params?.max });
             case 'URL_INVALID_FORMAT':
-              return this.translate.instant('VALIDATION.INVALID_URL');
+              return this.translate.translate('VALIDATION.INVALID_URL');
             default:
-              return this.translate.instant('VALIDATION.INVALID_INPUT');
+              return this.translate.translate('VALIDATION.INVALID_INPUT');
           }
         });
         this.fieldErrors[field] = messages;

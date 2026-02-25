@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 import { applicationConfig } from '@storybook/angular';
 import { Meta, StoryObj, moduleMetadata } from '@storybook/angular';
 import { SettingsComponent } from './settings.component';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslocoModule } from '@jsverse/transloco';
 import { RouterModule } from '@angular/router';
 import {  } from '@angular/platform-browser/animations';
 import { AuthService } from '../../core/services/auth.service';
@@ -22,7 +22,7 @@ const meta: Meta<SettingsComponent> = {
     applicationConfig({ providers: [provideAnimations(), provideRouter([])] }),
     moduleMetadata({
       imports: [
-        TranslateModule,
+        TranslocoModule,
         RouterModule,
         
       ],

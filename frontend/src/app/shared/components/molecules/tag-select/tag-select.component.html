@@ -1,9 +1,9 @@
 <div class="tags-section">
-  <span class="section-label" id="tag-select-label">{{ 'COMPONENTS.MOLECULES.TAG_SELECT.LABEL' | translate }}</span>
-  <p class="helper-text">{{ 'COMPONENTS.MOLECULES.TAG_SELECT.HELPER' | translate }}</p>
+  <span class="section-label" id="tag-select-label">{{ 'COMPONENTS.MOLECULES.TAG_SELECT.LABEL' | transloco }}</span>
+  <p class="helper-text">{{ 'COMPONENTS.MOLECULES.TAG_SELECT.HELPER' | transloco }}</p>
 
   <mat-form-field class="tag-chip-list" appearance="outline">
-    <mat-label>{{ 'COMMON.TAG' | translate }}</mat-label>
+    <mat-label>{{ 'COMMON.TAG' | transloco }}</mat-label>
     <mat-chip-grid #chipGrid aria-label="Tag selection">
       @for (tagId of selectedTagIds; track tagId) {
         <mat-chip-row (removed)="remove(tagId)">
@@ -14,7 +14,7 @@
         </mat-chip-row>
       }
       <input
-        [placeholder]="'COMPONENTS.MOLECULES.TAG_SELECT.NEW_PLACEHOLDER' | translate"
+        [placeholder]="'COMPONENTS.MOLECULES.TAG_SELECT.NEW_PLACEHOLDER' | transloco"
         #tagInput
         [formControl]="tagCtrl"
         [matChipInputFor]="chipGrid"

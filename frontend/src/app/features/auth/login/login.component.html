@@ -1,7 +1,7 @@
-<app-auth-card [title]="'FEATURES.AUTH.LOGIN.SUBMIT' | translate">
+<app-auth-card [title]="'FEATURES.AUTH.LOGIN.SUBMIT' | transloco">
   <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
     <app-input
-      [label]="'FEATURES.AUTH.LOGIN.EMAIL' | translate"
+      [label]="'FEATURES.AUTH.LOGIN.EMAIL' | transloco"
       type="email"
       formControlName="email"
       [required]="true"
@@ -10,7 +10,7 @@
 
     <div class="form-group">
       <app-input
-        [label]="'FEATURES.AUTH.LOGIN.PASSWORD' | translate"
+        [label]="'FEATURES.AUTH.LOGIN.PASSWORD' | transloco"
         type="password"
         formControlName="password"
         [required]="true"
@@ -24,13 +24,13 @@
         type="submit"
         class="submit-btn"
         [disabled]="loginForm.invalid"
-        >{{ 'FEATURES.AUTH.LOGIN.SUBMIT' | translate }}</app-button
+        >{{ 'FEATURES.AUTH.LOGIN.SUBMIT' | transloco }}</app-button
       >
     </div>
 
     <div class="forgot-password-link">
       <app-link routerLink="/password-reset/request" variant="secondary">
-        {{ 'FEATURES.AUTH.REQUEST_PASSWORD_RESET.TITLE' | translate }}
+        {{ 'FEATURES.AUTH.REQUEST_PASSWORD_RESET.TITLE' | transloco }}
       </app-link>
     </div>
 
@@ -40,7 +40,7 @@
   <div footer>
     <a routerLink="/signup" class="no-text-decoration">
       <app-button variant="accent" type="button" class="full-width-btn">{{
-        'FEATURES.AUTH.LOGIN.GO_TO_SIGNUP' | translate
+        'FEATURES.AUTH.LOGIN.GO_TO_SIGNUP' | transloco
       }}</app-button>
     </a>
   </div>

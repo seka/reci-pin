@@ -7,7 +7,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthCardComponent } from '../../../shared/components/organisms/auth-card/auth-card.component';
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
@@ -22,7 +22,7 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
     FormsModule,
     RouterModule,
     ReactiveFormsModule,
-    TranslatePipe,
+    TranslocoPipe,
     AuthCardComponent,
     InputComponent,
     ButtonComponent,
@@ -35,7 +35,7 @@ export class SignupComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
-  private readonly translate = inject(TranslateService);
+  private readonly translate = inject(TranslocoService);
 
   signupForm!: FormGroup;
   fieldErrors: { [key: string]: string[] } = {};
@@ -92,27 +92,27 @@ export class SignupComponent implements OnInit {
             const messages = (details as any)[field].map((d: any) => {
               switch (d.code) {
                 case 'PASSWORD_TOO_SHORT':
-                  return this.translate.instant('VALIDATION.MIN_LENGTH', {
+                  return this.translate.translate('VALIDATION.MIN_LENGTH', {
                     min: d.params?.min || 8,
                   });
                 case 'PASSWORD_TOO_LONG':
-                  return this.translate.instant('VALIDATION.MAX_LENGTH', {
+                  return this.translate.translate('VALIDATION.MAX_LENGTH', {
                     max: d.params?.max || VALIDATION_RULES.PASSWORD.MAX_LENGTH,
                   });
                 case 'PASSWORD_NO_ALPHA':
-                  return this.translate.instant('VALIDATION.PASSWORD_NO_ALPHA');
+                  return this.translate.translate('VALIDATION.PASSWORD_NO_ALPHA');
                 case 'PASSWORD_NO_NUMERIC':
-                  return this.translate.instant('VALIDATION.PASSWORD_NO_NUMERIC');
+                  return this.translate.translate('VALIDATION.PASSWORD_NO_NUMERIC');
                 case 'EMAIL_INVALID_FORMAT':
-                  return this.translate.instant('VALIDATION.INVALID_EMAIL');
+                  return this.translate.translate('VALIDATION.INVALID_EMAIL');
                 case 'EMAIL_TOO_LONG':
-                  return this.translate.instant('VALIDATION.MAX_LENGTH', {
+                  return this.translate.translate('VALIDATION.MAX_LENGTH', {
                     max: d.params?.max || VALIDATION_RULES.EMAIL.MAX_LENGTH,
                   });
                 case 'REQUIRED':
-                  return this.translate.instant('VALIDATION.REQUIRED');
+                  return this.translate.translate('VALIDATION.REQUIRED');
                 default:
-                  return this.translate.instant('VALIDATION.INVALID_INPUT');
+                  return this.translate.translate('VALIDATION.INVALID_INPUT');
               }
             });
             this.fieldErrors[field] = messages;
@@ -122,7 +122,7 @@ export class SignupComponent implements OnInit {
             return;
           }
         }
-        this.errorMessage = this.translate.instant('FEATURES.AUTH.SIGNUP.FAILED');
+        this.errorMessage = this.translate.translate('FEATURES.AUTH.SIGNUP.FAILED');
       },
     });
   }

@@ -13,7 +13,7 @@ import { InputComponent } from '../../../shared/components/atoms/input/input.com
 import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
 import { HeadlineComponent } from '../../../shared/components/atoms/headline/headline.component';
 import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { LinkComponent } from '../../../shared/components/atoms/link/link.component';
 import { AlertComponent } from '../../../shared/components/atoms/alert/alert.component';
 
@@ -27,7 +27,7 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
     InputComponent,
     ButtonComponent,
     HeadlineComponent,
-    TranslatePipe,
+    TranslocoPipe,
     LinkComponent,
     AlertComponent,
   ],
@@ -38,7 +38,7 @@ export class ChangePasswordComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
-  private translate = inject(TranslateService);
+  private translate = inject(TranslocoService);
 
   isProcessing = false;
   errorMessage = '';
@@ -76,17 +76,17 @@ export class ChangePasswordComponent {
   getErrorMessage(controlName: string): string | null {
     const control = this.form.get(controlName);
     if (control?.touched && control?.errors) {
-      if (control.errors['required']) return this.translate.instant('VALIDATION.REQUIRED');
+      if (control.errors['required']) return this.translate.translate('VALIDATION.REQUIRED');
       if (control.errors['minlength'])
-        return this.translate.instant('VALIDATION.MIN_LENGTH', {
+        return this.translate.translate('VALIDATION.MIN_LENGTH', {
           min: VALIDATION_RULES.PASSWORD.MIN_LENGTH,
         });
       if (control.errors['maxlength'])
-        return this.translate.instant('VALIDATION.MAX_LENGTH', {
+        return this.translate.translate('VALIDATION.MAX_LENGTH', {
           max: VALIDATION_RULES.PASSWORD.MAX_LENGTH,
         });
       if (controlName === 'confirmNewPassword' && this.form.errors?.['mismatch']) {
-        return this.translate.instant('VALIDATION.PASSWORD_MISMATCH');
+        return this.translate.translate('VALIDATION.PASSWORD_MISMATCH');
       }
     }
     return null;
@@ -109,16 +109,16 @@ export class ChangePasswordComponent {
       })
       .subscribe({
         next: () => {
-          alert(this.translate.instant('FEATURES.SETTINGS.CHANGE_PASSWORD.SUCCESS'));
+          alert(this.translate.translate('FEATURES.SETTINGS.CHANGE_PASSWORD.SUCCESS'));
           this.router.navigate(['/settings']);
         },
         error: (err) => {
           this.isProcessing = false;
           // Backend returns bad request for incorrect password or validation errors
           if (err.status === 400 || err.status === 401) {
-            this.errorMessage = this.translate.instant('FEATURES.SETTINGS.CHANGE_PASSWORD.FAILED_INVALID');
+            this.errorMessage = this.translate.translate('FEATURES.SETTINGS.CHANGE_PASSWORD.FAILED_INVALID');
           } else {
-            this.errorMessage = this.translate.instant('FEATURES.SETTINGS.CHANGE_PASSWORD.FAILED_ERROR');
+            this.errorMessage = this.translate.translate('FEATURES.SETTINGS.CHANGE_PASSWORD.FAILED_ERROR');
           }
           console.error(err);
         },

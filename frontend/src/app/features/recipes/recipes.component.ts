@@ -10,7 +10,7 @@ import {
   MatAutocompleteSelectedEvent,
 } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { Observable, startWith, map } from 'rxjs';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 
@@ -35,7 +35,7 @@ import { EmptyStateComponent } from '../../shared/components/molecules/empty-sta
     MatChipsModule,
     MatAutocompleteModule,
     MatFormFieldModule,
-    TranslatePipe,
+    TranslocoPipe,
     AsyncPipe,
     RecipeCardComponent,
     HeadlineComponent,

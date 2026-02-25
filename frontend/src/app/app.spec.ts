@@ -3,7 +3,7 @@
  */
 import { TestBed } from '@angular/core/testing';
 import { App } from './app';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslocoTestingModule } from '@jsverse/transloco';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AuthService } from './core/services/auth.service';
 import { of, BehaviorSubject } from 'rxjs';
@@ -14,7 +14,7 @@ describe.skip('App', () => {
   beforeEach(async () => {
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
-      imports: [App, TranslateModule.forRoot()],
+      imports: [App, TranslocoTestingModule.forRoot({ langs: { ja: {}, en: {} }, translocoConfig: { availableLangs: ['ja', 'en'], defaultLang: 'ja' } })],
       providers: [
         provideRouter([]),
         { provide: PLATFORM_ID, useValue: 'browser' },
