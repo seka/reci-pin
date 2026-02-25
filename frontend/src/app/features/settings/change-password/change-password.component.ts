@@ -116,9 +116,13 @@ export class ChangePasswordComponent {
           this.isProcessing = false;
           // Backend returns bad request for incorrect password or validation errors
           if (err.status === 400 || err.status === 401) {
-            this.errorMessage = this.translate.translate('FEATURES.SETTINGS.CHANGE_PASSWORD.FAILED_INVALID');
+            this.errorMessage = this.translate.translate(
+              'FEATURES.SETTINGS.CHANGE_PASSWORD.FAILED_INVALID',
+            );
           } else {
-            this.errorMessage = this.translate.translate('FEATURES.SETTINGS.CHANGE_PASSWORD.FAILED_ERROR');
+            this.errorMessage = this.translate.translate(
+              'FEATURES.SETTINGS.CHANGE_PASSWORD.FAILED_ERROR',
+            );
           }
           console.error(err);
         },

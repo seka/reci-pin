@@ -3,35 +3,43 @@
   max-width: 600px;
   margin: 0 auto;
 }
+
 mat-card {
   padding: var(--spacing-3);
 }
+
 mat-card-title {
   margin-bottom: var(--spacing-3);
 }
+
 .form-group {
   margin-bottom: var(--spacing-2);
 }
+
 .actions {
   display: flex;
   justify-content: flex-end;
   gap: var(--spacing-2);
   margin-top: var(--spacing-3);
 }
+
 .action-btn {
   width: auto;
   min-width: 100px;
 }
+
 .image-upload-section {
   margin-top: var(--spacing-2);
   margin-bottom: var(--spacing-2);
 }
+
 .upload-label {
   display: block;
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   margin-bottom: var(--spacing-1);
 }
+
 .dropzone {
   position: relative;
   border: 2px dashed var(--color-border);
@@ -48,11 +56,13 @@ mat-card-title {
   justify-content: center;
   min-height: 160px;
 }
+
 .dropzone:hover,
 .dropzone.dragover {
   border-color: var(--color-primary);
   background-color: rgba(var(--color-primary-rgb, 99, 102, 241), 0.05);
 }
+
 .upload-icon {
   font-size: 40px;
   width: 40px;
@@ -60,29 +70,33 @@ mat-card-title {
   color: var(--color-text-secondary);
   margin-bottom: var(--spacing-1);
 }
+
 .upload-text {
   color: var(--color-text-secondary);
   margin: 0;
   font-size: var(--font-size-sm);
 }
+
 .upload-subtext {
   color: var(--color-text-tertiary, #999);
   margin: var(--spacing-1) 0 0;
   font-size: var(--font-size-xs, 12px);
 }
+
 .preview-image {
   max-width: 100%;
   max-height: 200px;
   border-radius: var(--radius-1);
   object-fit: contain;
 }
+
 .remove-btn {
   position: absolute;
   top: 8px;
   right: 8px;
   background: rgba(0, 0, 0, 0.5);
   border: none;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   color: white;
   width: 32px;
   height: 32px;
@@ -93,14 +107,17 @@ mat-card-title {
   padding: 0;
   transition: background 0.2s;
 }
+
 .remove-btn:hover {
   background: rgba(0, 0, 0, 0.7);
 }
+
 .remove-btn mat-icon {
   font-size: 18px;
   width: 18px;
   height: 18px;
 }
+
 .image-error {
   color: var(--color-error, #f44336);
   font-size: var(--font-size-xs, 12px);

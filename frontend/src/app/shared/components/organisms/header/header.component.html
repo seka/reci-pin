@@ -14,7 +14,9 @@
       @if (currentUser$ | async; as user) {
         <div class="user-actions">
           <span class="username">{{ 'COMMON.HELLO' | transloco }}, {{ user.name }}</span>
-          <app-button variant="text" (click)="onLogout()">{{ 'COMMON.LOGOUT' | transloco }}</app-button>
+          <app-button variant="text" (click)="onLogout()">{{
+            'COMMON.LOGOUT' | transloco
+          }}</app-button>
         </div>
       }
     </div>

@@ -2,7 +2,7 @@ import { applicationConfig } from '@storybook/angular';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { Meta, StoryObj } from '@storybook/angular';
 import { SearchModeToggleComponent } from './search-mode-toggle.component';
-import {  } from '@angular/platform-browser/animations';
+import {} from '@angular/platform-browser/animations';
 import { moduleMetadata } from '@storybook/angular';
 
 const meta: Meta<SearchModeToggleComponent> = {

@@ -6,12 +6,16 @@ import { RecipeFormComponent } from './recipe-form.component';
 import { TranslocoModule } from '@jsverse/transloco';
 import { RouterModule } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
-import {  } from '@angular/platform-browser/animations';
+import {} from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 import { RecipeService } from '../../../../core/services/recipe.service';
 
 const mockRecipeService = {
-  getAllTags: () => of([{ id: 1, name: 'Tag 1' }, { id: 2, name: 'Tag 2' }]),
+  getAllTags: () =>
+    of([
+      { id: 1, name: 'Tag 1' },
+      { id: 2, name: 'Tag 2' },
+    ]),
 };
 
 const meta: Meta<RecipeFormComponent> = {
@@ -21,15 +25,8 @@ const meta: Meta<RecipeFormComponent> = {
   decorators: [
     applicationConfig({ providers: [provideAnimations(), provideRouter([])] }),
     moduleMetadata({
-      imports: [
-        TranslocoModule,
-        RouterModule,
-        HttpClientModule,
-        
-      ],
-      providers: [
-        { provide: RecipeService, useValue: mockRecipeService },
-      ],
+      imports: [TranslocoModule, RouterModule, HttpClientModule],
+      providers: [{ provide: RecipeService, useValue: mockRecipeService }],
     }),
   ],
   argTypes: {

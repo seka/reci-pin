@@ -14,7 +14,13 @@ describe.skip('App', () => {
   beforeEach(async () => {
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
-      imports: [App, TranslocoTestingModule.forRoot({ langs: { ja: {}, en: {} }, translocoConfig: { availableLangs: ['ja', 'en'], defaultLang: 'ja' } })],
+      imports: [
+        App,
+        TranslocoTestingModule.forRoot({
+          langs: { ja: {}, en: {} },
+          translocoConfig: { availableLangs: ['ja', 'en'], defaultLang: 'ja' },
+        }),
+      ],
       providers: [
         provideRouter([]),
         { provide: PLATFORM_ID, useValue: 'browser' },

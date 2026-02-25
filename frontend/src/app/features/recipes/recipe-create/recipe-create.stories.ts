@@ -5,7 +5,7 @@ import { Meta, StoryObj, moduleMetadata } from '@storybook/angular';
 import { RecipeCreateComponent } from './recipe-create.component';
 import { TranslocoModule } from '@jsverse/transloco';
 import { RouterModule } from '@angular/router';
-import {  } from '@angular/platform-browser/animations';
+import {} from '@angular/platform-browser/animations';
 import { RecipeService } from '../../../core/services/recipe.service';
 import { of } from 'rxjs';
 
@@ -21,14 +21,8 @@ const meta: Meta<RecipeCreateComponent> = {
   decorators: [
     applicationConfig({ providers: [provideAnimations(), provideRouter([])] }),
     moduleMetadata({
-      imports: [
-        TranslocoModule,
-        RouterModule,
-        
-      ],
-      providers: [
-        { provide: RecipeService, useValue: mockRecipeService },
-      ],
+      imports: [TranslocoModule, RouterModule],
+      providers: [{ provide: RecipeService, useValue: mockRecipeService }],
     }),
   ],
 };

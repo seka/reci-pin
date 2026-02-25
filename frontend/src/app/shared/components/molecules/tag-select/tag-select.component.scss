@@ -1,20 +1,23 @@
 .tags-section {
-  margin-top: 16px;
-  margin-bottom: 8px;
+  margin-top: var(--spacing-2);
+  margin-bottom: var(--spacing-1);
 }
+
 .section-label {
   font-size: 1rem;
   font-weight: 500;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--color-text-secondary);
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-1);
 }
+
 .helper-text {
   font-size: 0.85em;
-  color: #666;
-  margin-bottom: 12px;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-1_5);
   margin-top: 0;
 }
+
 .tag-chip-list {
   width: 100%;
 }

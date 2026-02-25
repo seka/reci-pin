@@ -6,19 +6,22 @@
 
 // Sizes handled by font-size usually, Material Icons font adjustment
 .icon-sm {
-  font-size: 18px;
+  font-size: var(--font-size-4);
   width: 18px;
   height: 18px;
   line-height: 18px;
 }
+
 .icon-md {
-  font-size: 24px;
+  font-size: var(--font-size-6);
   width: 24px;
   height: 24px;
   line-height: 24px;
-} // Default
+}
+
+// Default
 .icon-lg {
-  font-size: 36px;
+  font-size: var(--font-size-8);
   width: 36px;
   height: 36px;
   line-height: 36px;

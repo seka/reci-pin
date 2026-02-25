@@ -1,6 +1,6 @@
 import { applicationConfig } from '@storybook/angular';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import {  } from '@angular/platform-browser/animations';
+import {} from '@angular/platform-browser/animations';
 import { moduleMetadata, Meta, StoryObj } from '@storybook/angular';
 import { TagSelectComponent } from './tag-select.component';
 

@@ -28,7 +28,7 @@ export const Login: Story = {
         <div style="padding: 20px; text-align: center;">
           <p>ここにログインフォームが入ります</p>
           <div style="margin-top: 20px;">
-            <button style="width: 100%; padding: 10px; background: #e91e63; color: white; border: none; border-radius: 4px;">ログイン</button>
+            <button style="width: 100%; padding: 10px; background: #e91e63; color: white; border: none; border-radius: var(--radius-1);">ログイン</button>
           </div>
         </div>
       </app-auth-card>
@@ -47,7 +47,7 @@ export const Signup: Story = {
         <div style="padding: 20px; text-align: center;">
           <p>ここにユーザー登録フォームが入ります</p>
           <div style="margin-top: 20px;">
-            <button style="width: 100%; padding: 10px; background: #00bcd4; color: white; border: none; border-radius: 4px;">登録する</button>
+            <button style="width: 100%; padding: 10px; background: #00bcd4; color: white; border: none; border-radius: var(--radius-1);">登録する</button>
           </div>
         </div>
       </app-auth-card>

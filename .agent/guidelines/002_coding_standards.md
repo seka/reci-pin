@@ -42,7 +42,9 @@ description: Code Style & Refactoring Guidelines
 
 ### スタイル (SCSS)
 -   グローバルなスタイル汚染を避けるため、可能な限りコンポーネント内 (`:host`) にスタイルを閉じ込めてください。
--   DADSデザイントークン (`src/app/core/assets/styles/tokens.scss`) の変数を積極的に使用し、マジックナンバーの使用は避けてください。
+-   DADSデザイントークン (`src/app/core/styles`) の変数を積極的に使用し、マジックナンバーの使用は避けてください。
+    - **禁止**: `16px` や `#fff`, `#333` といった余白・フォントサイズ・色の直書き。
+    - **推奨**: `var(--spacing-2)`, `var(--color-primary)`, `var(--font-size-2)` などのデザイントークンを使用する。
 
 ### 命名規則 (Naming Convention)
 -   **ファイル名**: `kebab-case` (例: `user-profile.component.ts`)

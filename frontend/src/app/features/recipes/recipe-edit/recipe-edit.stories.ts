@@ -5,13 +5,14 @@ import { Meta, StoryObj, moduleMetadata } from '@storybook/angular';
 import { RecipeEditComponent } from './recipe-edit.component';
 import { TranslocoModule } from '@jsverse/transloco';
 import { RouterModule } from '@angular/router';
-import {  } from '@angular/platform-browser/animations';
+import {} from '@angular/platform-browser/animations';
 import { RecipeService } from '../../../core/services/recipe.service';
 import { of } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 
 const mockRecipeService = {
-  getRecipe: () => of({ id: 1, name: 'Sample Recipe', url: 'https://example.com', memo: 'Sample memo', tags: [] }),
+  getRecipe: () =>
+    of({ id: 1, name: 'Sample Recipe', url: 'https://example.com', memo: 'Sample memo', tags: [] }),
   getAllTags: () => of([]),
 };
 
@@ -30,11 +31,7 @@ const meta: Meta<RecipeEditComponent> = {
   decorators: [
     applicationConfig({ providers: [provideAnimations(), provideRouter([])] }),
     moduleMetadata({
-      imports: [
-        TranslocoModule,
-        RouterModule,
-        
-      ],
+      imports: [TranslocoModule, RouterModule],
       providers: [
         { provide: RecipeService, useValue: mockRecipeService },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },

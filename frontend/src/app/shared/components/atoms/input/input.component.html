@@ -39,7 +39,10 @@
       }
       @if (control?.errors?.['minlength']) {
         <div class="error-line">
-          {{ 'VALIDATION.MIN_LENGTH' | transloco: { min: control?.errors?.['minlength']?.requiredLength } }}
+          {{
+            'VALIDATION.MIN_LENGTH'
+              | transloco: { min: control?.errors?.['minlength']?.requiredLength }
+          }}
         </div>
       }
       @if (
