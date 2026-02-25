@@ -62,8 +62,8 @@ describe('AuthService', () => {
     initTestBed();
     const mockResponse: AuthResponse = { token: '', user: mockUser };
 
-    service.login({ email: 'test@example.com', password: 'password' }).subscribe((res) => {
-      expect(res.user).toEqual(mockUser);
+    service.login({ email: 'test@example.com', password: 'password' }).subscribe((user) => {
+      expect(user).toEqual(mockUser);
     });
 
     const req = httpMock.expectOne('/api/auth/login');

@@ -1,14 +1,22 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, switchMap, from } from 'rxjs';
+import { Observable, switchMap, from, map } from 'rxjs';
 import { Recipe, Tag, RecipeImage } from '../models/recipe.model';
 import {
   CreateRecipeRequest,
   UpdateRecipeRequest,
   SearchRecipeRequest,
   CreateRecipeImageRequest,
+  fromRecipeModelToCreateRequest,
+  fromRecipeModelToUpdateRequest,
 } from './requests/recipe.request';
-import { CreateRecipeImageResponse } from './responses/recipe.response';
+import {
+  RecipeResponse,
+  CreateRecipeImageResponse,
+  toRecipeModel,
+  toRecipeModels,
+  toRecipeImageModel,
+} from './responses/recipe.response';
 
 @Injectable({
   providedIn: 'root',
@@ -18,24 +26,26 @@ export class RecipeService {
   private readonly TAG_API_URL = '/api/tags';
   private readonly http = inject(HttpClient);
 
-  createRecipe(data: CreateRecipeRequest): Observable<Recipe> {
-    return this.http.post<Recipe>(this.API_URL, data);
+  createRecipe(model: Partial<Recipe>): Observable<Recipe> {
+    const data = fromRecipeModelToCreateRequest(model);
+    return this.http.post<RecipeResponse>(this.API_URL, data).pipe(map(toRecipeModel));
   }
 
   getRecipe(id: number): Observable<Recipe> {
-    return this.http.get<Recipe>(`${this.API_URL}/${id}`);
+    return this.http.get<RecipeResponse>(`${this.API_URL}/${id}`).pipe(map(toRecipeModel));
   }
 
   getUserRecipes(): Observable<Recipe[]> {
-    return this.http.get<Recipe[]>(this.API_URL);
+    return this.http.get<RecipeResponse[]>(this.API_URL).pipe(map(toRecipeModels));
   }
 
   searchRecipes(data: SearchRecipeRequest): Observable<Recipe[]> {
-    return this.http.post<Recipe[]>(`${this.API_URL}/search`, data);
+    return this.http.post<RecipeResponse[]>(`${this.API_URL}/search`, data).pipe(map(toRecipeModels));
   }
 
-  updateRecipe(id: number, data: UpdateRecipeRequest): Observable<Recipe> {
-    return this.http.put<Recipe>(`${this.API_URL}/${id}`, data);
+  updateRecipe(id: number, model: Partial<Recipe>): Observable<Recipe> {
+    const data = fromRecipeModelToUpdateRequest(model);
+    return this.http.put<RecipeResponse>(`${this.API_URL}/${id}`, data).pipe(map(toRecipeModel));
   }
 
   deleteRecipe(id: number): Observable<void> {
@@ -71,7 +81,7 @@ export class RecipeService {
               body: file,
             }).then((r) => {
               if (!r.ok) throw new Error(`S3 upload failed: ${r.status}`);
-              return res.image;
+              return toRecipeImageModel(res);
             }),
           );
         }),

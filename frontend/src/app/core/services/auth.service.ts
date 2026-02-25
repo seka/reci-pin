@@ -1,12 +1,12 @@
 import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, BehaviorSubject, map } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { User } from '../models/user.model';
 import { SignupRequest, LoginRequest } from './requests/auth.request';
-import { AuthResponse, MessageResponse } from './responses/auth.response';
+import { AuthResponse, MessageResponse, toUserModel } from './responses/auth.response';
 
 export type RefreshState = 'success' | 'error' | null;
 
@@ -72,16 +72,22 @@ export class AuthService {
     }
   }
 
-  signup(data: SignupRequest): Observable<AuthResponse> {
+  signup(data: SignupRequest): Observable<User> {
     return this.http
       .post<AuthResponse>(`${this.API_URL}/auth/signup`, data)
-      .pipe(tap((response) => this.handleAuthResponse(response)));
+      .pipe(
+        tap((response) => this.handleAuthResponse(response)),
+        map(toUserModel),
+      );
   }
 
-  login(data: LoginRequest): Observable<AuthResponse> {
+  login(data: LoginRequest): Observable<User> {
     return this.http
       .post<AuthResponse>(`${this.API_URL}/auth/login`, data)
-      .pipe(tap((response) => this.handleAuthResponse(response)));
+      .pipe(
+        tap((response) => this.handleAuthResponse(response)),
+        map(toUserModel),
+      );
   }
 
   logout(): void {
@@ -186,9 +192,12 @@ export class AuthService {
     });
   }
 
-  refresh(): Observable<AuthResponse> {
+  refresh(): Observable<User> {
     return this.http
       .post<AuthResponse>(`${this.API_URL}/auth/refresh`, {})
-      .pipe(tap((response) => this.handleAuthResponse(response)));
+      .pipe(
+        tap((response) => this.handleAuthResponse(response)),
+        map(toUserModel),
+      );
   }
 }
