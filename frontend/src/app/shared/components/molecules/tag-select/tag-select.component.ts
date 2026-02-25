@@ -5,7 +5,8 @@ import {
   FormControl,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { Tag, RecipeService } from '../../../../core/services/recipe.service';
+import { RecipeService } from '../../../../core/services/recipe.service';
+import { Tag } from '../../../../core/models/recipe.model';
 import { CommonModule } from '@angular/common';
 import { MatChipsModule, MatChipInputEvent } from '@angular/material/chips';
 import {
@@ -54,9 +55,9 @@ export class TagSelectComponent implements ControlValueAccessor, OnInit {
   private readonly recipeService = inject(RecipeService);
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  onChange: (value: number[]) => void = () => {};
+  onChange: (value: number[]) => void = () => { };
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  onTouched: () => void = () => {};
+  onTouched: () => void = () => { };
 
   constructor() {
     this.filteredTags = this.tagCtrl.valueChanges.pipe(

@@ -4,7 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { RecipeCardComponent } from './recipe-card.component';
-import { Recipe } from '../../../../core/services/recipe.service';
+import { Recipe } from '../../../../core/models/recipe.model';
 
 const meta: Meta<RecipeCardComponent> = {
   title: 'Organisms/RecipeCard',

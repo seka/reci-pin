@@ -6,7 +6,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { RouterModule } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-import { Recipe } from '../../../../core/services/recipe.service';
+import { Recipe } from '../../../../core/models/recipe.model';
 import { VALIDATION_RULES } from '../../../../core/constants/validation.constants';
 import { ConfirmDialogComponent } from '../../molecules/confirm-dialog/confirm-dialog.component';
 

@@ -14,7 +14,8 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { Observable, startWith, map } from 'rxjs';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 
-import { RecipeService, Recipe, Tag } from '../../core/services/recipe.service';
+import { RecipeService } from '../../core/services/recipe.service';
+import { Recipe, Tag } from '../../core/models/recipe.model';
 import { RecipeCardComponent } from '../../shared/components/organisms/recipe-card/recipe-card.component';
 import { HeadlineComponent } from '../../shared/components/atoms/headline/headline.component';
 import { ButtonComponent } from '../../shared/components/atoms/button/button.component';

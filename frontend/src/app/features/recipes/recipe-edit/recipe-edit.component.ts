@@ -2,7 +2,8 @@ import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin, Observable, of, switchMap } from 'rxjs';
-import { RecipeService, RecipeImage } from '../../../core/services/recipe.service';
+import { RecipeService } from '../../../core/services/recipe.service';
+import { RecipeImage } from '../../../core/models/recipe.model';
 import {
   RecipeFormComponent,
   RecipeFormSubmitEvent,
