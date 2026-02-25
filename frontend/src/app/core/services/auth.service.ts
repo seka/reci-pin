@@ -50,9 +50,12 @@ export class AuthService {
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
   // SSR Context
-  private readonly request = inject<SsrRequest>('REQUEST' as unknown as import('@angular/core').InjectionToken<SsrRequest>, {
-    optional: true,
-  });
+  private readonly request = inject<SsrRequest>(
+    'REQUEST' as unknown as import('@angular/core').InjectionToken<SsrRequest>,
+    {
+      optional: true,
+    },
+  );
 
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
