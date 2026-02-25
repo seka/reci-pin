@@ -5,7 +5,13 @@ import { tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { User } from '../models/user.model';
-import { SignupRequest, LoginRequest } from './requests/auth.request';
+import {
+  SignupRequest,
+  LoginRequest,
+  ChangePasswordRequest,
+  PasswordResetRequest,
+  PasswordResetConfirmRequest,
+} from './requests/auth.request';
 import { AuthResponse, MessageResponse, toUserModel } from './responses/auth.response';
 
 export type RefreshState = 'success' | 'error' | null;
@@ -106,8 +112,9 @@ export class AuthService {
   private handleAuthResponse(response: AuthResponse) {
     // auth_token は HttpOnly Cookie としてサーバーから設定されるため、
     // ここで保存する必要はなくなりました。
-    this.saveUser(response.user);
-    this.currentUserSubject.next(response.user);
+    const user = toUserModel(response);
+    this.saveUser(user);
+    this.currentUserSubject.next(user);
   }
 
   private saveUser(user: User): void {
@@ -166,7 +173,7 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
-  changePassword(data: { currentPassword: string; newPassword: string }): Observable<void> {
+  changePassword(data: ChangePasswordRequest): Observable<void> {
     return this.http.put<void>(`${this.API_URL}/auth/password`, data);
   }
 
@@ -179,17 +186,12 @@ export class AuthService {
     );
   }
 
-  requestPasswordReset(email: string): Observable<MessageResponse> {
-    return this.http.post<MessageResponse>(`${this.API_URL}/auth/password-reset/request`, {
-      email,
-    });
+  requestPasswordReset(data: PasswordResetRequest): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(`${this.API_URL}/auth/password-reset/request`, data);
   }
 
-  resetPassword(token: string, newPassword: string): Observable<MessageResponse> {
-    return this.http.post<MessageResponse>(`${this.API_URL}/auth/password-reset`, {
-      token,
-      newPassword,
-    });
+  resetPassword(data: PasswordResetConfirmRequest): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(`${this.API_URL}/auth/password-reset`, data);
   }
 
   refresh(): Observable<User> {

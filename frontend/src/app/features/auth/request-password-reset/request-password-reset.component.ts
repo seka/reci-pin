@@ -41,7 +41,7 @@ export class RequestPasswordResetComponent {
     this.message = '';
     this.errorMessage = '';
 
-    this.authService.requestPasswordReset(this.email).subscribe({
+    this.authService.requestPasswordReset({ email: this.email }).subscribe({
       next: (res) => {
         this.message = res.message;
         this.isLoading = false;
