@@ -21,6 +21,7 @@ import { HeadlineComponent } from '../../atoms/headline/headline.component';
 import { InputComponent } from '../../atoms/input/input.component';
 import { TextareaComponent } from '../../atoms/textarea/textarea.component';
 import { VALIDATION_RULES } from '../../../../core/constants/validation.constants';
+import { ApiError } from '../../../../core/models/api-error.model';
 
 export interface RecipeFormData {
   name: string;
@@ -195,18 +196,19 @@ export class RecipeFormComponent implements OnInit, OnChanges {
     }
   }
 
-  handleServerErrors(err: any): boolean {
+  handleServerErrors(err: { error?: ApiError }): boolean {
     let hasValidationErrors = false;
     if (err.error?.error?.details) {
       const details = err.error.error.details;
       Object.keys(details).forEach((field) => {
         hasValidationErrors = true;
-        const messages = (details as any)[field].map((d: any) => {
+        const fieldDetails = details[field];
+        const messages = fieldDetails.map((d) => {
           switch (d.code) {
             case 'REQUIRED':
               return this.translate.translate('VALIDATION.REQUIRED');
             case 'TEXT_TOO_LONG':
-              return this.translate.translate('VALIDATION.MAX_LENGTH', { max: d.params?.max });
+              return this.translate.translate('VALIDATION.MAX_LENGTH', { max: d.params?.['max'] });
             case 'URL_INVALID_FORMAT':
               return this.translate.translate('VALIDATION.INVALID_URL');
             default:

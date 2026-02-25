@@ -10,7 +10,7 @@ import { RouterModule } from '@angular/router';
   styleUrl: './link.component.scss',
 })
 export class LinkComponent {
-  @Input() routerLink?: string | unknown[];
+  @Input() routerLink?: string | (string | number)[];
   @Input() href?: string;
   @Input() title?: string;
   @Input() variant: 'primary' | 'secondary' = 'primary';

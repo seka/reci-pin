@@ -31,6 +31,14 @@ export interface LoginRequest {
 
 export type RefreshState = 'success' | 'error' | null;
 
+export interface SsrRequest {
+  headers?: {
+    get?: (name: string) => string;
+    cookie?: string;
+  };
+  cookie?: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -42,7 +50,9 @@ export class AuthService {
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
   // SSR Context
-  private readonly request = inject('REQUEST' as any, { optional: true });
+  private readonly request = inject<SsrRequest>('REQUEST' as unknown as import('@angular/core').InjectionToken<SsrRequest>, {
+    optional: true,
+  });
 
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
@@ -62,7 +72,7 @@ export class AuthService {
         storedUser = this.getCookie(this.USER_KEY);
       } else if (this.request) {
         // SSR context: read from request headers
-        const req = this.request as any;
+        const req = this.request;
         const cookieHeader = req.headers?.get?.('cookie') || req.headers?.cookie;
         if (cookieHeader) {
           storedUser = this.parseCookieHeader(cookieHeader, this.USER_KEY);
@@ -131,8 +141,8 @@ export class AuthService {
     if (isPlatformBrowser(this.platformId)) {
       const nameEQ = name + '=';
       const ca = document.cookie.split(';');
-      for (let i = 0; i < ca.length; i++) {
-        let c = ca[i];
+      for (const element of ca) {
+        let c = element;
         while (c.charAt(0) === ' ') c = c.substring(1, c.length);
         if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
       }
@@ -143,8 +153,8 @@ export class AuthService {
   private parseCookieHeader(header: string, name: string): string | null {
     const nameEQ = name + '=';
     const ca = header.split(';');
-    for (let i = 0; i < ca.length; i++) {
-      let c = ca[i];
+    for (const element of ca) {
+      let c = element;
       while (c.charAt(0) === ' ') c = c.substring(1, c.length);
       if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
     }

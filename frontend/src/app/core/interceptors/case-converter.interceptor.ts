@@ -10,7 +10,7 @@ export const caseConverterInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
-  let modifiedReq: HttpRequest<any> = req;
+  let modifiedReq: HttpRequest<unknown> = req;
 
   if (req.body && !(req.body instanceof FormData) && !(req.body instanceof Blob)) {
     try {
