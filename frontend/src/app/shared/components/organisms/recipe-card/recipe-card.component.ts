@@ -3,7 +3,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { RouterModule } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { Recipe } from '../../../../core/services/recipe.service';
@@ -18,7 +18,7 @@ import { ConfirmDialogComponent } from '../../molecules/confirm-dialog/confirm-d
     MatButtonModule,
     MatIconModule,
     MatChipsModule,
-    TranslatePipe,
+    TranslocoPipe,
     RouterModule,
   ],
   templateUrl: './recipe-card.component.html',

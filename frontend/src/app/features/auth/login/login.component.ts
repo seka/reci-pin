@@ -7,7 +7,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthCardComponent } from '../../../shared/components/organisms/auth-card/auth-card.component';
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
@@ -23,7 +23,7 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
     FormsModule,
     RouterModule,
     ReactiveFormsModule,
-    TranslatePipe,
+    TranslocoPipe,
     AuthCardComponent,
     InputComponent,
     ButtonComponent,
@@ -37,7 +37,7 @@ export class LoginComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
-  private readonly translate = inject(TranslateService);
+  private readonly translate = inject(TranslocoService);
 
   loginForm!: FormGroup;
   errorMessage = '';
@@ -71,7 +71,7 @@ export class LoginComponent implements OnInit {
         this.router.navigate(['/recipes']);
       },
       error: () => {
-        this.errorMessage = this.translate.instant('FEATURES.AUTH.LOGIN.FAILED');
+        this.errorMessage = this.translate.translate('FEATURES.AUTH.LOGIN.FAILED');
       },
     });
   }

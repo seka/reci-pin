@@ -9,11 +9,12 @@ import {
 } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-textarea',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule],
+  imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, TranslocoPipe],
   templateUrl: './textarea.component.html',
   styleUrl: './textarea.component.scss',
   providers: [

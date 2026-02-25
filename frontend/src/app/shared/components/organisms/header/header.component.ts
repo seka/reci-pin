@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { AuthService } from '../../../../core/services/auth.service';
 import { LogoComponent } from '../../atoms/logo/logo.component';
 import { ButtonComponent } from '../../atoms/button/button.component';
@@ -9,18 +9,18 @@ import { ButtonComponent } from '../../atoms/button/button.component';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [AsyncPipe, RouterModule, TranslatePipe, LogoComponent, ButtonComponent],
+  imports: [AsyncPipe, RouterModule, TranslocoPipe, LogoComponent, ButtonComponent],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent {
   private readonly authService = inject(AuthService);
-  private readonly translate = inject(TranslateService);
+  private readonly translate = inject(TranslocoService);
 
   currentUser$ = this.authService.currentUser$;
 
   get currentLang() {
-    return this.translate.currentLang;
+    return this.translate.getActiveLang();
   }
 
   onLogout() {
@@ -28,7 +28,7 @@ export class HeaderComponent {
   }
 
   switchLang(lang: string) {
-    this.translate.use(lang);
+    this.translate.setActiveLang(lang);
     localStorage.setItem('lang', lang);
   }
 }

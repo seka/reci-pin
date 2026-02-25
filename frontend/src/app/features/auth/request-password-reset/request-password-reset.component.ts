@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthCardComponent } from '../../../shared/components/organisms/auth-card/auth-card.component';
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
@@ -17,7 +17,7 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
     CommonModule,
     FormsModule,
     RouterModule,
-    TranslatePipe,
+    TranslocoPipe,
     AuthCardComponent,
     InputComponent,
     ButtonComponent,
@@ -28,7 +28,7 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
 })
 export class RequestPasswordResetComponent {
   private readonly authService = inject(AuthService);
-  private readonly translate = inject(TranslateService);
+  private readonly translate = inject(TranslocoService);
 
   email = '';
   message = '';
@@ -47,7 +47,7 @@ export class RequestPasswordResetComponent {
         this.isLoading = false;
       },
       error: (err) => {
-        this.errorMessage = this.translate.instant('FEATURES.AUTH.REQUEST_PASSWORD_RESET.FAILED');
+        this.errorMessage = this.translate.translate('FEATURES.AUTH.REQUEST_PASSWORD_RESET.FAILED');
         this.isLoading = false;
         console.error(err);
       },

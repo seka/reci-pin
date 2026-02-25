@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-search-mode-toggle',
   standalone: true,
-  imports: [FormsModule, MatButtonToggleModule],
+  imports: [FormsModule, MatButtonToggleModule, TranslocoPipe],
   templateUrl: './search-mode-toggle.component.html',
   styleUrl: './search-mode-toggle.component.scss',
 })
