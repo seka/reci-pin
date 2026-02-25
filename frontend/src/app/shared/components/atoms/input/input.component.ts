@@ -51,7 +51,8 @@ export class InputComponent implements ControlValueAccessor, OnInit {
     return String(this.value || '').length;
   }
 
-  @Output() blur = new EventEmitter<void>();
+  @Output() inputBlur = new EventEmitter<void>();
+  @Output() valueChange = new EventEmitter<string | number>();
 
   get errorMessages(): string[] {
     if (!this.errorMessage) return [];
@@ -107,10 +108,11 @@ export class InputComponent implements ControlValueAccessor, OnInit {
     const target = event.target as HTMLInputElement;
     this.value = target.value;
     this.onChange(this.value);
+    this.valueChange.emit(this.value);
   }
 
   onBlur() {
     this.onTouched();
-    this.blur.emit();
+    this.inputBlur.emit();
   }
 }

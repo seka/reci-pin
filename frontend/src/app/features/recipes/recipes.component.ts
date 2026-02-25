@@ -4,7 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { CommonModule, AsyncPipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { SearchModeToggleComponent } from '../../shared/components/molecules/search-mode-toggle/search-mode-toggle.component';
-import { MatChipsModule } from '@angular/material/chips';
+import { MatChipsModule, MatChipInputEvent } from '@angular/material/chips';
 import {
   MatAutocompleteModule,
   MatAutocompleteSelectedEvent,
@@ -120,7 +120,7 @@ export class RecipesComponent implements OnInit {
 
   // --- Tag Logic ---
 
-  appendTag(event: any): void {
+  appendTag(event: MatChipInputEvent): void {
     const value = (event.value || '').trim();
 
     // If matches an existing tag, select it

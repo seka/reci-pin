@@ -61,7 +61,7 @@ export class RecipeCardComponent {
       }
       console.warn('Blocked image from untrusted domain:', url.hostname);
       return null;
-    } catch (e) {
+    } catch {
       console.error('Invalid image URL:', imageUrl);
       return null;
     }
