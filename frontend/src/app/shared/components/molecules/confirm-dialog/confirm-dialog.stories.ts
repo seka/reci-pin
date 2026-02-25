@@ -1,7 +1,7 @@
 import { Meta, StoryObj, moduleMetadata } from '@storybook/angular';
 import { ConfirmDialogComponent } from './confirm-dialog.component';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslocoModule } from '@jsverse/transloco';
 
 const mockDialogRef = {
   close: () => console.log('dialogRef.close'),
@@ -13,7 +13,7 @@ const meta: Meta<ConfirmDialogComponent> = {
   tags: ['autodocs'],
   decorators: [
     moduleMetadata({
-      imports: [TranslateModule],
+      imports: [TranslocoModule],
       providers: [
         { provide: MatDialogRef, useValue: mockDialogRef },
         {
