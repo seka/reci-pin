@@ -1,8 +1,8 @@
 import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { forkJoin, of, switchMap } from 'rxjs';
-import { RecipeService } from '../../../core/services/recipe.service';
+import { forkJoin, Observable, of, switchMap } from 'rxjs';
+import { RecipeService, RecipeImage } from '../../../core/services/recipe.service';
 import {
   RecipeFormComponent,
   RecipeFormSubmitEvent,
@@ -64,17 +64,15 @@ export class RecipeEditComponent implements OnInit {
     this.isSubmitting = true;
     const formData = event.formData;
 
-    const requestData = {
-      name: formData.name,
-      url: formData.url,
-      memo: formData.memo,
-    };
-
     this.recipeService
-      .updateRecipe(this.recipeId, requestData)
+      .updateRecipe(this.recipeId, {
+        name: formData.name,
+        url: formData.url,
+        memo: formData.memo,
+      })
       .pipe(
         switchMap(() => {
-          let tagUpdates$: any = of(null);
+          let tagUpdates$: Observable<void[] | RecipeImage | null> = of(null);
           const currentTagIds: number[] = formData.tagIds || [];
           const tagsToAdd = currentTagIds.filter((id) => !this.originalTagIds.includes(id));
           const tagsToRemove = this.originalTagIds.filter((id) => !currentTagIds.includes(id));
@@ -100,7 +98,7 @@ export class RecipeEditComponent implements OnInit {
         error: (err) => {
           console.error('Failed to save recipe', err);
           this.isSubmitting = false;
-          let hasValidationErrors = this.recipeFormComponent.handleServerErrors(err);
+          const hasValidationErrors = this.recipeFormComponent.handleServerErrors(err);
 
           if (!hasValidationErrors) {
             this.router.navigate(['/recipes']);

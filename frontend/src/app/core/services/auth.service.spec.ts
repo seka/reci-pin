@@ -2,7 +2,8 @@
  * @vitest-environment jsdom
  */
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
 import { PLATFORM_ID } from '@angular/core';
 import { AuthService, User, AuthResponse } from './auth.service';
@@ -11,7 +12,7 @@ import { vi, expect, describe, it, beforeEach, afterEach } from 'vitest';
 describe('AuthService', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
-  let routerMock: any;
+  let routerMock: { navigate: ReturnType<typeof vi.fn> };
 
   const mockUser: User = {
     id: 1,
@@ -22,12 +23,12 @@ describe('AuthService', () => {
   };
 
   function initTestBed() {
-    TestBed.resetTestingModule();
     routerMock = { navigate: vi.fn() };
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
       providers: [
         AuthService,
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: Router, useValue: routerMock },
         { provide: PLATFORM_ID, useValue: 'browser' },
       ],

@@ -3,18 +3,22 @@
  */
 import { HttpRequest, HttpHandlerFn, HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { authInterceptorInternal } from './auth.interceptor';
-import { AuthService } from '../services/auth.service';
 import { of, throwError, BehaviorSubject, firstValueFrom } from 'rxjs';
 import { vi, expect, describe, it, beforeEach } from 'vitest';
 
 describe('authInterceptorInternal', () => {
-  let authServiceMock: any;
+  let authServiceMock: {
+    refresh: ReturnType<typeof vi.fn>;
+    isRefreshing: boolean;
+    refreshTokenSubject: BehaviorSubject<string | null>;
+    clearAuth: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     authServiceMock = {
       refresh: vi.fn(),
       isRefreshing: false,
-      refreshTokenSubject: new BehaviorSubject<any>(null),
+      refreshTokenSubject: new BehaviorSubject<string | null>(null),
       clearAuth: vi.fn(),
     };
   });
@@ -24,7 +28,7 @@ describe('authInterceptorInternal', () => {
     const expectedResponse = new HttpResponse({ status: 200 });
     const next: HttpHandlerFn = vi.fn().mockReturnValue(of(expectedResponse));
 
-    const result$ = authInterceptorInternal(req, next, authServiceMock);
+    const result$ = authInterceptorInternal(req, next, authServiceMock as unknown as never);
     const result = await firstValueFrom(result$);
 
     expect(result).toBe(expectedResponse);
@@ -41,8 +45,8 @@ describe('authInterceptorInternal', () => {
 
     authServiceMock.refresh.mockReturnValue(of({}));
 
-    const result$ = authInterceptorInternal(req, next, authServiceMock);
-    const result = (await firstValueFrom(result$)) as HttpResponse<any>;
+    const result$ = authInterceptorInternal(req, next, authServiceMock as unknown as never);
+    const result = (await firstValueFrom(result$)) as HttpResponse<unknown>;
 
     expect(result.status).toBe(200);
     expect(authServiceMock.refresh).toHaveBeenCalled();
@@ -56,7 +60,7 @@ describe('authInterceptorInternal', () => {
 
     authServiceMock.refresh.mockReturnValue(throwError(() => new Error('refresh failed')));
 
-    const result$ = authInterceptorInternal(req, next, authServiceMock);
+    const result$ = authInterceptorInternal(req, next, authServiceMock as unknown as never);
 
     await expect(firstValueFrom(result$)).rejects.toThrow();
     expect(authServiceMock.clearAuth).toHaveBeenCalled();

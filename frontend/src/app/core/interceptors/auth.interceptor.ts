@@ -14,10 +14,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 };
 
 export const authInterceptorInternal = (
-  req: HttpRequest<any>,
+  req: HttpRequest<unknown>,
   next: HttpHandlerFn,
   authService: AuthService,
-): Observable<HttpEvent<any>> => {
+): Observable<HttpEvent<unknown>> => {
   return next(req).pipe(
     catchError((error) => {
       if (error instanceof HttpErrorResponse && error.status === 401) {
@@ -36,9 +36,9 @@ export const authInterceptorInternal = (
 
 const handleUnauthorizedError = (
   authService: AuthService,
-  req: HttpRequest<any>,
+  req: HttpRequest<unknown>,
   next: HttpHandlerFn,
-): Observable<HttpEvent<any>> => {
+): Observable<HttpEvent<unknown>> => {
   if (!authService.isRefreshing) {
     authService.isRefreshing = true;
     authService.refreshTokenSubject.next(null);

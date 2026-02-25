@@ -8,92 +8,63 @@
     <mat-card-content>
       <form [formGroup]="recipeForm" (ngSubmit)="onSubmit()">
         <div class="form-group">
-          <app-input
-            [label]="'COMPONENTS.ORGANISMS.RECIPE_FORM.NAME' | transloco"
-            formControlName="name"
-            [placeholder]="'COMPONENTS.ORGANISMS.RECIPE_FORM.NAME_PLACEHOLDER' | transloco"
-            [required]="true"
-            [maxLength]="VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH"
-            [showCounter]="true"
-            [errorMessage]="fieldErrors['name']"
-          ></app-input>
+          <app-input [label]="'COMPONENTS.ORGANISMS.RECIPE_FORM.NAME' | transloco" formControlName="name"
+            [placeholder]="'COMPONENTS.ORGANISMS.RECIPE_FORM.NAME_PLACEHOLDER' | transloco" [required]="true"
+            [maxLength]="VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH" [showCounter]="true"
+            [errorMessage]="fieldErrors['name']"></app-input>
         </div>
 
         <div class="form-group">
-          <app-input
-            label="URL"
-            formControlName="url"
-            placeholder="https://example.com/recipe"
-            [required]="true"
-            (blur)="onUrlBlur()"
-            [errorMessage]="fieldErrors['url']"
-          ></app-input>
+          <app-input label="URL" formControlName="url" placeholder="https://example.com/recipe" [required]="true"
+            (blur)="onUrlBlur()" [errorMessage]="fieldErrors['url']"></app-input>
         </div>
 
         <div class="form-group">
-          <app-textarea
-            [label]="'COMPONENTS.ORGANISMS.RECIPE_FORM.MEMO' | transloco"
-            formControlName="memo"
-            [placeholder]="'COMPONENTS.ORGANISMS.RECIPE_FORM.MEMO_PLACEHOLDER' | transloco"
-            [rows]="4"
-            [maxLength]="VALIDATION_RULES.RECIPE.MEMO_MAX_LENGTH"
-            [showCounter]="true"
-            [errorMessage]="fieldErrors['memo']"
-          ></app-textarea>
+          <app-textarea [label]="'COMPONENTS.ORGANISMS.RECIPE_FORM.MEMO' | transloco" formControlName="memo"
+            [placeholder]="'COMPONENTS.ORGANISMS.RECIPE_FORM.MEMO_PLACEHOLDER' | transloco" [rows]="4"
+            [maxLength]="VALIDATION_RULES.RECIPE.MEMO_MAX_LENGTH" [showCounter]="true"
+            [errorMessage]="fieldErrors['memo']"></app-textarea>
         </div>
 
         <app-tag-select [tags]="tags" formControlName="tagIds"> </app-tag-select>
 
         <!-- Image Upload -->
         <div class="image-upload-section">
-          <label class="upload-label">{{
+          <label class="upload-label" for="fileInput">{{
             'COMPONENTS.ORGANISMS.RECIPE_FORM.IMAGE' | transloco
-          }}</label>
-          <div
-            class="dropzone"
-            [class.dragover]="isDragover"
-            (dragover)="onDragOver($event)"
-            (dragleave)="onDragLeave($event)"
-            (drop)="onDrop($event)"
-            (click)="fileInput.click()"
-          >
+            }}</label>
+          <div class="dropzone" [class.dragover]="isDragover" (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave($event)" (drop)="onDrop($event)" (click)="fileInput.click()"
+            (keydown.enter)="fileInput.click()" (keydown.space)="fileInput.click()" tabindex="0" role="button"
+            [attr.aria-label]="'COMPONENTS.ORGANISMS.RECIPE_FORM.IMAGE' | transloco">
             @if (imagePreview) {
-              <img [src]="imagePreview" alt="Preview" class="preview-image" />
-              <button type="button" class="remove-btn" (click)="removeImage($event)">
-                <mat-icon>close</mat-icon>
-              </button>
+            <img [src]="imagePreview" alt="Preview" class="preview-image" />
+            <button type="button" class="remove-btn" (click)="removeImage($event)">
+              <mat-icon>close</mat-icon>
+            </button>
             } @else {
-              <mat-icon class="upload-icon">cloud_upload</mat-icon>
-              <p class="upload-text">
-                {{ 'COMPONENTS.ORGANISMS.RECIPE_FORM.IMAGE_DROP_HINT' | transloco }}
-              </p>
-              <p class="upload-subtext">
-                {{ 'COMPONENTS.ORGANISMS.RECIPE_FORM.IMAGE_FORMAT_HINT' | transloco }}
-              </p>
+            <mat-icon class="upload-icon">cloud_upload</mat-icon>
+            <p class="upload-text">
+              {{ 'COMPONENTS.ORGANISMS.RECIPE_FORM.IMAGE_DROP_HINT' | transloco }}
+            </p>
+            <p class="upload-subtext">
+              {{ 'COMPONENTS.ORGANISMS.RECIPE_FORM.IMAGE_FORMAT_HINT' | transloco }}
+            </p>
             }
           </div>
-          <input
-            #fileInput
-            type="file"
-            [accept]="VALIDATION_RULES.IMAGE.ACCEPT"
-            (change)="onFileSelected($event)"
-            hidden
-          />
+          <input #fileInput type="file" [accept]="VALIDATION_RULES.IMAGE.ACCEPT" (change)="onFileSelected($event)"
+            hidden />
           @if (imageError) {
-            <p class="image-error">{{ imageError }}</p>
+          <p class="image-error">{{ imageError }}</p>
           }
         </div>
 
         <div class="actions">
           <app-button type="button" routerLink="/recipes" variant="warn" class="action-btn">{{
             'COMMON.CANCEL' | transloco
-          }}</app-button>
-          <app-button
-            type="submit"
-            variant="primary"
-            [disabled]="recipeForm.invalid || isSubmitting"
-            class="action-btn"
-          >
+            }}</app-button>
+          <app-button type="submit" variant="primary" [disabled]="recipeForm.invalid || isSubmitting"
+            class="action-btn">
             {{ isSubmitting ? (submittingLabelKey | transloco) : (submitLabelKey | transloco) }}
           </app-button>
         </div>

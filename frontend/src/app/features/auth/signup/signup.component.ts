@@ -14,6 +14,7 @@ import { InputComponent } from '../../../shared/components/atoms/input/input.com
 import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
 import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
 import { AlertComponent } from '../../../shared/components/atoms/alert/alert.component';
+import { ApiError } from '../../../core/models/api-error.model';
 
 @Component({
   selector: 'app-signup',
@@ -38,7 +39,7 @@ export class SignupComponent implements OnInit {
   private readonly translate = inject(TranslocoService);
 
   signupForm!: FormGroup;
-  fieldErrors: { [key: string]: string[] } = {};
+  fieldErrors: Record<string, string[]> = {};
   errorMessage = '';
 
   protected readonly VALIDATION_RULES = VALIDATION_RULES;
@@ -82,22 +83,23 @@ export class SignupComponent implements OnInit {
       next: () => {
         this.router.navigate(['/recipes']);
       },
-      error: (err) => {
+      error: (err: { error?: ApiError }) => {
         // バックエンドからのエラーレスポンスを処理
-        if (err.error && err.error.error && err.error.error.details) {
+        if (err.error?.error?.details) {
           const details = err.error.error.details;
 
           // 各フィールドのエラーをマッピング
           Object.keys(details).forEach((field) => {
-            const messages = (details as any)[field].map((d: any) => {
+            const fieldDetails = details[field];
+            const messages = fieldDetails.map((d) => {
               switch (d.code) {
                 case 'PASSWORD_TOO_SHORT':
                   return this.translate.translate('VALIDATION.MIN_LENGTH', {
-                    min: d.params?.min || 8,
+                    min: d.params?.['min'] || 8,
                   });
                 case 'PASSWORD_TOO_LONG':
                   return this.translate.translate('VALIDATION.MAX_LENGTH', {
-                    max: d.params?.max || VALIDATION_RULES.PASSWORD.MAX_LENGTH,
+                    max: d.params?.['max'] || VALIDATION_RULES.PASSWORD.MAX_LENGTH,
                   });
                 case 'PASSWORD_NO_ALPHA':
                   return this.translate.translate('VALIDATION.PASSWORD_NO_ALPHA');
@@ -107,7 +109,7 @@ export class SignupComponent implements OnInit {
                   return this.translate.translate('VALIDATION.INVALID_EMAIL');
                 case 'EMAIL_TOO_LONG':
                   return this.translate.translate('VALIDATION.MAX_LENGTH', {
-                    max: d.params?.max || VALIDATION_RULES.EMAIL.MAX_LENGTH,
+                    max: d.params?.['max'] || VALIDATION_RULES.EMAIL.MAX_LENGTH,
                   });
                 case 'REQUIRED':
                   return this.translate.translate('VALIDATION.REQUIRED');
