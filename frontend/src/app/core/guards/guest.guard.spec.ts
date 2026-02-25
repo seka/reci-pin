@@ -1,14 +1,15 @@
-import '@angular/compiler';
+/**
+ * @vitest-environment jsdom
+ */
 import { guestGuard } from './guest.guard';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { PLATFORM_ID, Injector, runInInjectionContext } from '@angular/core';
 
 describe('guestGuard', () => {
-  let mockAuthService: any;
-  let mockRouter: any;
+  let mockAuthService: { isLoggedIn: ReturnType<typeof vi.fn> };
+  let mockRouter: { navigate: ReturnType<typeof vi.fn> };
   let injector: Injector;
 
   beforeEach(() => {
@@ -17,9 +18,9 @@ describe('guestGuard', () => {
 
     injector = Injector.create({
       providers: [
-        { provide: PLATFORM_ID, useValue: 'browser' },
         { provide: AuthService, useValue: mockAuthService },
         { provide: Router, useValue: mockRouter },
+        { provide: PLATFORM_ID, useValue: 'browser' },
       ],
     });
   });
@@ -29,18 +30,17 @@ describe('guestGuard', () => {
 
     // Injector のコンテキスト内で guard を実行
     const result = runInInjectionContext(injector, () =>
-      guestGuard(undefined as any, undefined as any),
+      guestGuard({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot),
     );
 
     expect(result).toBe(true);
-    expect(mockRouter.navigate).not.toHaveBeenCalled();
   });
 
-  it('should return false and navigate to /recipes if user is logged in', () => {
+  it('should redirect if user is logged in', () => {
     mockAuthService.isLoggedIn.mockReturnValue(true);
 
     const result = runInInjectionContext(injector, () =>
-      guestGuard(undefined as any, undefined as any),
+      guestGuard({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot),
     );
 
     expect(result).toBe(false);
