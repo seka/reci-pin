@@ -4,7 +4,7 @@
       mat-icon-button
       class="action-btn"
       [routerLink]="['/recipes', recipe.id, 'edit']"
-      [attr.aria-label]="'COMMON.EDIT' | translate"
+      [attr.aria-label]="'COMMON.EDIT' | transloco"
     >
       <mat-icon>edit</mat-icon>
     </a>
@@ -13,7 +13,7 @@
       color="warn"
       class="action-btn"
       (click)="openDeleteDialog()"
-      [attr.aria-label]="'COMMON.DELETE' | translate"
+      [attr.aria-label]="'COMMON.DELETE' | transloco"
     >
       <mat-icon>delete</mat-icon>
     </button>
@@ -45,7 +45,7 @@
         target="_blank"
         rel="noopener noreferrer"
       >
-        {{ 'COMPONENTS.ORGANISMS.RECIPE_CARD.VIEW_DETAILS' | translate }}
+        {{ 'COMPONENTS.ORGANISMS.RECIPE_CARD.VIEW_DETAILS' | transloco }}
       </a>
     }
   </mat-card-actions>

@@ -1,12 +1,12 @@
 <div class="recipes-container">
   <div class="header">
-    <app-headline variant="h2">{{ 'FEATURES.RECIPES.RECIPES.MY_RECIPES' | translate }}</app-headline>
+    <app-headline variant="h2">{{ 'FEATURES.RECIPES.RECIPES.MY_RECIPES' | transloco }}</app-headline>
     <div class="header-actions">
       <app-button routerLink="/recipes/new" variant="primary" class="add-btn">
         <mat-icon class="add-icon">add</mat-icon>
-        {{ 'FEATURES.RECIPES.RECIPES.ADD_NEW' | translate }}
+        {{ 'FEATURES.RECIPES.RECIPES.ADD_NEW' | transloco }}
       </app-button>
-      <a routerLink="/settings" class="settings-link" [title]="'COMMON.SETTINGS' | translate">
+      <a routerLink="/settings" class="settings-link" [title]="'COMMON.SETTINGS' | transloco">
         <mat-icon>settings</mat-icon>
       </a>
     </div>
@@ -22,9 +22,9 @@
         <app-input
           [(ngModel)]="searchQuery"
           (keyup.enter)="search()"
-          [label]="'FEATURES.RECIPES.RECIPES.SEARCH_KEYWORD_LABEL' | translate"
+          [label]="'FEATURES.RECIPES.RECIPES.SEARCH_KEYWORD_LABEL' | transloco"
           floatLabel="always"
-          [placeholder]="'FEATURES.RECIPES.RECIPES.SEARCH_KEYWORD_PLACEHOLDER' | translate"
+          [placeholder]="'FEATURES.RECIPES.RECIPES.SEARCH_KEYWORD_PLACEHOLDER' | transloco"
           class="search-input"
         ></app-input>
       </app-search-bar>
@@ -33,7 +33,7 @@
     @if (searchMode === 'tag') {
       <app-search-bar (searchSubmit)="search()">
         <mat-form-field class="tag-chip-list" appearance="outline" floatLabel="always">
-          <mat-label>{{ 'FEATURES.RECIPES.RECIPES.SEARCH_TAG_LABEL' | translate }}</mat-label>
+          <mat-label>{{ 'FEATURES.RECIPES.RECIPES.SEARCH_TAG_LABEL' | transloco }}</mat-label>
           <mat-chip-grid #chipGrid aria-label="Tag selection">
             @for (tagId of selectedTagIds; track tagId) {
               <mat-chip-row (removed)="removeTag(tagId)">
@@ -44,7 +44,7 @@
               </mat-chip-row>
             }
             <input
-              [placeholder]="'FEATURES.RECIPES.RECIPES.SEARCH_TAG_PLACEHOLDER' | translate"
+              [placeholder]="'FEATURES.RECIPES.RECIPES.SEARCH_TAG_PLACEHOLDER' | transloco"
               #tagInput
               [formControl]="tagCtrl"
               [matChipInputFor]="chipGrid"
@@ -78,12 +78,12 @@
   } @else {
     <app-empty-state
       icon="receipt_long"
-      [title]="'FEATURES.RECIPES.RECIPES.EMPTY_TITLE' | translate"
-      [message]="'FEATURES.RECIPES.RECIPES.EMPTY_MESSAGE' | translate"
+      [title]="'FEATURES.RECIPES.RECIPES.EMPTY_TITLE' | transloco"
+      [message]="'FEATURES.RECIPES.RECIPES.EMPTY_MESSAGE' | transloco"
     >
       <app-button routerLink="/recipes/new" variant="primary">
         <mat-icon class="add-icon">add</mat-icon>
-        {{ 'FEATURES.RECIPES.RECIPES.ADD_NEW' | translate }}
+        {{ 'FEATURES.RECIPES.RECIPES.ADD_NEW' | transloco }}
       </app-button>
     </app-empty-state>
   }

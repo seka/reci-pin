@@ -1,38 +1,38 @@
 <div class="settings-container">
   <div class="back-link">
-    <app-link routerLink="/recipes">{{ 'FEATURES.SETTINGS.SETTINGS.BACK_TO_RECIPES' | translate }}</app-link>
+    <app-link routerLink="/recipes">{{ 'FEATURES.SETTINGS.SETTINGS.BACK_TO_RECIPES' | transloco }}</app-link>
   </div>
 
-  <app-headline level="1">{{ 'FEATURES.SETTINGS.SETTINGS.TITLE' | translate }}</app-headline>
+  <app-headline level="1">{{ 'FEATURES.SETTINGS.SETTINGS.TITLE' | transloco }}</app-headline>
 
   <section class="settings-section">
-    <app-headline level="2">{{ 'FEATURES.SETTINGS.SETTINGS.ACCOUNT' | translate }}</app-headline>
+    <app-headline level="2">{{ 'FEATURES.SETTINGS.SETTINGS.ACCOUNT' | transloco }}</app-headline>
 
     @if (currentUser$ | async; as user) {
       <div class="user-info">
         <p>
-          <strong>{{ 'FEATURES.SETTINGS.SETTINGS.NAME' | translate }}:</strong> {{ user.name }}
+          <strong>{{ 'FEATURES.SETTINGS.SETTINGS.NAME' | transloco }}:</strong> {{ user.name }}
         </p>
         <p>
-          <strong>{{ 'FEATURES.SETTINGS.SETTINGS.EMAIL' | translate }}:</strong> {{ user.email }}
+          <strong>{{ 'FEATURES.SETTINGS.SETTINGS.EMAIL' | transloco }}:</strong> {{ user.email }}
         </p>
       </div>
     }
     <div class="account-actions">
       <app-button routerLink="/settings/password" variant="outline">{{
-        'FEATURES.SETTINGS.CHANGE_PASSWORD.SUBMIT' | translate
+        'FEATURES.SETTINGS.CHANGE_PASSWORD.SUBMIT' | transloco
       }}</app-button>
     </div>
   </section>
 
   <section class="settings-section danger-zone">
-    <app-headline level="2">{{ 'FEATURES.SETTINGS.SETTINGS.WITHDRAW_TITLE' | translate }}</app-headline>
-    <p class="warning-text" [innerHTML]="'FEATURES.SETTINGS.SETTINGS.WITHDRAW_WARNING' | translate"></p>
+    <app-headline level="2">{{ 'FEATURES.SETTINGS.SETTINGS.WITHDRAW_TITLE' | transloco }}</app-headline>
+    <p class="warning-text" [innerHTML]="'FEATURES.SETTINGS.SETTINGS.WITHDRAW_WARNING' | transloco"></p>
     <app-button variant="warn" (click)="onWithdraw()" [disabled]="isProcessing">
       {{
         isProcessing
-          ? ('FEATURES.SETTINGS.SETTINGS.WITHDRAWING' | translate)
-          : ('FEATURES.SETTINGS.SETTINGS.WITHDRAW_BUTTON' | translate)
+          ? ('FEATURES.SETTINGS.SETTINGS.WITHDRAWING' | transloco)
+          : ('FEATURES.SETTINGS.SETTINGS.WITHDRAW_BUTTON' | transloco)
       }}
     </app-button>
   </section>

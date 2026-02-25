@@ -1,12 +1,12 @@
-<h2 mat-dialog-title>{{ data.title | translate }}</h2>
+<h2 mat-dialog-title>{{ data.title | transloco }}</h2>
 <mat-dialog-content>
-  <p>{{ data.message | translate }}</p>
+  <p>{{ data.message | transloco }}</p>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
   <button mat-button (click)="onCancel()" color="primary">
-    {{ data.cancelText || 'COMMON.CANCEL' | translate }}
+    {{ data.cancelText || 'COMMON.CANCEL' | transloco }}
   </button>
   <button mat-button (click)="onConfirm()" color="warn">
-    {{ data.confirmText || 'COMMON.DELETE' | translate }}
+    {{ data.confirmText || 'COMMON.DELETE' | transloco }}
   </button>
 </mat-dialog-actions>

@@ -1,47 +1,23 @@
-<app-auth-card [title]="'FEATURES.AUTH.SIGNUP.TITLE' | translate">
+<app-auth-card [title]="'FEATURES.AUTH.SIGNUP.TITLE' | transloco">
   <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
-    <app-input
-      [label]="'FEATURES.AUTH.SIGNUP.NAME' | translate"
-      type="text"
-      formControlName="name"
-      [required]="true"
-      [maxLength]="VALIDATION_RULES.COMPONENTS.ORGANISMS.RECIPE_FORM.NAME_MAX_LENGTH"
-      [showCounter]="true"
-      [errorMessage]="fieldErrors['name']"
-    ></app-input>
+    <app-input [label]="'FEATURES.AUTH.SIGNUP.NAME' | transloco" type="text" formControlName="name" [required]="true"
+      [maxLength]="100" [showCounter]="true" [errorMessage]="fieldErrors['name']"></app-input>
 
     <div class="form-group">
-      <app-input
-        [label]="'FEATURES.AUTH.SIGNUP.EMAIL' | translate"
-        type="email"
-        formControlName="email"
-        [required]="true"
-        [maxLength]="VALIDATION_RULES.EMAIL.MAX_LENGTH"
-        [showCounter]="true"
-        [errorMessage]="fieldErrors['email']"
-      ></app-input>
+      <app-input [label]="'FEATURES.AUTH.SIGNUP.EMAIL' | transloco" type="email" formControlName="email"
+        [required]="true" [maxLength]="VALIDATION_RULES.EMAIL.MAX_LENGTH" [showCounter]="true"
+        [errorMessage]="fieldErrors['email']"></app-input>
     </div>
 
     <div class="form-group">
-      <app-input
-        [label]="'FEATURES.AUTH.SIGNUP.PASSWORD' | translate"
-        type="password"
-        formControlName="password"
-        [required]="true"
-        [maxLength]="VALIDATION_RULES.PASSWORD.MAX_LENGTH"
-        [showCounter]="true"
-        [errorMessage]="fieldErrors['password']"
-      ></app-input>
+      <app-input [label]="'FEATURES.AUTH.SIGNUP.PASSWORD' | transloco" type="password" formControlName="password"
+        [required]="true" [maxLength]="VALIDATION_RULES.PASSWORD.MAX_LENGTH" [showCounter]="true"
+        [errorMessage]="fieldErrors['password']"></app-input>
     </div>
 
     <div class="actions">
-      <app-button
-        variant="primary"
-        type="submit"
-        class="submit-btn"
-        [disabled]="signupForm.invalid"
-        >{{ 'FEATURES.AUTH.SIGNUP.SUBMIT' | translate }}</app-button
-      >
+      <app-button variant="primary" type="submit" class="submit-btn" [disabled]="signupForm.invalid">{{
+        'FEATURES.AUTH.SIGNUP.SUBMIT' | transloco }}</app-button>
     </div>
 
     <app-alert type="error" [message]="errorMessage" class="signup-alert"></app-alert>
@@ -49,7 +25,7 @@
 
   <div footer>
     <div class="footer-actions">
-      <app-link routerLink="/login">{{ 'FEATURES.AUTH.SIGNUP.GO_TO_LOGIN' | translate }}</app-link>
+      <app-link routerLink="/login">{{ 'FEATURES.AUTH.SIGNUP.GO_TO_LOGIN' | transloco }}</app-link>
     </div>
   </div>
 </app-auth-card>

@@ -13,8 +13,8 @@
       </div>
       @if (currentUser$ | async; as user) {
         <div class="user-actions">
-          <span class="username">{{ 'COMMON.HELLO' | translate }}, {{ user.name }}</span>
-          <app-button variant="text" (click)="onLogout()">{{ 'COMMON.LOGOUT' | translate }}</app-button>
+          <span class="username">{{ 'COMMON.HELLO' | transloco }}, {{ user.name }}</span>
+          <app-button variant="text" (click)="onLogout()">{{ 'COMMON.LOGOUT' | transloco }}</app-button>
         </div>
       }
     </div>
