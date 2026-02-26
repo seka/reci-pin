@@ -7,9 +7,9 @@ import {
   UpdateRecipeRequest,
   SearchRecipeRequest,
   CreateRecipeImageRequest,
-  fromRecipeFormToCreateRequest,
-  fromRecipeFormToUpdateRequest,
-  fromRecipeSearchFormToSearchRequest,
+  toCreateRecipeRequest,
+  toUpdateRecipeRequest,
+  toSearchRecipeRequest,
   toTagRequest,
 } from './requests/recipe.request';
 import {
@@ -29,7 +29,7 @@ export class RecipeService {
   private readonly http = inject(HttpClient);
 
   createRecipe(form: RecipeFormModel): Observable<Recipe> {
-    const data = fromRecipeFormToCreateRequest(form);
+    const data = toCreateRecipeRequest(form);
     return this.http.post<RecipeResponse>(this.API_URL, data).pipe(map(toRecipeModel));
   }
 
@@ -42,12 +42,12 @@ export class RecipeService {
   }
 
   searchRecipes(form: RecipeSearchFormModel): Observable<Recipe[]> {
-    const data = fromRecipeSearchFormToSearchRequest(form);
+    const data = toSearchRecipeRequest(form);
     return this.http.post<RecipeResponse[]>(`${this.API_URL}/search`, data).pipe(map(toRecipeModels));
   }
 
   updateRecipe(id: number, form: RecipeFormModel): Observable<Recipe> {
-    const data = fromRecipeFormToUpdateRequest(form);
+    const data = toUpdateRecipeRequest(form);
     return this.http.put<RecipeResponse>(`${this.API_URL}/${id}`, data).pipe(map(toRecipeModel));
   }
 

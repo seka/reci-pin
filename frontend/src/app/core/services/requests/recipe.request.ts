@@ -36,7 +36,7 @@ export interface TagRequest {
 /**
  * RecipeFormModel から CreateRecipeRequest を作成します
  */
-export function fromRecipeFormToCreateRequest(form: RecipeFormModel): CreateRecipeRequest {
+export function toCreateRecipeRequest(form: RecipeFormModel): CreateRecipeRequest {
     return {
         name: form.name,
         url: form.url,
@@ -48,7 +48,7 @@ export function fromRecipeFormToCreateRequest(form: RecipeFormModel): CreateReci
 /**
  * RecipeFormModel から UpdateRecipeRequest を作成します
  */
-export function fromRecipeFormToUpdateRequest(form: RecipeFormModel): UpdateRecipeRequest {
+export function toUpdateRecipeRequest(form: RecipeFormModel): UpdateRecipeRequest {
     return {
         name: form.name,
         url: form.url,
@@ -59,7 +59,7 @@ export function fromRecipeFormToUpdateRequest(form: RecipeFormModel): UpdateReci
 /**
  * RecipeSearchFormModel から SearchRecipeRequest を作成します
  */
-export function fromRecipeSearchFormToSearchRequest(form: RecipeSearchFormModel): SearchRecipeRequest {
+export function toSearchRecipeRequest(form: RecipeSearchFormModel): SearchRecipeRequest {
     return {
         query: form.query,
         tagIds: form.tagIds,
