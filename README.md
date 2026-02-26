@@ -93,13 +93,13 @@ docker-compose exec backend make seed.run
 
 ## Directory Structure
 
-```
+```text
 .
-├── backend/          # Go API サーバー ([README](./backend/README.md))
-├── frontend/         # Angular アプリケーション ([README](./frontend/README.md))
-├── proxy/            # プロキシサーバー設定 (Nginx)
+├── backend/            # Go API サーバー ([README](./backend/README.md))
+├── frontend/           # Angular アプリケーション ([README](./frontend/README.md))
+├── proxy/              # プロキシサーバー設定 (Nginx)
 ├── docker-compose.yml
-└── AGENTS.md         # AI エージェント用ガイドライン
+└── README.md
 ```
 
 ## Development Rules

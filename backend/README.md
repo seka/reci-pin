@@ -16,18 +16,30 @@ Go で構築されたレシピ管理アプリケーションのバックエン�
 
 クリーンアーキテクチャの考え方を取り入れ、保守性とテスト容易性を高めるために以下の3層構造で実装されています。
 
-```
-handler → usecase → repository → Database
+```mermaid
+graph LR
+    H[handler] --> U[usecase]
+    U --> R[repository]
+    R --> DB[(PostgreSQL)]
+    R --> ES[[Elasticsearch]]
+    R --> S3{{S3 / LocalStack}}
 ```
 
 ### ディレクトリ構造
 
-- `cmd/api/`: アプリケーションのエントリーポイント
-- `internal/domain/`: エンティティ、リポジトリ・ユースケースのインターフェース
-- `internal/usecase/`: ビジネスロジックの実装
-- `internal/server/`: HTTP ハンドラー、ルート定義、ミドルウェア
-- `internal/infrastructure/`: データベース、外部 API、外部サービスの具体的な実装
-- `migrations/`: データベースマイグレーションファイル
+```text
+.
+├── cmd/                # エントリーポイント（api, seed, sync_es など）
+├── internal/
+│   ├── domain/         # ドメイン層（エンティティ、リポジトリIF）
+│   ├── usecase/        # ユースケース層（ビジネスロジック）
+│   ├── server/         # サーバー層（ハンドラー、ルーティング）
+│   ├── infrastructure/ # インフラ層（DB実装、外部サービス）
+│   └── registry/       # DI コンテナ・依存解決
+├── migrations/         # DB マイグレーションファイル
+├── Dockerfile
+└── Makefile
+```
 
 ## 開発ガイド
 

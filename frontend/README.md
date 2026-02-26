@@ -46,12 +46,17 @@ UI コンポーネントの可読性と再利用性を高めるため、**Atomic
 
 ### ディレクトリ構造
 
-- `src/app/core/`: シングルトンサービス、インターセプター、ガード、共通モデル
-- `src/app/shared/`: 複数の機能で使用される再利用可能なコンポーネントやパイプ
-- `src/app/features/`: 機能ごとのモジュール（認証、レシピ管理など）
-  - 各機能ディレクトリ内に `components`, `services`, `pages` を配置
-- `src/assets/`: 画像や静的ファイル
-- `src/styles/`: グローバルスタイルとデザイントークン
+```text
+src/app/
+├── core/               # シングルトン（共通モデル、ガード、インターセプター）
+│   └── styles/         # デザイントークン（CSS変数）
+├── features/           # 機能モジュール（auth, recipes, settings）
+│   └── recipes/        # コンポーネント、サービス、ストーリー
+├── shared/             # 再利用可能なコンポーネント
+│   └── components/     # Atoms, Molecules, Organisms
+├── app.config.ts       # アプリケーション設定
+└── app.routes.ts       # ルート定義
+```
 
 ## 開発ガイド
 
