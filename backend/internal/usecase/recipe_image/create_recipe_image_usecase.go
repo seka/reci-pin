@@ -76,7 +76,7 @@ func (uc *createRecipeImageInteractor) Execute(ctx context.Context, input Create
 		return nil, "", fmt.Errorf("failed to join path: %w", err)
 	}
 
-	presignedURL, err := uc.storageService.GeneratePresignedURL(ctx, key, input.ContentType, input.Size, 15*time.Minute)
+	presignedURL, err := uc.storageService.GeneratePresignedURL(ctx, key, model.RecipeImageType(input.ContentType), input.Size, 15*time.Minute)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to generate presigned URL: %w", err)
 	}

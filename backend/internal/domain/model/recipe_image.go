@@ -2,6 +2,15 @@ package model
 
 import "net/url"
 
+// RecipeImageType defines the supported image types
+type RecipeImageType string
+
+const (
+	RecipeImageTypePNG  RecipeImageType = "image/png"
+	RecipeImageTypeJPEG RecipeImageType = "image/jpeg"
+	RecipeImageTypeWEBP RecipeImageType = "image/webp"
+)
+
 // RecipeImage represents a recipe image in business logic
 type RecipeImage struct {
 	ID        int64

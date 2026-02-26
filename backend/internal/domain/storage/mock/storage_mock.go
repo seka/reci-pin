@@ -11,10 +11,12 @@ package mock
 
 import (
 	context "context"
+	io "io"
 	url "net/url"
 	reflect "reflect"
 	time "time"
 
+	model "github.com/seka/reci-pin/backend/internal/domain/model"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -42,8 +44,22 @@ func (m *MockClient) EXPECT() *MockClientMockRecorder {
 	return m.recorder
 }
 
+// Delete mocks base method.
+func (m *MockClient) Delete(ctx context.Context, key string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, key)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockClientMockRecorder) Delete(ctx, key any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockClient)(nil).Delete), ctx, key)
+}
+
 // GeneratePresignedURL mocks base method.
-func (m *MockClient) GeneratePresignedURL(ctx context.Context, key, contentType string, contentLength int64, expires time.Duration) (string, error) {
+func (m *MockClient) GeneratePresignedURL(ctx context.Context, key string, contentType model.RecipeImageType, contentLength int64, expires time.Duration) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GeneratePresignedURL", ctx, key, contentType, contentLength, expires)
 	ret0, _ := ret[0].(string)
@@ -69,4 +85,18 @@ func (m *MockClient) GetPublicURL() *url.URL {
 func (mr *MockClientMockRecorder) GetPublicURL() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPublicURL", reflect.TypeOf((*MockClient)(nil).GetPublicURL))
+}
+
+// Upload mocks base method.
+func (m *MockClient) Upload(ctx context.Context, key string, body io.Reader, contentType model.RecipeImageType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Upload", ctx, key, body, contentType)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Upload indicates an expected call of Upload.
+func (mr *MockClientMockRecorder) Upload(ctx, key, body, contentType any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Upload", reflect.TypeOf((*MockClient)(nil).Upload), ctx, key, body, contentType)
 }
