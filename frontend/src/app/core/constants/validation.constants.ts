@@ -8,6 +8,7 @@ export const VALIDATION_RULES = {
   },
   RECIPE: {
     NAME_MAX_LENGTH: 100,
+    URL_MAX_LENGTH: 2000,
     MEMO_MAX_LENGTH: 1000,
   },
   TAG: {
