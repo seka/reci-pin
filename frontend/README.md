@@ -89,7 +89,3 @@ yarn start
 - **コンポーネントの生成**: `ng generate component path/to/name`
 - **ユニットテスト**: `yarn test`
 - **Storybook**: `yarn storybook`
-
----
-
-[Root README に戻る](../README.md)

@@ -27,6 +27,23 @@ graph LR
     ST --> S3{{S3 / LocalStack}}
 ```
 
+### データフロー (Data Flow)
+
+ドメインモデル（`internal/domain/model`）をアプリケーションの中心に据え、外部との境界で適切に変換を行うことで、ビジネスロジックの純粋性を保っています。
+
+```mermaid
+graph LR
+    Req[Request DTO] -- "Parse/Validate" --> H[Handler]
+    H -- "Domain Model" --> U[Usecase]
+    U -- "Domain Model" --> I[Infrastructure]
+    I -- "Entity/Row" --> DB[(External)]
+
+    DB -- "Entity/Row" --> I
+    I -- "Domain Model" --> U
+    U -- "Domain Model" --> H
+    H -- "Response DTO" --> Res[JSON Response]
+```
+
 ### ディレクトリ構造
 
 ```text
