@@ -48,14 +48,16 @@ UI コンポーネントの可読性と再利用性を高めるため、**Atomic
 
 ```text
 src/app/
-├── core/               # シングルトン（共通モデル、ガード、インターセプター）
-│   └── styles/         # デザイントークン（CSS変数）
-├── features/           # 機能モジュール（auth, recipes, settings）
-│   └── recipes/        # コンポーネント、サービス、ストーリー
-├── shared/             # 再利用可能なコンポーネント
+├── core/               # アプリケーションの基盤（ガード、インターセプター）
+│   ├── models/         # 全体で共通のデータ型定義
+│   ├── services/       # グローバルサービス（API クライアントなど）
+│   └── styles/         # デザイントークン（CSS 変数）
+├── features/           # 機能ごとのモジュール（auth, recipes, settings）
+│   └── recipes/        # 機能固有のコンポーネント、サービス、モデル
+├── shared/             # 複数の機能で再利用されるコンポーネント
 │   └── components/     # Atoms, Molecules, Organisms
-├── app.config.ts       # アプリケーション設定
-└── app.routes.ts       # ルート定義
+├── app.config.ts       # アプリケーション全体の設定
+└── app.routes.ts       # アプリケーションのルーティング定義
 ```
 
 ## 開発ガイド
