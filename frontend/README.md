@@ -50,14 +50,12 @@ UI コンポーネントの可読性と再利用性を高めるため、**Atomic
 
 ```mermaid
 graph LR
-    User([User]) --> UI[Component / UI]
-    UI -- "Model / Action" --> S[Feature Service]
-    S -- "Model" --> C[Core Service / HttpClient]
-    C -- "Request DTO (JSON)" --> API[(Backend API)]
+    User([User]) -- Action --> UI[UI]
+    UI -- "Form" --> Service[Feature Service]
+    Service -- "Request" --> API[(Backend API)]
 
-    API -- "Response DTO (JSON)" --> C
-    C -- "Model (Mapping)" --> S
-    S -- "Model / State" --> UI
+    API -- "Response" --> Service
+    Service -- "Model" --> UI
     UI -- "Render" --> User([User])
 ```
 
