@@ -37,30 +37,49 @@ func (uc *getUserRecipesInteractor) Execute(ctx context.Context, userID int64) (
 		return nil, fmt.Errorf("failed to get user recipes: %w", err)
 	}
 
-	// Load tags and images for each recipe
+	// Load tags and images in batch
+	recipeIDs := make([]int64, len(recipes))
+	for i, r := range recipes {
+		recipeIDs[i] = r.ID
+	}
+
+	tagsMap, err := uc.recipeRepo.GetTagsBatch(ctx, recipeIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get recipe tags batch: %w", err)
+	}
+
+	imagesMap, err := uc.recipeImageRepo.GetByRecipeIDs(ctx, recipeIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get recipe images batch: %w", err)
+	}
+
+	baseURL := uc.storageService.GetPublicURL()
+
+	// Orchestrate: Assemble tags and public images for each recipe
 	for i := range recipes {
-		tags, err := uc.recipeRepo.GetTags(ctx, recipes[i].ID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get recipe tags: %w", err)
-		}
-		recipes[i].Tags = tags
+		id := recipes[i].ID
 
-		images, err := uc.recipeImageRepo.GetByRecipeID(ctx, recipes[i].ID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get recipe images: %w", err)
+		// Set tags
+		if tags, ok := tagsMap[id]; ok {
+			recipes[i].Tags = tags
+		} else {
+			recipes[i].Tags = []model.Tag{}
 		}
 
-		// Orchestrate: Convert to PublicRecipeImage
-		baseURL := uc.storageService.GetPublicURL()
-		publicImages := make([]model.PublicRecipeImage, len(images))
-		for j, img := range images {
-			u := baseURL.JoinPath(img.ImagePath)
-			publicImages[j] = model.PublicRecipeImage{
-				RecipeImage: img,
-				ImageURL:    *u,
+		// Set public images
+		if images, ok := imagesMap[id]; ok {
+			publicImages := make([]model.PublicRecipeImage, len(images))
+			for j, img := range images {
+				u := baseURL.JoinPath(img.ImagePath)
+				publicImages[j] = model.PublicRecipeImage{
+					RecipeImage: img,
+					ImageURL:    *u,
+				}
 			}
+			recipes[i].Images = publicImages
+		} else {
+			recipes[i].Images = []model.PublicRecipeImage{}
 		}
-		recipes[i].Images = publicImages
 	}
 
 	return recipes, nil

@@ -70,44 +70,54 @@ func (uc *searchRecipesInteractor) Execute(ctx context.Context, input SearchReci
 		return []model.Recipe{}, nil
 	}
 
-	// Fetch details from DB
-	// TODO: Add GetByIDs to repository for better performance
-	recipes := make([]model.Recipe, 0, len(ids))
-	for _, id := range ids {
-		recipe, err := uc.recipeRepo.GetByID(ctx, id)
-		if err != nil {
-			// Start logging warning. Maybe the recipe was deleted in DB but not in ES?
-			// Skip this recipe.
-			fmt.Printf("failed to get recipe details for id %d: %v\n", id, err)
-			continue
-		}
-		recipes = append(recipes, *recipe)
+	if len(ids) == 0 {
+		return []model.Recipe{}, nil
 	}
 
-	// Load tags and images for each recipe
+	// Fetch details from DB in batch
+	recipes, err := uc.recipeRepo.GetByIDs(ctx, ids)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get recipes by ids: %w", err)
+	}
+
+	// Load tags and images in batch
+	tagsMap, err := uc.recipeRepo.GetTagsBatch(ctx, ids)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get recipe tags batch: %w", err)
+	}
+
+	imagesMap, err := uc.recipeImageRepo.GetByRecipeIDs(ctx, ids)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get recipe images batch: %w", err)
+	}
+
+	baseURL := uc.storageService.GetPublicURL()
+
+	// Orchestrate: Assemble tags and public images for each recipe
 	for i := range recipes {
-		tags, err := uc.recipeRepo.GetTags(ctx, recipes[i].ID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get recipe tags: %w", err)
-		}
-		recipes[i].Tags = tags
-
-		images, err := uc.recipeImageRepo.GetByRecipeID(ctx, recipes[i].ID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get images for recipe %d: %w", recipes[i].ID, err)
+		id := recipes[i].ID
+		
+		// Set tags
+		if tags, ok := tagsMap[id]; ok {
+			recipes[i].Tags = tags
+		} else {
+			recipes[i].Tags = []model.Tag{}
 		}
 
-		// Orchestrate: Convert to PublicRecipeImage
-		baseURL := uc.storageService.GetPublicURL()
-		publicImages := make([]model.PublicRecipeImage, len(images))
-		for j, img := range images {
-			u := baseURL.JoinPath(img.ImagePath)
-			publicImages[j] = model.PublicRecipeImage{
-				RecipeImage: img,
-				ImageURL:    *u,
+		// Set public images
+		if images, ok := imagesMap[id]; ok {
+			publicImages := make([]model.PublicRecipeImage, len(images))
+			for j, img := range images {
+				u := baseURL.JoinPath(img.ImagePath)
+				publicImages[j] = model.PublicRecipeImage{
+					RecipeImage: img,
+					ImageURL:    *u,
+				}
 			}
+			recipes[i].Images = publicImages
+		} else {
+			recipes[i].Images = []model.PublicRecipeImage{}
 		}
-		recipes[i].Images = publicImages
 	}
 
 	return recipes, nil
