@@ -9,6 +9,7 @@ import {
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { ChangePasswordFormModel } from '../../../core/models/auth.model';
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
 import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
 import { HeadlineComponent } from '../../../shared/components/atoms/headline/headline.component';
@@ -35,7 +36,7 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
   styleUrl: './change-password.component.scss',
 })
 export class ChangePasswordComponent {
-  private fb = inject(FormBuilder);
+  private fb = inject(FormBuilder).nonNullable;
   private authService = inject(AuthService);
   private router = inject(Router);
   private translate = inject(TranslocoService);
@@ -98,14 +99,12 @@ export class ChangePasswordComponent {
     this.isProcessing = true;
     this.errorMessage = '';
 
-    const { currentPassword, newPassword } = this.form.value;
-
-    if (!currentPassword || !newPassword) return;
+    const data = this.form.getRawValue();
 
     this.authService
       .changePassword({
-        currentPassword: currentPassword,
-        newPassword: newPassword,
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
       })
       .subscribe({
         next: () => {
