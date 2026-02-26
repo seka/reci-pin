@@ -44,6 +44,23 @@ UI コンポーネントの可読性と再利用性を高めるため、**Atomic
 - 色、余白、タイポグラフィ、角丸などの定数を CSS 変数（Custom Properties）として定義。
 - 個別のコンポーネントではハードコードを避け、これらの変数を参照することで、テーマ変更や一括調整に強い設計としています。
 
+### データフロー (Data Flow)
+
+共通のモデル（`src/app/core/models`）を介してデータをやり取りし、API との境界で型安全な変換を行います。
+
+```mermaid
+graph TD
+    User([User]) --> UI[Component / UI]
+    UI -- "Model / Action" --> S[Feature Service]
+    S -- "Model" --> C[Core Service / HttpClient]
+    C -- "Request DTO (JSON)" --> API[(Backend API)]
+
+    API -- "Response DTO (JSON)" --> C
+    C -- "Model (Mapping)" --> S
+    S -- "Model / State" --> UI
+    UI -- "Render" --> User([User])
+```
+
 ### ディレクトリ構造
 
 ```text

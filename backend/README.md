@@ -33,7 +33,7 @@ graph LR
 
 ```mermaid
 graph LR
-    Req[Request DTO] -- "Parse/Validate" --> H[Handler]
+    Frontend[Frontend] --> H[Handler]
     H -- "Domain Model" --> U[Usecase]
     U -- "Domain Model" --> I[Infrastructure]
     I -- "Entity/Row" --> DB[(External)]
@@ -41,7 +41,7 @@ graph LR
     DB -- "Entity/Row" --> I
     I -- "Domain Model" --> U
     U -- "Domain Model" --> H
-    H -- "Response DTO" --> Res[JSON Response]
+    H -- "Response DTO" --> Frontend[Frontend]
 ```
 
 ### ディレクトリ構造
