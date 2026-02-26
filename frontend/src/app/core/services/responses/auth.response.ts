@@ -1,15 +1,15 @@
-import { User } from '../../models/user.model';
+import { User, UserData } from '../../models/user.model';
 
 export interface AuthResponse {
     token: string;
-    user: User;
+    user: UserData;
 }
 
 /**
  * AuthResponse を User モデルに変換します
  */
 export function toUserModel(res: AuthResponse): User {
-    return res.user;
+    return new User(res.user);
 }
 
 export interface MessageResponse {

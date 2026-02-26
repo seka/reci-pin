@@ -1,4 +1,4 @@
-import { Recipe } from '../../models/recipe.model';
+import { Recipe, RecipeFormModel } from '../../models/recipe.model';
 
 export interface CreateRecipeRequest {
     name: string;
@@ -25,24 +25,24 @@ export interface CreateRecipeImageRequest {
 }
 
 /**
- * Partial<Recipe> から CreateRecipeRequest を作成します
+ * RecipeFormModel から CreateRecipeRequest を作成します
  */
-export function fromRecipeModelToCreateRequest(model: Partial<Recipe>): CreateRecipeRequest {
+export function fromRecipeFormToCreateRequest(form: RecipeFormModel): CreateRecipeRequest {
     return {
-        name: model.name || '',
-        url: model.url || '',
-        memo: model.memo || '',
-        tagIds: model.tags?.map((t) => t.id) || [],
+        name: form.name,
+        url: form.url,
+        memo: form.memo,
+        tagIds: form.tagIds,
     };
 }
 
 /**
- * Partial<Recipe> から UpdateRecipeRequest を作成します
+ * RecipeFormModel から UpdateRecipeRequest を作成します
  */
-export function fromRecipeModelToUpdateRequest(model: Partial<Recipe>): UpdateRecipeRequest {
+export function fromRecipeFormToUpdateRequest(form: RecipeFormModel): UpdateRecipeRequest {
     return {
-        name: model.name || '',
-        url: model.url || '',
-        memo: model.memo || '',
+        name: form.name,
+        url: form.url,
+        memo: form.memo,
     };
 }
