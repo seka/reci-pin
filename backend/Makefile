@@ -121,7 +121,7 @@ app.clean: ## Clean build artifacts
 # ============================================================================
 
 .PHONY: seed.run
-seed.run: ## Run database seed and sync to Elasticsearch
+seed.run: ## Run database seed and upload images
 	@echo "Running database seed..."
 	go run ./cmd/seed/main.go \
 		-db-host $(DB_HOST) \
@@ -133,11 +133,10 @@ seed.run: ## Run database seed and sync to Elasticsearch
 		-storage-bucket $(STORAGE_BUCKET) \
 		-storage-endpoint $(STORAGE_ENDPOINT) \
 		-storage-public-url $(STORAGE_PUBLIC_URL)
-	$(MAKE) seed.image
 	$(MAKE) sync-es.run
 
 .PHONY: seed.force
-seed.force: ## Clean database, clear ES index and run seed
+seed.force: ## Clean database and run seed
 	@echo "Cleaning and seeding database..."
 	go run ./cmd/seed/main.go -clean \
 		-db-host $(DB_HOST) \
@@ -149,17 +148,8 @@ seed.force: ## Clean database, clear ES index and run seed
 		-storage-bucket $(STORAGE_BUCKET) \
 		-storage-endpoint $(STORAGE_ENDPOINT) \
 		-storage-public-url $(STORAGE_PUBLIC_URL)
-	$(MAKE) seed.image
 	$(MAKE) sync-es.clear
 	$(MAKE) sync-es.run
-
-.PHONY: seed.image
-seed.image: ## Upload seed images to LocalStack
-	@echo "Uploading seed images to LocalStack..."
-	docker cp internal/infrastructure/storage/mock/seed_placeholder.png reci-pin-localstack:/tmp/seed_placeholder.png
-	docker exec reci-pin-localstack awslocal s3 cp /tmp/seed_placeholder.png s3://$(STORAGE_BUCKET)/recipes/1/seed_1.png --content-type image/png
-	docker exec reci-pin-localstack awslocal s3 cp /tmp/seed_placeholder.png s3://$(STORAGE_BUCKET)/recipes/2/seed_1.png --content-type image/png
-	docker exec reci-pin-localstack awslocal s3 cp /tmp/seed_placeholder.png s3://$(STORAGE_BUCKET)/recipes/2/seed_2.png --content-type image/png
 
 .PHONY: sync-es.run
 sync-es.run: ## Sync data from DB to Elasticsearch

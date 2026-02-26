@@ -1,20 +1,24 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"flag"
 	"fmt"
 	"log"
-	"time"
-
 	"net/url"
+	"os"
+	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/seka/reci-pin/backend/config"
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
+	"github.com/seka/reci-pin/backend/internal/domain/storage"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/storage/s3"
 	"github.com/seka/reci-pin/backend/internal/registry"
 )
 
@@ -24,12 +28,19 @@ var (
 )
 
 func init() {
+	// DB
 	flag.StringVar(&cfg.Database.Host, "db-host", "localhost", "Database host")
 	flag.StringVar(&cfg.Database.Port, "db-port", "5432", "Database port")
 	flag.StringVar(&cfg.Database.User, "db-user", "postgres", "Database user")
 	flag.StringVar(&cfg.Database.Password, "db-password", "postgres", "Database password")
 	flag.StringVar(&cfg.Database.DBName, "db-name", "recipin_dev", "Database name")
 	flag.StringVar(&cfg.Database.SSLMode, "db-sslmode", "disable", "Database SSL mode")
+
+	// Storage
+	flag.StringVar(&cfg.Storage.Bucket, "storage-bucket", "recipin-bucket", "Storage bucket name")
+	flag.StringVar(&cfg.Storage.Endpoint, "storage-endpoint", "", "Storage endpoint (e.g. LocalStack)")
+	flag.StringVar(&cfg.Storage.PublicBaseURL, "storage-public-url", "", "Storage public base URL")
+
 	flag.BoolVar(&doClean, "clean", false, "Clean existing data before seeing")
 }
 
@@ -46,6 +57,12 @@ func main() {
 	defer db.Close()
 	log.Println("Connected to database")
 
+	// Connect to Storage
+	storageClient, err := s3.NewClient(ctx, cfg.Storage)
+	if err != nil {
+		log.Fatalf("Failed to initialize storage client: %v", err)
+	}
+
 	// Clean data if requested
 	if doClean {
 		log.Println("Cleaning existing data...")
@@ -58,7 +75,7 @@ func main() {
 	repoReg := registry.NewRepository(db)
 
 	// Seed Data
-	if err := seedData(ctx, repoReg); err != nil {
+	if err := seedData(ctx, repoReg, storageClient); err != nil {
 		log.Fatalf("Failed to seed data: %v", err)
 	}
 
@@ -87,7 +104,7 @@ func cleanData(ctx context.Context, db database.Database) error {
 	return nil
 }
 
-func seedData(ctx context.Context, repoReg registry.Repository) error {
+func seedData(ctx context.Context, repoReg registry.Repository, storageClient storage.Client) error {
 	// 1. Create Users
 	if err := createUsers(ctx, repoReg); err != nil {
 		return err
@@ -105,7 +122,7 @@ func seedData(ctx context.Context, repoReg registry.Repository) error {
 		return err
 	}
 	// 5. Create Recipe Images
-	if err := createRecipeImages(ctx, repoReg); err != nil {
+	if err := createRecipeImages(ctx, repoReg, storageClient); err != nil {
 		return err
 	}
 	return nil
@@ -179,6 +196,7 @@ func createRecipes(ctx context.Context, repoReg registry.Repository) error {
 			Host:   "example.com",
 			Path:   recipePath,
 		}).String()
+
 		recipe := &model.Recipe{
 			UserID: user.ID,
 			Name:   fmt.Sprintf("Delicious Fish %d", i),
@@ -207,6 +225,7 @@ func createTags(ctx context.Context, repoReg registry.Repository) error {
 	}
 	return nil
 }
+
 func assignTagsToRecipes(ctx context.Context, repoReg registry.Repository) error {
 	recipeRepo := repoReg.NewRecipeRepository()
 	tagRepo := repoReg.NewTagRepository()
@@ -246,7 +265,7 @@ func assignTagsToRecipes(ctx context.Context, repoReg registry.Repository) error
 	return nil
 }
 
-func createRecipeImages(ctx context.Context, repoReg registry.Repository) error {
+func createRecipeImages(ctx context.Context, repoReg registry.Repository, storageClient storage.Client) error {
 	recipeRepo := repoReg.NewRecipeRepository()
 	imageRepo := repoReg.NewRecipeImageRepository()
 
@@ -256,22 +275,38 @@ func createRecipeImages(ctx context.Context, repoReg registry.Repository) error 
 		return fmt.Errorf("getting all recipes: %w", err)
 	}
 
+	// Read placeholder image
+	placeholderPath := filepath.Join("internal", "infrastructure", "storage", "mock", "seed_placeholder.png")
+	// Check relative paths based on where it's run. If run from backend/ it works.
+	// In Docker, it's run from /app which is backend/.
+	imageData, err := os.ReadFile(placeholderPath)
+	if err != nil {
+		return fmt.Errorf("reading placeholder image: %w", err)
+	}
+
 	// Add 1-2 images per recipe
 	for i, recipe := range recipes {
 		numImages := (i % 2) + 1 // 1 or 2 images
-		for j := range numImages {
-			imagePath, err := url.JoinPath("recipes", strconv.FormatInt(recipe.ID, 10), fmt.Sprintf("seed_%d.png", j+1))
+		for j := 0; j < numImages; j++ {
+			fileName := fmt.Sprintf("seed_%d.png", j+1)
+			imageKey, err := url.JoinPath("recipes", strconv.FormatInt(recipe.ID, 10), fileName)
 			if err != nil {
 				return fmt.Errorf("joining image path: %w", err)
 			}
+
+			// Upload to Storage
+			if err := storageClient.Upload(ctx, imageKey, bytes.NewReader(imageData), model.RecipeImageTypePNG); err != nil {
+				return fmt.Errorf("uploading image %s: %w", imageKey, err)
+			}
+
 			image := &model.RecipeImage{
 				RecipeID:  recipe.ID,
-				ImagePath: imagePath,
+				ImagePath: imageKey,
 			}
 			if err := imageRepo.Create(ctx, image); err != nil {
 				return fmt.Errorf("creating image for recipe %d: %w", recipe.ID, err)
 			}
-			log.Printf("  Created image: %s", image.ImagePath)
+			log.Printf("  Created and uploaded image: %s", image.ImagePath)
 		}
 	}
 	return nil
