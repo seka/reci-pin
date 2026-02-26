@@ -46,6 +46,7 @@ export class InputComponent implements ControlValueAccessor, OnInit {
   @Input() errorMessage: string | string[] | null = null;
   @Input() focus = false;
   @Input() floatLabel: 'always' | 'auto' = 'auto';
+  @Input() disabled = false;
 
   get currentLength(): number {
     return String(this.value || '').length;
@@ -63,7 +64,6 @@ export class InputComponent implements ControlValueAccessor, OnInit {
   control: FormControl | null = null;
 
   value: string | number = '';
-  disabled = false;
 
   onChange: (value: string | number) => void = () => {
     // Placeholder for ControlValueAccessor - implemented in registerOnChange
