@@ -10,5 +10,6 @@ import (
 type RecipeImageRepository interface {
 	Create(ctx context.Context, image *model.RecipeImage) error
 	GetByRecipeID(ctx context.Context, recipeID int64) ([]model.RecipeImage, error)
+	GetByRecipeIDs(ctx context.Context, recipeIDs []int64) (map[int64][]model.RecipeImage, error)
 	Delete(ctx context.Context, id int64) error
 }
