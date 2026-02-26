@@ -83,3 +83,18 @@ func (mr *MockRecipeImageRepositoryMockRecorder) GetByRecipeID(ctx, recipeID any
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByRecipeID", reflect.TypeOf((*MockRecipeImageRepository)(nil).GetByRecipeID), ctx, recipeID)
 }
+
+// GetByRecipeIDs mocks base method.
+func (m *MockRecipeImageRepository) GetByRecipeIDs(ctx context.Context, recipeIDs []int64) (map[int64][]model.RecipeImage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByRecipeIDs", ctx, recipeIDs)
+	ret0, _ := ret[0].(map[int64][]model.RecipeImage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByRecipeIDs indicates an expected call of GetByRecipeIDs.
+func (mr *MockRecipeImageRepositoryMockRecorder) GetByRecipeIDs(ctx, recipeIDs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByRecipeIDs", reflect.TypeOf((*MockRecipeImageRepository)(nil).GetByRecipeIDs), ctx, recipeIDs)
+}
