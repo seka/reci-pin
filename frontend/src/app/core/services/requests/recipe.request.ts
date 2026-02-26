@@ -1,4 +1,9 @@
-import { Recipe, RecipeFormModel } from '../../models/recipe.model';
+import {
+    Recipe,
+    RecipeFormModel,
+    RecipeSearchFormModel,
+    TagFormModel,
+} from '../../models/recipe.model';
 
 export interface CreateRecipeRequest {
     name: string;
@@ -24,6 +29,10 @@ export interface CreateRecipeImageRequest {
     size: number;
 }
 
+export interface TagRequest {
+    name: string;
+}
+
 /**
  * RecipeFormModel から CreateRecipeRequest を作成します
  */
@@ -44,5 +53,24 @@ export function fromRecipeFormToUpdateRequest(form: RecipeFormModel): UpdateReci
         name: form.name,
         url: form.url,
         memo: form.memo,
+    };
+}
+
+/**
+ * RecipeSearchFormModel から SearchRecipeRequest を作成します
+ */
+export function fromRecipeSearchFormToSearchRequest(form: RecipeSearchFormModel): SearchRecipeRequest {
+    return {
+        query: form.query,
+        tagIds: form.tagIds,
+    };
+}
+
+/**
+ * TagFormModel から TagRequest を作成します
+ */
+export function toTagRequest(form: TagFormModel): TagRequest {
+    return {
+        name: form.name,
     };
 }

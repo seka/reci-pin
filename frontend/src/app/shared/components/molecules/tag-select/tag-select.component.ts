@@ -93,7 +93,7 @@ export class TagSelectComponent implements ControlValueAccessor, OnInit {
         }
       } else {
         // Create new tag
-        this.recipeService.createTag(value).subscribe({
+        this.recipeService.createTag({ name: value }).subscribe({
           next: (newTag) => {
             this.tags = [...this.tags, newTag];
             this.selectedTagIds = [...this.selectedTagIds, newTag.id];

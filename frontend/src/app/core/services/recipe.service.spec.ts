@@ -122,7 +122,7 @@ describe('RecipeService', () => {
     });
 
     it('should create tag', () => {
-        service.createTag('New Tag').subscribe((tag) => {
+        service.createTag({ name: 'New Tag' }).subscribe((tag) => {
             expect(tag).toEqual(mockTag);
         });
 

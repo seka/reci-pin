@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, switchMap, from, map } from 'rxjs';
-import { Recipe, Tag, RecipeImage, RecipeFormModel } from '../models/recipe.model';
+import { Recipe, Tag, RecipeImage, RecipeFormModel, RecipeSearchFormModel, TagFormModel } from '../models/recipe.model';
 import {
   CreateRecipeRequest,
   UpdateRecipeRequest,
@@ -9,6 +9,8 @@ import {
   CreateRecipeImageRequest,
   fromRecipeFormToCreateRequest,
   fromRecipeFormToUpdateRequest,
+  fromRecipeSearchFormToSearchRequest,
+  toTagRequest,
 } from './requests/recipe.request';
 import {
   RecipeResponse,
@@ -39,7 +41,8 @@ export class RecipeService {
     return this.http.get<RecipeResponse[]>(this.API_URL).pipe(map(toRecipeModels));
   }
 
-  searchRecipes(data: SearchRecipeRequest): Observable<Recipe[]> {
+  searchRecipes(form: RecipeSearchFormModel): Observable<Recipe[]> {
+    const data = fromRecipeSearchFormToSearchRequest(form);
     return this.http.post<RecipeResponse[]>(`${this.API_URL}/search`, data).pipe(map(toRecipeModels));
   }
 
@@ -89,8 +92,9 @@ export class RecipeService {
   }
 
   // Tag management
-  createTag(name: string): Observable<Tag> {
-    return this.http.post<Tag>(this.TAG_API_URL, { name });
+  createTag(form: TagFormModel): Observable<Tag> {
+    const data = toTagRequest(form);
+    return this.http.post<Tag>(this.TAG_API_URL, data);
   }
 
   getAllTags(): Observable<Tag[]> {

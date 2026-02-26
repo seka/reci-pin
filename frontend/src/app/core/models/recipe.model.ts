@@ -81,3 +81,12 @@ export interface RecipeFormModel {
     memo: string;
     tagIds: number[];
 }
+
+export interface RecipeSearchFormModel {
+    query: string;
+    tagIds: number[];
+}
+
+export interface TagFormModel {
+    name: string;
+}
