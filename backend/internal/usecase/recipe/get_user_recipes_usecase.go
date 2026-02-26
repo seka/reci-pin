@@ -43,12 +43,13 @@ func (uc *getUserRecipesInteractor) Execute(ctx context.Context, userID int64) (
 		recipeIDs[i] = r.ID
 	}
 
-	tagsMap, err := uc.recipeRepo.GetTagsBatch(ctx, recipeIDs)
+	// 2. Batch fetch tags and images to avoid N+1
+	tagsMap, err := uc.recipeRepo.BulkGetTags(ctx, recipeIDs)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get recipe tags batch: %w", err)
+		return nil, fmt.Errorf("failed to get tags: %w", err)
 	}
 
-	imagesMap, err := uc.recipeImageRepo.GetByRecipeIDs(ctx, recipeIDs)
+	imagesMap, err := uc.recipeImageRepo.BulkGetByRecipeIDs(ctx, recipeIDs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get recipe images batch: %w", err)
 	}

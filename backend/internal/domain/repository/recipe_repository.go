@@ -10,7 +10,7 @@ import (
 type RecipeRepository interface {
 	Create(ctx context.Context, recipe *model.Recipe) error
 	GetByID(ctx context.Context, id int64) (*model.Recipe, error)
-	GetByIDs(ctx context.Context, ids []int64) ([]model.Recipe, error)
+	BulkGetByIDs(ctx context.Context, ids []int64) ([]model.Recipe, error)
 	GetByUserID(ctx context.Context, userID int64) ([]model.Recipe, error)
 	GetAll(ctx context.Context) ([]model.Recipe, error)
 	Update(ctx context.Context, recipe *model.Recipe) error
@@ -19,7 +19,7 @@ type RecipeRepository interface {
 
 	// Tag operations
 	GetTags(ctx context.Context, recipeID int64) ([]model.Tag, error)
-	GetTagsBatch(ctx context.Context, recipeIDs []int64) (map[int64][]model.Tag, error)
+	BulkGetTags(ctx context.Context, recipeIDs []int64) (map[int64][]model.Tag, error)
 	AddTags(ctx context.Context, recipeID int64, tagIDs []int64) error
 	RemoveTags(ctx context.Context, recipeID int64, tagIDs []int64) error
 }

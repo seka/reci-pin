@@ -55,6 +55,36 @@ func (mr *MockRecipeRepositoryMockRecorder) AddTags(ctx, recipeID, tagIDs any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTags", reflect.TypeOf((*MockRecipeRepository)(nil).AddTags), ctx, recipeID, tagIDs)
 }
 
+// BulkGetByIDs mocks base method.
+func (m *MockRecipeRepository) BulkGetByIDs(ctx context.Context, ids []int64) ([]model.Recipe, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BulkGetByIDs", ctx, ids)
+	ret0, _ := ret[0].([]model.Recipe)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BulkGetByIDs indicates an expected call of BulkGetByIDs.
+func (mr *MockRecipeRepositoryMockRecorder) BulkGetByIDs(ctx, ids any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BulkGetByIDs", reflect.TypeOf((*MockRecipeRepository)(nil).BulkGetByIDs), ctx, ids)
+}
+
+// BulkGetTags mocks base method.
+func (m *MockRecipeRepository) BulkGetTags(ctx context.Context, recipeIDs []int64) (map[int64][]model.Tag, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BulkGetTags", ctx, recipeIDs)
+	ret0, _ := ret[0].(map[int64][]model.Tag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BulkGetTags indicates an expected call of BulkGetTags.
+func (mr *MockRecipeRepositoryMockRecorder) BulkGetTags(ctx, recipeIDs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BulkGetTags", reflect.TypeOf((*MockRecipeRepository)(nil).BulkGetTags), ctx, recipeIDs)
+}
+
 // Create mocks base method.
 func (m *MockRecipeRepository) Create(ctx context.Context, recipe *model.Recipe) error {
 	m.ctrl.T.Helper()
@@ -113,21 +143,6 @@ func (mr *MockRecipeRepositoryMockRecorder) GetByID(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockRecipeRepository)(nil).GetByID), ctx, id)
 }
 
-// GetByIDs mocks base method.
-func (m *MockRecipeRepository) GetByIDs(ctx context.Context, ids []int64) ([]model.Recipe, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByIDs", ctx, ids)
-	ret0, _ := ret[0].([]model.Recipe)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetByIDs indicates an expected call of GetByIDs.
-func (mr *MockRecipeRepositoryMockRecorder) GetByIDs(ctx, ids any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByIDs", reflect.TypeOf((*MockRecipeRepository)(nil).GetByIDs), ctx, ids)
-}
-
 // GetByUserID mocks base method.
 func (m *MockRecipeRepository) GetByUserID(ctx context.Context, userID int64) ([]model.Recipe, error) {
 	m.ctrl.T.Helper()
@@ -156,21 +171,6 @@ func (m *MockRecipeRepository) GetTags(ctx context.Context, recipeID int64) ([]m
 func (mr *MockRecipeRepositoryMockRecorder) GetTags(ctx, recipeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTags", reflect.TypeOf((*MockRecipeRepository)(nil).GetTags), ctx, recipeID)
-}
-
-// GetTagsBatch mocks base method.
-func (m *MockRecipeRepository) GetTagsBatch(ctx context.Context, recipeIDs []int64) (map[int64][]model.Tag, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTagsBatch", ctx, recipeIDs)
-	ret0, _ := ret[0].(map[int64][]model.Tag)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetTagsBatch indicates an expected call of GetTagsBatch.
-func (mr *MockRecipeRepositoryMockRecorder) GetTagsBatch(ctx, recipeIDs any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTagsBatch", reflect.TypeOf((*MockRecipeRepository)(nil).GetTagsBatch), ctx, recipeIDs)
 }
 
 // RemoveTags mocks base method.

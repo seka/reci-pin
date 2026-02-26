@@ -75,7 +75,7 @@ func (r *RecipeRepository) GetByID(ctx context.Context, id int64) (*model.Recipe
 	return e.ToModel(), nil
 }
 
-func (r *RecipeRepository) GetByIDs(ctx context.Context, ids []int64) ([]model.Recipe, error) {
+func (r *RecipeRepository) BulkGetByIDs(ctx context.Context, ids []int64) ([]model.Recipe, error) {
 	if len(ids) == 0 {
 		return []model.Recipe{}, nil
 	}
@@ -264,7 +264,7 @@ func (r *RecipeRepository) GetTags(ctx context.Context, recipeID int64) ([]model
 	return r.toTagModels(tagEntities), nil
 }
 
-func (r *RecipeRepository) GetTagsBatch(ctx context.Context, recipeIDs []int64) (map[int64][]model.Tag, error) {
+func (r *RecipeRepository) BulkGetTags(ctx context.Context, recipeIDs []int64) (map[int64][]model.Tag, error) {
 	if len(recipeIDs) == 0 {
 		return make(map[int64][]model.Tag), nil
 	}

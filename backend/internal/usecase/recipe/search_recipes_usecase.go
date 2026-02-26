@@ -70,23 +70,19 @@ func (uc *searchRecipesInteractor) Execute(ctx context.Context, input SearchReci
 		return []model.Recipe{}, nil
 	}
 
-	if len(ids) == 0 {
-		return []model.Recipe{}, nil
-	}
-
-	// Fetch details from DB in batch
-	recipes, err := uc.recipeRepo.GetByIDs(ctx, ids)
+	// 2. Batch fetch recipes by IDs
+	recipes, err := uc.recipeRepo.BulkGetByIDs(ctx, ids)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get recipes by ids: %w", err)
+		return nil, fmt.Errorf("failed to get recipes: %w", err)
 	}
 
-	// Load tags and images in batch
-	tagsMap, err := uc.recipeRepo.GetTagsBatch(ctx, ids)
+	// 3. Batch fetch tags and images for the retrieved recipes
+	tagsMap, err := uc.recipeRepo.BulkGetTags(ctx, ids)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get recipe tags batch: %w", err)
+		return nil, fmt.Errorf("failed to get tags: %w", err)
 	}
 
-	imagesMap, err := uc.recipeImageRepo.GetByRecipeIDs(ctx, ids)
+	imagesMap, err := uc.recipeImageRepo.BulkGetByRecipeIDs(ctx, ids)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get recipe images batch: %w", err)
 	}

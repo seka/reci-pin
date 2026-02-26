@@ -70,7 +70,7 @@ func (r *RecipeImageRepository) GetByRecipeID(ctx context.Context, recipeID int6
 	return r.toModels(entities), nil
 }
 
-func (r *RecipeImageRepository) GetByRecipeIDs(ctx context.Context, recipeIDs []int64) (map[int64][]model.RecipeImage, error) {
+func (r *RecipeImageRepository) BulkGetByRecipeIDs(ctx context.Context, recipeIDs []int64) (map[int64][]model.RecipeImage, error) {
 	if len(recipeIDs) == 0 {
 		return make(map[int64][]model.RecipeImage), nil
 	}

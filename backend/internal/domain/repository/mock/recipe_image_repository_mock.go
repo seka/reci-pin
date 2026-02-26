@@ -41,6 +41,21 @@ func (m *MockRecipeImageRepository) EXPECT() *MockRecipeImageRepositoryMockRecor
 	return m.recorder
 }
 
+// BulkGetByRecipeIDs mocks base method.
+func (m *MockRecipeImageRepository) BulkGetByRecipeIDs(ctx context.Context, recipeIDs []int64) (map[int64][]model.RecipeImage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BulkGetByRecipeIDs", ctx, recipeIDs)
+	ret0, _ := ret[0].(map[int64][]model.RecipeImage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BulkGetByRecipeIDs indicates an expected call of BulkGetByRecipeIDs.
+func (mr *MockRecipeImageRepositoryMockRecorder) BulkGetByRecipeIDs(ctx, recipeIDs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BulkGetByRecipeIDs", reflect.TypeOf((*MockRecipeImageRepository)(nil).BulkGetByRecipeIDs), ctx, recipeIDs)
+}
+
 // Create mocks base method.
 func (m *MockRecipeImageRepository) Create(ctx context.Context, image *model.RecipeImage) error {
 	m.ctrl.T.Helper()
@@ -82,19 +97,4 @@ func (m *MockRecipeImageRepository) GetByRecipeID(ctx context.Context, recipeID 
 func (mr *MockRecipeImageRepositoryMockRecorder) GetByRecipeID(ctx, recipeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByRecipeID", reflect.TypeOf((*MockRecipeImageRepository)(nil).GetByRecipeID), ctx, recipeID)
-}
-
-// GetByRecipeIDs mocks base method.
-func (m *MockRecipeImageRepository) GetByRecipeIDs(ctx context.Context, recipeIDs []int64) (map[int64][]model.RecipeImage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByRecipeIDs", ctx, recipeIDs)
-	ret0, _ := ret[0].(map[int64][]model.RecipeImage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetByRecipeIDs indicates an expected call of GetByRecipeIDs.
-func (mr *MockRecipeImageRepositoryMockRecorder) GetByRecipeIDs(ctx, recipeIDs any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByRecipeIDs", reflect.TypeOf((*MockRecipeImageRepository)(nil).GetByRecipeIDs), ctx, recipeIDs)
 }
