@@ -15,9 +15,34 @@ Angular で構築されたレシピ管理アプリケーションのフロント
 
 Angular の推奨される構成に従い、関心の分離を意識したディレクトリ構成を採用しています。
 
+```mermaid
+graph TD
+    Page["Pages (Features)"] --> Temp["Templates (Shared)"]
+    Temp --> Org["Organisms (Shared/Features)"]
+    Org --> Mol["Molecules (Shared)"]
+    Mol --> Ato["Atoms (Shared)"]
+
+    Page --> Service["Services (Feature Logic)"]
+    Org --> Service
+    Service --> Core["Core Services (API Client)"]
+    Core --> API["Backend API"]
 ```
-Components → Services → HttpClient → API
-```
+
+#### コンポーネント設計 (Atomic Design)
+
+UI コンポーネントの可読性と再利用性を高めるため、**Atomic Design** の考え方をベースにしたコンポーネント構成を採用しています。
+
+- **Atoms**: 最小単位のボタン、入力フォーム、アイコンなどの汎用パーツ。
+- **Molecules**: Atoms を組み合わせた、特定の役割を持つ塊（検索バー、カードのヘッダーなど）。
+- **Organisms**: ドメイン知識を伴う、より具体的で機能的なコンポーネント（ナビゲーションバー、レシピリストなど）。
+- **Templates**: ページ全体のレイアウト構造を定義する枠組み。
+
+#### スタイル管理 (Design Tokens)
+
+一貫したデザインを維持し、メンテナンスを容易にするため、`src/styles/tokens/` 以下に定義された **Design Tokens** を全面的に採用しています。
+
+- 色、余白、タイポグラフィ、角丸などの定数を CSS 変数（Custom Properties）として定義。
+- 個別のコンポーネントではハードコードを避け、これらの変数を参照することで、テーマ変更や一括調整に強い設計としています。
 
 ### ディレクトリ構造
 
