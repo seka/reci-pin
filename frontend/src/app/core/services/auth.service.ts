@@ -11,8 +11,20 @@ import {
   ChangePasswordRequest,
   PasswordResetRequest,
   PasswordResetConfirmRequest,
+  toSignupRequest,
+  toLoginRequest,
+  toChangePasswordRequest,
+  toPasswordResetRequest,
+  toPasswordResetConfirmRequest,
 } from './requests/auth.request';
 import { AuthResponse, MessageResponse, toUserModel } from './responses/auth.response';
+import {
+  LoginFormModel,
+  SignupFormModel,
+  ChangePasswordFormModel,
+  PasswordResetFormModel,
+  PasswordResetConfirmFormModel,
+} from '../models/auth.model';
 
 export type RefreshState = 'success' | 'error' | null;
 
@@ -78,18 +90,20 @@ export class AuthService {
     }
   }
 
-  signup(data: SignupRequest): Observable<User> {
+  signup(data: SignupFormModel): Observable<User> {
+    const request = toSignupRequest(data);
     return this.http
-      .post<AuthResponse>(`${this.API_URL}/auth/signup`, data)
+      .post<AuthResponse>(`${this.API_URL}/auth/signup`, request)
       .pipe(
         tap((response) => this.handleAuthResponse(response)),
         map(toUserModel),
       );
   }
 
-  login(data: LoginRequest): Observable<User> {
+  login(data: LoginFormModel): Observable<User> {
+    const request = toLoginRequest(data);
     return this.http
-      .post<AuthResponse>(`${this.API_URL}/auth/login`, data)
+      .post<AuthResponse>(`${this.API_URL}/auth/login`, request)
       .pipe(
         tap((response) => this.handleAuthResponse(response)),
         map(toUserModel),
@@ -173,8 +187,9 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
-  changePassword(data: ChangePasswordRequest): Observable<void> {
-    return this.http.put<void>(`${this.API_URL}/auth/password`, data);
+  changePassword(data: ChangePasswordFormModel): Observable<void> {
+    const request = toChangePasswordRequest(data);
+    return this.http.put<void>(`${this.API_URL}/auth/password`, request);
   }
 
   withdraw(): Observable<void> {
@@ -186,12 +201,14 @@ export class AuthService {
     );
   }
 
-  requestPasswordReset(data: PasswordResetRequest): Observable<MessageResponse> {
-    return this.http.post<MessageResponse>(`${this.API_URL}/auth/password-reset/request`, data);
+  requestPasswordReset(data: PasswordResetFormModel): Observable<MessageResponse> {
+    const request = toPasswordResetRequest(data);
+    return this.http.post<MessageResponse>(`${this.API_URL}/auth/password-reset/request`, request);
   }
 
-  resetPassword(data: PasswordResetConfirmRequest): Observable<MessageResponse> {
-    return this.http.post<MessageResponse>(`${this.API_URL}/auth/password-reset`, data);
+  resetPassword(data: PasswordResetConfirmFormModel): Observable<MessageResponse> {
+    const request = toPasswordResetConfirmRequest(data);
+    return this.http.post<MessageResponse>(`${this.API_URL}/auth/password-reset`, request);
   }
 
   refresh(): Observable<User> {

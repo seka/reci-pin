@@ -102,10 +102,7 @@ export class ChangePasswordComponent {
     const data = this.form.getRawValue();
 
     this.authService
-      .changePassword({
-        currentPassword: data.currentPassword,
-        newPassword: data.newPassword,
-      })
+      .changePassword(this.form.getRawValue())
       .subscribe({
         next: () => {
           alert(this.translate.translate('FEATURES.SETTINGS.CHANGE_PASSWORD.SUCCESS'));
