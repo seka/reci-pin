@@ -36,21 +36,18 @@ func TestGetUserRecipesUseCase_Execute(t *testing.T) {
 						{ID: 2, UserID: 1, Name: "Recipe 2"},
 					}, nil)
 
-				// 各レシピのタグ取得
+				// バッチ取得
 				mr.EXPECT().
-					GetTags(gomock.Any(), int64(1)).
-					Return([]model.Tag{{ID: 1, Name: "Tag1"}}, nil)
-				mr.EXPECT().
-					GetTags(gomock.Any(), int64(2)).
-					Return([]model.Tag{}, nil)
+					GetTagsBatch(gomock.Any(), gomock.Any()).
+					Return(map[int64][]model.Tag{
+						1: {{ID: 1, Name: "Tag1"}},
+					}, nil)
 
-				// 各レシピの画像取得
 				mi.EXPECT().
-					GetByRecipeID(gomock.Any(), int64(1)).
-					Return([]model.RecipeImage{{ID: 1, RecipeID: 1, ImagePath: "1.jpg"}}, nil)
-				mi.EXPECT().
-					GetByRecipeID(gomock.Any(), int64(2)).
-					Return([]model.RecipeImage{}, nil)
+					GetByRecipeIDs(gomock.Any(), gomock.Any()).
+					Return(map[int64][]model.RecipeImage{
+						1: {{ID: 1, RecipeID: 1, ImagePath: "1.jpg"}},
+					}, nil)
 
 				ms.EXPECT().GetPublicURL().AnyTimes().Return(&url.URL{Scheme: "http", Host: "localhost"})
 			},
@@ -64,6 +61,10 @@ func TestGetUserRecipesUseCase_Execute(t *testing.T) {
 				mr.EXPECT().
 					GetByUserID(gomock.Any(), int64(999)).
 					Return([]model.Recipe{}, nil)
+				// 空のリストの場合もバッチ呼び出しが行われる実装になっているため、それらを期待する
+				mr.EXPECT().GetTagsBatch(gomock.Any(), []int64{}).Return(map[int64][]model.Tag{}, nil)
+				mi.EXPECT().GetByRecipeIDs(gomock.Any(), []int64{}).Return(map[int64][]model.RecipeImage{}, nil)
+				ms.EXPECT().GetPublicURL().Return(&url.URL{Scheme: "http", Host: "localhost"})
 			},
 			wantErr: false,
 			wantLen: 0,
@@ -113,16 +114,16 @@ func TestSearchRecipesUseCase_Execute(t *testing.T) {
 					Search(gomock.Any(), gomock.Any()).
 					Return([]int64{1}, int64(1), nil)
 				mr.EXPECT().
-					GetByID(gomock.Any(), int64(1)).
-					Return(&model.Recipe{
-						ID: 1, UserID: 1, Name: "Pasta Recipe",
+					GetByIDs(gomock.Any(), []int64{1}).
+					Return([]model.Recipe{
+						{ID: 1, UserID: 1, Name: "Pasta Recipe"},
 					}, nil)
 				mr.EXPECT().
-					GetTags(gomock.Any(), int64(1)).
-					Return([]model.Tag{}, nil)
+					GetTagsBatch(gomock.Any(), []int64{1}).
+					Return(map[int64][]model.Tag{}, nil)
 				mi.EXPECT().
-					GetByRecipeID(gomock.Any(), int64(1)).
-					Return([]model.RecipeImage{}, nil)
+					GetByRecipeIDs(gomock.Any(), []int64{1}).
+					Return(map[int64][]model.RecipeImage{}, nil)
 				storage.EXPECT().GetPublicURL().AnyTimes().Return(&url.URL{Scheme: "http", Host: "localhost"})
 			},
 			wantErr: false,
@@ -140,23 +141,20 @@ func TestSearchRecipesUseCase_Execute(t *testing.T) {
 					Search(gomock.Any(), gomock.Any()).
 					Return([]int64{1, 2}, int64(2), nil)
 				mr.EXPECT().
-					GetByID(gomock.Any(), int64(1)).
-					Return(&model.Recipe{ID: 1, UserID: 1, Name: "Recipe 1"}, nil)
+					GetByIDs(gomock.Any(), []int64{1, 2}).
+					Return([]model.Recipe{
+						{ID: 1, UserID: 1, Name: "Recipe 1"},
+						{ID: 2, UserID: 1, Name: "Recipe 2"},
+					}, nil)
 				mr.EXPECT().
-					GetByID(gomock.Any(), int64(2)).
-					Return(&model.Recipe{ID: 2, UserID: 1, Name: "Recipe 2"}, nil)
-				mr.EXPECT().
-					GetTags(gomock.Any(), int64(1)).
-					Return([]model.Tag{{ID: 1, Name: "Tag1"}}, nil)
-				mr.EXPECT().
-					GetTags(gomock.Any(), int64(2)).
-					Return([]model.Tag{{ID: 2, Name: "Tag2"}}, nil)
+					GetTagsBatch(gomock.Any(), []int64{1, 2}).
+					Return(map[int64][]model.Tag{
+						1: {{ID: 1, Name: "Tag1"}},
+						2: {{ID: 2, Name: "Tag2"}},
+					}, nil)
 				mi.EXPECT().
-					GetByRecipeID(gomock.Any(), int64(1)).
-					Return([]model.RecipeImage{}, nil)
-				mi.EXPECT().
-					GetByRecipeID(gomock.Any(), int64(2)).
-					Return([]model.RecipeImage{}, nil)
+					GetByRecipeIDs(gomock.Any(), []int64{1, 2}).
+					Return(map[int64][]model.RecipeImage{}, nil)
 				storage.EXPECT().GetPublicURL().AnyTimes().Return(&url.URL{Scheme: "http", Host: "localhost"})
 			},
 			wantErr: false,

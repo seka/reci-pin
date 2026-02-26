@@ -39,7 +39,7 @@ func TestCreateRecipeImageUseCase_Execute(t *testing.T) {
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{ID: 1, UserID: 1}, nil)
 				ms.EXPECT().
-					GeneratePresignedURL(gomock.Any(), gomock.Any(), "image/jpeg", int64(1024), gomock.Any()).
+					GeneratePresignedURL(gomock.Any(), gomock.Any(), gomock.Any(), int64(1024), gomock.Any()).
 					Return("https://s3.example.com/presigned-url", nil)
 				mi.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
