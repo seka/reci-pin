@@ -1,9 +1,15 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { AuthService } from '../../../core/services/auth.service';
+import { PasswordResetConfirmFormModel } from '../../../core/models/auth.model';
 import { AuthCardComponent } from '../../../shared/components/organisms/auth-card/auth-card.component';
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
 import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
@@ -15,7 +21,7 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
+    ReactiveFormsModule,
     RouterModule,
     TranslocoPipe,
     AuthCardComponent,
@@ -31,9 +37,21 @@ export class ResetPasswordComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly translate = inject(TranslocoService);
+  private readonly fb = inject(FormBuilder).nonNullable;
+
+  form: FormGroup = this.fb.group({
+    token: ['', [Validators.required]],
+    newPassword: [
+      '',
+      [
+        Validators.required,
+        Validators.minLength(VALIDATION_RULES.PASSWORD.MIN_LENGTH),
+        Validators.maxLength(VALIDATION_RULES.PASSWORD.MAX_LENGTH),
+      ],
+    ],
+  });
 
   token = '';
-  newPassword = '';
   message = '';
   errorMessage = '';
   isLoading = false;
@@ -42,23 +60,22 @@ export class ResetPasswordComponent implements OnInit {
   ngOnInit() {
     this.route.queryParams.subscribe((params) => {
       this.token = params['token'] || '';
-      if (!this.token) {
+      if (this.token) {
+        this.form.patchValue({ token: this.token });
+      } else {
         this.errorMessage = this.translate.translate('FEATURES.AUTH.RESET_PASSWORD.INVALID_LINK');
       }
     });
   }
 
   onSubmit() {
-    if (!this.token) {
-      this.errorMessage = this.translate.translate('FEATURES.AUTH.RESET_PASSWORD.MISSING_TOKEN');
-      return;
-    }
+    if (this.form.invalid) return;
 
     this.isLoading = true;
     this.message = '';
     this.errorMessage = '';
 
-    this.authService.resetPassword({ token: this.token, newPassword: this.newPassword }).subscribe({
+    this.authService.resetPassword(this.form.getRawValue()).subscribe({
       next: (res) => {
         this.message = res.message;
         this.isLoading = false;
