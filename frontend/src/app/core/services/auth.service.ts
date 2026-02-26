@@ -6,11 +6,6 @@ import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { User } from '../models/user.model';
 import {
-  SignupRequest,
-  LoginRequest,
-  ChangePasswordRequest,
-  PasswordResetRequest,
-  PasswordResetConfirmRequest,
   toSignupRequest,
   toLoginRequest,
   toChangePasswordRequest,

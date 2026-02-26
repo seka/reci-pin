@@ -3,10 +3,9 @@ import {
     RecipeData,
     RecipeImage,
     RecipeImageData,
-    Tag,
 } from '../../models/recipe.model';
 
-export interface RecipeResponse extends RecipeData { }
+export type RecipeResponse = RecipeData;
 
 export interface CreateRecipeImageResponse {
     image: RecipeImageData;

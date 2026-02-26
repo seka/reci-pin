@@ -9,7 +9,6 @@ import {
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { ChangePasswordFormModel } from '../../../core/models/auth.model';
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
 import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
 import { HeadlineComponent } from '../../../shared/components/atoms/headline/headline.component';
@@ -99,7 +98,6 @@ export class ChangePasswordComponent {
     this.isProcessing = true;
     this.errorMessage = '';
 
-    const data = this.form.getRawValue();
 
     this.authService
       .changePassword(this.form.getRawValue())

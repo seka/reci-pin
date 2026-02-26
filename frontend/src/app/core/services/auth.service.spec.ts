@@ -9,7 +9,7 @@ import { PLATFORM_ID } from '@angular/core';
 import { AuthService } from './auth.service';
 import { User, UserData } from '../models/user.model';
 import { AuthResponse } from './responses/auth.response';
-import { LoginFormModel, SignupFormModel } from '../models/auth.model';
+import { LoginFormModel } from '../models/auth.model';
 import { vi, expect, describe, it, beforeEach, afterEach } from 'vitest';
 
 describe('AuthService', () => {
