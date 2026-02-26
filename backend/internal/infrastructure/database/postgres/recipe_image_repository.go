@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
@@ -67,6 +68,43 @@ func (r *RecipeImageRepository) GetByRecipeID(ctx context.Context, recipeID int6
 	}
 
 	return r.toModels(entities), nil
+}
+
+func (r *RecipeImageRepository) GetByRecipeIDs(ctx context.Context, recipeIDs []int64) (map[int64][]model.RecipeImage, error) {
+	if len(recipeIDs) == 0 {
+		return make(map[int64][]model.RecipeImage), nil
+	}
+
+	placeholders := make([]string, len(recipeIDs))
+	args := make([]any, len(recipeIDs))
+	for i, id := range recipeIDs {
+		placeholders[i] = fmt.Sprintf("$%d", i+1)
+		args[i] = id
+	}
+
+	query := fmt.Sprintf(`
+		SELECT id, recipe_id, image_path, created_at
+		FROM recipe_images
+		WHERE recipe_id IN (%s)
+		ORDER BY created_at DESC
+	`, strings.Join(placeholders, ","))
+
+	rows, err := r.db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get recipe images batch: %w", err)
+	}
+	defer rows.Close()
+
+	result := make(map[int64][]model.RecipeImage)
+	for rows.Next() {
+		var e entity.RecipeImage
+		if err := rows.Scan(&e.ID, &e.RecipeID, &e.ImagePath, &e.CreatedAt); err != nil {
+			return nil, fmt.Errorf("failed to scan recipe image batch: %w", err)
+		}
+		result[e.RecipeID] = append(result[e.RecipeID], *e.ToModel())
+	}
+
+	return result, nil
 }
 
 func (r *RecipeImageRepository) Delete(ctx context.Context, id int64) error {

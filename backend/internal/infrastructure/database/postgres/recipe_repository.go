@@ -75,6 +75,50 @@ func (r *RecipeRepository) GetByID(ctx context.Context, id int64) (*model.Recipe
 	return e.ToModel(), nil
 }
 
+func (r *RecipeRepository) GetByIDs(ctx context.Context, ids []int64) ([]model.Recipe, error) {
+	if len(ids) == 0 {
+		return []model.Recipe{}, nil
+	}
+
+	placeholders := make([]string, len(ids))
+	args := make([]any, len(ids))
+	for i, id := range ids {
+		placeholders[i] = fmt.Sprintf("$%d", i+1)
+		args[i] = id
+	}
+
+	query := fmt.Sprintf(`
+		SELECT id, user_id, name, url, memo, created_at, updated_at
+		FROM recipes
+		WHERE id IN (%s)
+	`, strings.Join(placeholders, ","))
+
+	rows, err := r.db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get recipes by ids: %w", err)
+	}
+	defer rows.Close()
+
+	// Maintain order of provided IDs
+	recipeMap := make(map[int64]model.Recipe)
+	for rows.Next() {
+		var re entity.Recipe
+		if err := rows.Scan(&re.ID, &re.UserID, &re.Name, &re.URL, &re.Memo, &re.CreatedAt, &re.UpdatedAt); err != nil {
+			return nil, fmt.Errorf("failed to scan recipe: %w", err)
+		}
+		recipeMap[re.ID] = *re.ToModel()
+	}
+
+	recipes := make([]model.Recipe, 0, len(ids))
+	for _, id := range ids {
+		if recipe, ok := recipeMap[id]; ok {
+			recipes = append(recipes, recipe)
+		}
+	}
+
+	return recipes, nil
+}
+
 func (r *RecipeRepository) GetByUserID(ctx context.Context, userID int64) ([]model.Recipe, error) {
 	query := `
 		SELECT id, user_id, name, url, memo, created_at, updated_at
@@ -218,6 +262,45 @@ func (r *RecipeRepository) GetTags(ctx context.Context, recipeID int64) ([]model
 		tagEntities = append(tagEntities, tag)
 	}
 	return r.toTagModels(tagEntities), nil
+}
+
+func (r *RecipeRepository) GetTagsBatch(ctx context.Context, recipeIDs []int64) (map[int64][]model.Tag, error) {
+	if len(recipeIDs) == 0 {
+		return make(map[int64][]model.Tag), nil
+	}
+
+	placeholders := make([]string, len(recipeIDs))
+	args := make([]any, len(recipeIDs))
+	for i, id := range recipeIDs {
+		placeholders[i] = fmt.Sprintf("$%d", i+1)
+		args[i] = id
+	}
+
+	query := fmt.Sprintf(`
+		SELECT rt.recipe_id, t.id, t.name
+		FROM tags t
+		INNER JOIN recipe_tags rt ON t.id = rt.tag_id
+		WHERE rt.recipe_id IN (%s)
+		ORDER BY t.name
+	`, strings.Join(placeholders, ","))
+
+	rows, err := r.db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get recipe tags batch: %w", err)
+	}
+	defer rows.Close()
+
+	result := make(map[int64][]model.Tag)
+	for rows.Next() {
+		var recipeID int64
+		var tag entity.Tag
+		if err := rows.Scan(&recipeID, &tag.ID, &tag.Name); err != nil {
+			return nil, fmt.Errorf("failed to scan tag batch: %w", err)
+		}
+		result[recipeID] = append(result[recipeID], *tag.ToModel())
+	}
+
+	return result, nil
 }
 
 func (r *RecipeRepository) AddTags(ctx context.Context, recipeID int64, tagIDs []int64) error {
