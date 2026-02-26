@@ -20,9 +20,11 @@ Go で構築されたレシピ管理アプリケーションのバックエン�
 graph LR
     H[handler] --> U[usecase]
     U --> R[repository]
+    U --> S[searcher]
+    U --> ST[storage]
     R --> DB[(PostgreSQL)]
-    R --> ES[[Elasticsearch]]
-    R --> S3{{S3 / LocalStack}}
+    S --> ES[[Elasticsearch]]
+    ST --> S3{{S3 / LocalStack}}
 ```
 
 ### ディレクトリ構造
@@ -70,7 +72,3 @@ make app.run
 - **ユニットテスト**: `make app.test`
 - **リンター**: `make app.lint`
 - **シード投入**: `make seed.run` (DBが起動している必要あり)
-
----
-
-[Root README に戻る](../README.md)
