@@ -7,8 +7,8 @@ import { RecipeImage } from '../../../core/models/recipe.model';
 import {
   RecipeFormComponent,
   RecipeFormSubmitEvent,
-  RecipeFormData,
 } from '../../../shared/components/organisms/recipe-form/recipe-form.component';
+import { RecipeFormModel } from '../../../core/models/recipe.model';
 
 @Component({
   selector: 'app-recipe-edit',
@@ -29,7 +29,7 @@ export class RecipeEditComponent implements OnInit {
   recipeId!: number;
   originalTagIds: number[] = [];
 
-  initialData: Partial<RecipeFormData> = {};
+  initialData: Partial<RecipeFormModel> = {};
   initialImagePreview: string | null = null;
 
   ngOnInit() {
@@ -66,11 +66,7 @@ export class RecipeEditComponent implements OnInit {
     const formData = event.formData;
 
     this.recipeService
-      .updateRecipe(this.recipeId, {
-        name: formData.name,
-        url: formData.url,
-        memo: formData.memo,
-      })
+      .updateRecipe(this.recipeId, formData)
       .pipe(
         switchMap(() => {
           let tagUpdates$: Observable<void[] | RecipeImage | null> = of(null);

@@ -24,14 +24,7 @@ export class RecipeCreateComponent {
   onSave(event: RecipeFormSubmitEvent) {
     this.isSubmitting = true;
 
-    const requestData = {
-      name: event.formData.name,
-      url: event.formData.url,
-      memo: event.formData.memo,
-      tagIds: event.formData.tagIds || [],
-    };
-
-    this.recipeService.createRecipe(requestData).subscribe({
+    this.recipeService.createRecipe(event.formData).subscribe({
       next: (recipe) => {
         if (event.file) {
           this.recipeService.uploadImage(recipe.id, event.file).subscribe({

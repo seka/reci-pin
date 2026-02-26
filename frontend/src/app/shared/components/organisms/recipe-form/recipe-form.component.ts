@@ -15,7 +15,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { RecipeService } from '../../../../core/services/recipe.service';
-import { Tag } from '../../../../core/models/recipe.model';
+import { Tag, RecipeFormModel } from '../../../../core/models/recipe.model';
 import { TagSelectComponent } from '../../molecules/tag-select/tag-select.component';
 import { ButtonComponent } from '../../atoms/button/button.component';
 import { HeadlineComponent } from '../../atoms/headline/headline.component';
@@ -24,15 +24,8 @@ import { TextareaComponent } from '../../atoms/textarea/textarea.component';
 import { VALIDATION_RULES } from '../../../../core/constants/validation.constants';
 import { ApiError } from '../../../../core/models/api-error.model';
 
-export interface RecipeFormData {
-  name: string;
-  url: string;
-  memo: string;
-  tagIds: number[];
-}
-
 export interface RecipeFormSubmitEvent {
-  formData: RecipeFormData;
+  formData: RecipeFormModel;
   file: File | null;
 }
 
@@ -56,7 +49,7 @@ export interface RecipeFormSubmitEvent {
   styleUrl: './recipe-form.component.scss',
 })
 export class RecipeFormComponent implements OnInit, OnChanges {
-  private readonly fb = inject(FormBuilder);
+  private readonly fb = inject(FormBuilder).nonNullable;
   private readonly recipeService = inject(RecipeService);
   private readonly translate = inject(TranslocoService);
 
@@ -65,7 +58,7 @@ export class RecipeFormComponent implements OnInit, OnChanges {
   @Input() submittingLabelKey: string = 'COMPONENTS.ORGANISMS.RECIPE_FORM.SAVING';
 
   @Input() isSubmitting = false;
-  @Input() initialData: Partial<RecipeFormData> = {};
+  @Input() initialData: Partial<RecipeFormModel> = {};
   @Input() initialImagePreview: string | null = null;
 
   @Output() save = new EventEmitter<RecipeFormSubmitEvent>();
@@ -86,15 +79,9 @@ export class RecipeFormComponent implements OnInit, OnChanges {
         '',
         [Validators.required, Validators.maxLength(VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH)],
       ],
-      url: [
-        '',
-        [
-          Validators.required,
-          Validators.pattern(/^https?:\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}.*|^https?:\/\/localhost.*/),
-        ],
-      ],
+      url: ['', [Validators.maxLength(VALIDATION_RULES.RECIPE.URL_MAX_LENGTH)]],
       memo: ['', Validators.maxLength(VALIDATION_RULES.RECIPE.MEMO_MAX_LENGTH)],
-      tagIds: [[]],
+      tagIds: [[] as number[]],
     });
   }
 
@@ -191,7 +178,7 @@ export class RecipeFormComponent implements OnInit, OnChanges {
     this.fieldErrors = {};
     if (this.recipeForm.valid) {
       this.save.emit({
-        formData: this.recipeForm.value as RecipeFormData,
+        formData: this.recipeForm.getRawValue(),
         file: this.selectedFile,
       });
     }
