@@ -12,7 +12,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/migrations:/docker-entrypoint-initdb.d
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -54,8 +54,6 @@ services:
       dockerfile: Dockerfile
       target: dev
     container_name: recipin_frontend
-    ports:
-      - "4200:4200"
     volumes:
       - ./frontend:/app
       - /app/node_modules
