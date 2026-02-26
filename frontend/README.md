@@ -49,7 +49,7 @@ UI コンポーネントの可読性と再利用性を高めるため、**Atomic
 共通のモデル（`src/app/core/models`）を介してデータをやり取りし、API との境界で型安全な変換を行います。
 
 ```mermaid
-graph TD
+graph LR
     User([User]) --> UI[Component / UI]
     UI -- "Model / Action" --> S[Feature Service]
     S -- "Model" --> C[Core Service / HttpClient]
