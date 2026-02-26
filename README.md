@@ -1,10 +1,6 @@
 # レシピまとめサイト (Reci-Pin)
 
-レシピの参照先URLを保存・管理するための個人用Webアプリケーションです。
-
-## 概要
-
-様々なWebサイトに点在するレシピを一箇所にまとめ、タグやメモで整理・検索できるようにします。
+様々なWebサイトに点在するレシピを一箇所にまとめ、タグやメモで整理・検索できるようにするための個人用Webアプリケーションです。
 
 ## 主要機能
 
@@ -31,120 +27,79 @@
 
 ## 技術構成 (Tech Stack)
 
-- **Frontend**: Angular (最新版) + TypeScript + Angular Material
-- **Backend**: Go + chi ルーター
-- **Database**: PostgreSQL
-- **Proxy Server**: Nginx (Reverse Proxy)
-- **Infrastructure**: Docker Compose
+このプロジェクトは以下の技術スタックで構成されています。詳細は各ディレクトリの README を参照してください。
 
-## アーキテクチャ
+- **[Frontend (Angular)](./frontend/README.md)**: Angular (19系), TypeScript, Angular Material, Vitest
+- **[Backend (Go)](./backend/README.md)**: Go, chi, PostgreSQL, Docker
 
-本プロジェクトは、保守性と拡張性を高めるために、関心の分離を意識したディレクトリ構成を採用しています。
+---
 
-### Backend (Go)
+## セットアップ
 
-クリーンアーキテクチャの考え方を取り入れ、以下の3層構造で実装されています。
+このプロジェクトは Docker Compose を使用して素早く開発環境を構築できます。各サービスを個別に実行したい場合は、それぞれのディレクトリの README を参照してください。
 
-```
-handler → usecase → repository → Database
-```
+- **[Frontend 開発ガイド](./frontend/README.md)**
+- **[Backend 開発ガイド](./backend/README.md)**
 
-- **handler**: HTTPリクエストのパース、バリデーション、レスポンスの返却
-- **usecase**: 主要なビジネスロジック
-- **repository**: データベースなど、外部ストレージへのデータアクセス
+### クイックスタート (Docker Compose)
 
-### Frontend (Angular)
+#### 1. 前提条件の確認
 
-Angular の推奨される構成に従い、機能ごとにモジュール・コンポーネントを分離しています。
+以下のツールがインストールされていることを確認してください。
 
-```
-Components → Services → HttpClient → API
-```
+- **Docker Desktop** / **Docker Compose**
+- **Git**
+- **mkcert**: ローカルで HTTPS (Proxy) を使用するために必要です。
+  - macOS: `brew install mkcert nss && mkcert -install`
 
-- **Components**: UIコンポーネントとテンプレート
-- **Services**: ビジネスロジックとAPI通信
-- **Guards**: ルーティング保護
-- **Interceptors**: HTTP通信の共通処理
-
-## 開発環境のセットアップ
-
-### Requirements
-
-- Docker Desktop
-- Git
-- `mkcert` (for local HTTPS)
-
-### Setup
-
-1. リポジトリをクローン
+#### 2. リポジトリの準備
 
 ```bash
 git clone https://github.com/seka/reci-pin.git
 cd reci-pin
+
+# 設定（ポート番号やJWTシークレット等）をカスタマイズしたい場合のみ実行
+# docker-compose は自動的に .env ファイルを読み込み、デフォルト値を上書きします
+# cp .env.example .env
 ```
 
-2. 環境変数の設定
+#### 3. SSL 証明書の生成
+
+Proxy (Nginx) で使用する証明書を生成します。
 
 ```bash
-cp .env.example .env
-# 必要に応じて .env を編集
-```
-
-3. 証明書の生成 (HTTPS)
-   ローカル開発環境は HTTPS で動作します。`mkcert` を使用して証明書を生成してください。
-
-```bash
-# mkcert のインストール (macOS)
-brew install mkcert
-brew install nss # Firefox support
-mkcert -install
-
-# 証明書の生成 (proxy/certs ディレクトリへ)
 mkdir -p proxy/certs
 mkcert -key-file proxy/certs/key.pem -cert-file proxy/certs/cert.pem localhost
 ```
 
-4. Docker コンテナを起動
+#### 4. アプリケーションの起動
 
 ```bash
 docker-compose up -d
 ```
 
-5. 初期データの投入 (Seed)
-   ※ テーブル作成はコンテナ起動時に自動で行われます。
+起動後、以下のURLでアクセス可能です。
+
+- **Frontend**: [https://localhost](https://localhost)
+- **Backend API**: [https://localhost/api](https://localhost/api)
+- **Mailhog (メール確認)**: [http://localhost:8025](http://localhost:8025)
+
+#### 5. 初期データの投入 (Seed)
 
 ```bash
-docker-compose exec backend go run ./cmd/seed/main.go -db-host=postgres
+# データベースのシード、画像のアップロード、検索インデックスの同期を一括で実行します
+docker-compose exec backend make seed.run
 ```
-
-### Access
-
-- **Frontend**: https://localhost
-- **Backend API**: https://localhost/api
-- **PostgreSQL**: localhost:5432
 
 ## Directory Structure
 
 ```
 .
-├── backend/          # Go API サーバー
-│   ├── cmd/         # エントリーポイント
-│   ├── internal/    # 内部パッケージ
-│   │   ├── domain/      # ドメイン層（エンティティ、リポジトリIF）
-│   │   ├── infrastructure/ # インフラ層（DB実装）
-│   │   ├── usecase/     # ユースケース層
-│   │   └── server/      # サーバー層（ハンドラー、ミドルウェア）
-│   └── migrations/  # DBマイグレーション
-├── frontend/        # Angular アプリケーション
-│   └── src/
-│       └── app/
-│           ├── core/     # サービス、インターセプター、ガード
-│           ├── shared/   # 共通コンポーネント
-│           ├── auth/     # 認証機能
-│           └── recipes/  # レシピ機能
-├── proxy/           # プロキシサーバー設定 (Nginx)
+├── backend/          # Go API サーバー ([README](./backend/README.md))
+├── frontend/         # Angular アプリケーション ([README](./frontend/README.md))
+├── proxy/            # プロキシサーバー設定 (Nginx)
 ├── docker-compose.yml
-└── AGENTS.md        # AI エージェント用ガイドライン
+└── AGENTS.md         # AI エージェント用ガイドライン
 ```
 
 ## Development Rules

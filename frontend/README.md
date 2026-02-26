@@ -1,59 +1,63 @@
-# Frontend
+# Frontend (Reci-Pin)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.2.
+Angular で構築されたレシピ管理アプリケーションのフロントエンドです。
 
-## Development server
+## 技術構成 (Tech Stack)
 
-To start a local development server, run:
+- **Framework**: Angular 19.1.2
+- **Language**: TypeScript
+- **Styling**: SCSS, Angular Material, CSS Variables (Design Tokens)
+- **Testing**: Vitest, Angular Testing Library
+- **Documentation**: Storybook
+- **Form Management**: Angular Reactive Forms
 
-```bash
-ng serve
+## アーキテクチャ
+
+Angular の推奨される構成に従い、関心の分離を意識したディレクトリ構成を採用しています。
+
+```
+Components → Services → HttpClient → API
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+### ディレクトリ構造
 
-## Code scaffolding
+- `src/app/core/`: シングルトンサービス、インターセプター、ガード、共通モデル
+- `src/app/shared/`: 複数の機能で使用される再利用可能なコンポーネントやパイプ
+- `src/app/features/`: 機能ごとのモジュール（認証、レシピ管理など）
+  - 各機能ディレクトリ内に `components`, `services`, `pages` を配置
+- `src/assets/`: 画像や静的ファイル
+- `src/styles/`: グローバルスタイルとデザイントークン
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## 開発ガイド
 
-```bash
-ng generate component component-name
-```
+Docker Compose を使用せずに、直接フロントエンドを開発する場合の手順です。
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+### 前提条件
 
-```bash
-ng generate --help
-```
+- **Node.js** (v20+)
+- **Yarn**
 
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+### 1. 依存関係のインストール
 
 ```bash
-ng test
+yarn install
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
+### 2. 開発サーバーの起動
 
 ```bash
-ng e2e
+yarn start
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+ブラウザで `http://localhost:4200/` を開いてください。
+※ バックエンド API や Proxy と連携させて開発する場合は [Root README](../README.md) の Docker Compose 手順を推奨します。
 
-## Additional Resources
+### 3. その他のコマンド
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- **コンポーネントの生成**: `ng generate component path/to/name`
+- **ユニットテスト**: `yarn test`
+- **Storybook**: `yarn storybook`
+
+---
+
+[Root README に戻る](../README.md)
