@@ -5,7 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { RecipeService } from './recipe.service';
-import { Recipe, Tag, RecipeImage } from '../models/recipe.model';
+import { Recipe, Tag, RecipeImage, RecipeFormModel } from '../models/recipe.model';
 import { vi, expect, describe, it, beforeEach, afterEach } from 'vitest';
 
 import { lastValueFrom } from 'rxjs';
@@ -14,7 +14,7 @@ describe('RecipeService', () => {
     let service: RecipeService;
     let httpMock: HttpTestingController;
 
-    const mockRecipe: Recipe = {
+    const mockRecipe = new Recipe({
         id: 1,
         userId: 1,
         name: 'Test Recipe',
@@ -22,9 +22,9 @@ describe('RecipeService', () => {
         memo: 'Test memo',
         createdAt: '',
         updatedAt: '',
-    };
+    });
 
-    const mockTag: Tag = { id: 1, name: 'Test Tag' };
+    const mockTag = new Tag({ id: 1, name: 'Test Tag' });
 
     beforeEach(() => {
         TestBed.configureTestingModule({
@@ -43,7 +43,7 @@ describe('RecipeService', () => {
     });
 
     it('should create recipe', () => {
-        const requestData = { name: 'New', url: '', memo: '', tagIds: [] };
+        const requestData: RecipeFormModel = { name: 'New', url: '', memo: '', tagIds: [] };
         service.createRecipe(requestData).subscribe((recipe) => {
             expect(recipe).toEqual(mockRecipe);
         });
@@ -85,7 +85,7 @@ describe('RecipeService', () => {
     });
 
     it('should update recipe', () => {
-        const updateData = { name: 'Updated', url: '', memo: '' };
+        const updateData: RecipeFormModel = { name: 'Updated', url: '', memo: '', tagIds: [] };
         service.updateRecipe(1, updateData).subscribe((recipe) => {
             expect(recipe).toEqual(mockRecipe);
         });

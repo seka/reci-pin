@@ -7,8 +7,9 @@ import { provideHttpClientTesting, HttpTestingController } from '@angular/common
 import { Router } from '@angular/router';
 import { PLATFORM_ID } from '@angular/core';
 import { AuthService } from './auth.service';
-import { User } from '../models/user.model';
+import { User, UserData } from '../models/user.model';
 import { AuthResponse } from './responses/auth.response';
+import { LoginFormModel, SignupFormModel } from '../models/auth.model';
 import { vi, expect, describe, it, beforeEach, afterEach } from 'vitest';
 
 describe('AuthService', () => {
@@ -16,13 +17,14 @@ describe('AuthService', () => {
   let httpMock: HttpTestingController;
   let routerMock: { navigate: ReturnType<typeof vi.fn> };
 
-  const mockUser: User = {
+  const userData: UserData = {
     id: 1,
     email: 'test@example.com',
     name: 'Test User',
     createdAt: '',
     updatedAt: '',
   };
+  const mockUser = new User(userData);
 
   function initTestBed() {
     routerMock = { navigate: vi.fn() };
@@ -60,9 +62,9 @@ describe('AuthService', () => {
 
   it('should login and set current user', () => {
     initTestBed();
-    const mockResponse: AuthResponse = { token: '', user: mockUser };
+    const mockResponse: AuthResponse = { token: '', user: userData };
 
-    service.login({ email: 'test@example.com', password: 'password' }).subscribe((user) => {
+    service.login({ email: 'test@example.com', password: 'password' } as LoginFormModel).subscribe((user) => {
       expect(user).toEqual(mockUser);
     });
 

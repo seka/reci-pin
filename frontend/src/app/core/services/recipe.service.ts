@@ -1,14 +1,14 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, switchMap, from, map } from 'rxjs';
-import { Recipe, Tag, RecipeImage } from '../models/recipe.model';
+import { Recipe, Tag, RecipeImage, RecipeFormModel } from '../models/recipe.model';
 import {
   CreateRecipeRequest,
   UpdateRecipeRequest,
   SearchRecipeRequest,
   CreateRecipeImageRequest,
-  fromRecipeModelToCreateRequest,
-  fromRecipeModelToUpdateRequest,
+  fromRecipeFormToCreateRequest,
+  fromRecipeFormToUpdateRequest,
 } from './requests/recipe.request';
 import {
   RecipeResponse,
@@ -26,8 +26,8 @@ export class RecipeService {
   private readonly TAG_API_URL = '/api/tags';
   private readonly http = inject(HttpClient);
 
-  createRecipe(model: Partial<Recipe>): Observable<Recipe> {
-    const data = fromRecipeModelToCreateRequest(model);
+  createRecipe(form: RecipeFormModel): Observable<Recipe> {
+    const data = fromRecipeFormToCreateRequest(form);
     return this.http.post<RecipeResponse>(this.API_URL, data).pipe(map(toRecipeModel));
   }
 
@@ -43,8 +43,8 @@ export class RecipeService {
     return this.http.post<RecipeResponse[]>(`${this.API_URL}/search`, data).pipe(map(toRecipeModels));
   }
 
-  updateRecipe(id: number, model: Partial<Recipe>): Observable<Recipe> {
-    const data = fromRecipeModelToUpdateRequest(model);
+  updateRecipe(id: number, form: RecipeFormModel): Observable<Recipe> {
+    const data = fromRecipeFormToUpdateRequest(form);
     return this.http.put<RecipeResponse>(`${this.API_URL}/${id}`, data).pipe(map(toRecipeModel));
   }
 
