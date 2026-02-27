@@ -22,15 +22,18 @@ type SignupUseCase interface {
 type signupInteractor struct {
 	userRepo       repository.UserRepository
 	credentialRepo repository.UserEmailCredentialRepository
+	txManager      repository.TransactionManager
 }
 
 func NewSignupUseCase(
 	userRepo repository.UserRepository,
 	credentialRepo repository.UserEmailCredentialRepository,
+	txManager repository.TransactionManager,
 ) SignupUseCase {
 	return &signupInteractor{
 		userRepo:       userRepo,
 		credentialRepo: credentialRepo,
+		txManager:      txManager,
 	}
 }
 
@@ -67,43 +70,53 @@ func (uc *signupInteractor) Execute(ctx context.Context, input SignupInput) (int
 		return 0, fmt.Errorf("failed to hash password: %w", err)
 	}
 
-	// Create user (profile)
-	user := &model.User{
-		Name: input.Name,
-	}
-	if err := uc.userRepo.Create(ctx, user); err != nil {
-		return 0, fmt.Errorf("failed to create user profile: %w", err)
+	var userID int64
+	err = uc.txManager.WithTransaction(ctx, func(txCtx context.Context) error {
+		// Create user (profile)
+		user := &model.User{
+			Name: input.Name,
+		}
+		if err := uc.userRepo.Create(txCtx, user); err != nil {
+			return fmt.Errorf("failed to create user profile: %w", err)
+		}
+
+		// Generate verification token
+		tokenBytes := make([]byte, 32)
+		if _, err := rand.Read(tokenBytes); err != nil {
+			return fmt.Errorf("failed to generate random token: %w", err)
+		}
+		token := hex.EncodeToString(tokenBytes)
+		expiresAt := time.Now().Add(24 * time.Hour)
+
+		// Create credential (unverified)
+		credential := &model.UserEmailCredential{
+			UserID:                     user.ID,
+			Email:                      input.Email,
+			PasswordHash:               hashedPassword,
+			EmailVerifiedAt:            nil, // Unverified
+			VerificationToken:          token,
+			VerificationTokenExpiresAt: &expiresAt,
+		}
+
+		if err := uc.credentialRepo.Create(txCtx, credential); err != nil {
+			return fmt.Errorf("failed to create user credential: %w", err)
+		}
+
+		userID = user.ID
+
+		// 検証用メール送信（現在はログ出力のみ）
+		// TODO: EmailSenderサービスの実装
+		log.Printf("==============================================")
+		log.Printf("Email Sent to: %s", input.Email)
+		log.Printf("Verification Link: /verify?token=%s", token)
+		log.Printf("==============================================")
+
+		return nil
+	})
+
+	if err != nil {
+		return 0, err
 	}
 
-	// Generate verification token
-	tokenBytes := make([]byte, 32)
-	if _, err := rand.Read(tokenBytes); err != nil {
-		return 0, fmt.Errorf("failed to generate random token: %w", err)
-	}
-	token := hex.EncodeToString(tokenBytes)
-	expiresAt := time.Now().Add(24 * time.Hour)
-
-	// Create credential (unverified)
-	credential := &model.UserEmailCredential{
-		UserID:                     user.ID,
-		Email:                      input.Email,
-		PasswordHash:               hashedPassword,
-		EmailVerifiedAt:            nil, // Unverified
-		VerificationToken:          token,
-		VerificationTokenExpiresAt: &expiresAt,
-	}
-
-	if err := uc.credentialRepo.Create(ctx, credential); err != nil {
-		// TODO: ユーザー作成失敗時のロールバック（トランザクション）を実装する
-		return 0, fmt.Errorf("failed to create user credential: %w", err)
-	}
-
-	// 検証用メール送信（現在はログ出力のみ）
-	// TODO: EmailSenderサービスの実装
-	log.Printf("==============================================")
-	log.Printf("Email Sent to: %s", input.Email)
-	log.Printf("Verification Link: /verify?token=%s", token)
-	log.Printf("==============================================")
-
-	return user.ID, nil
+	return userID, nil
 }
