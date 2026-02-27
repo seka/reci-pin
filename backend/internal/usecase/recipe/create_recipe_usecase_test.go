@@ -127,6 +127,9 @@ func TestCreateRecipeUseCase_Execute(t *testing.T) {
 				m.EXPECT().
 					AddTags(gomock.Any(), int64(1), []int64{1}).
 					Return(errors.New("tag add error"))
+				ms.EXPECT().
+					Index(gomock.Any(), gomock.Any()).
+					Times(0)
 			},
 			wantErr: true,
 			errMsg:  "failed to add tags to recipe",
