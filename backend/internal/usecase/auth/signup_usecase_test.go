@@ -123,6 +123,28 @@ func TestSignupUseCase_Execute(t *testing.T) {
 			wantErr: true,
 			errMsg:  "validation failed",
 		},
+		{
+			name: "異常系_Credential作成失敗_ロールバック確認",
+			input: auth.SignupInput{
+				Email:    "rollback@example.com",
+				Password: "password123",
+				Name:     "Rollback User",
+			},
+			setup: func(mr *mock.MockUserRepository, mc *mock.MockUserEmailCredentialRepository, mtm *mock.MockTransactionManager) {
+				mc.EXPECT().GetByEmail(gomock.Any(), "rollback@example.com").Return(nil, errors.New("not found"))
+
+				mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					},
+				)
+
+				mr.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
+				mc.EXPECT().Create(gomock.Any(), gomock.Any()).Return(errors.New("credential creation failed"))
+			},
+			wantErr: true,
+			errMsg:  "failed to create user credential",
+		},
 	}
 
 	for _, tt := range tests {

@@ -11,8 +11,12 @@ import (
 
 type txKey struct{}
 
+type txBeginner interface {
+	Begin(ctx context.Context) (pgx.Tx, error)
+}
+
 type transactionManager struct {
-	pool *pgxpool.Pool
+	pool txBeginner
 }
 
 // NewTransactionManager creates a new repository.TransactionManager implementation for Postgres.
