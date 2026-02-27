@@ -24,6 +24,9 @@ CMD air -c .air.toml -- \
     -jwt-expiration=${JWT_EXPIRATION_HOURS:-24} \
     -storage-bucket=${STORAGE_BUCKET:-recipin-bucket} \
     -storage-endpoint=${STORAGE_ENDPOINT} \
+    -storage-region=${AWS_REGION:-us-east-1} \
+    -storage-access-key=${AWS_ACCESS_KEY_ID} \
+    -storage-secret-key=${AWS_SECRET_ACCESS_KEY} \
     -storage-public-url=${STORAGE_PUBLIC_URL} \
     -es-addresses=${ELASTICSEARCH_ADDRESS:-http://elasticsearch:9200} \
     -mail-host=${MAIL_HOST:-localhost} \
@@ -54,6 +57,9 @@ CMD ./main \
     -jwt-expiration=${JWT_EXPIRATION_HOURS} \
     -storage-bucket=${STORAGE_BUCKET} \
     -storage-endpoint=${STORAGE_ENDPOINT} \
+    -storage-region=${AWS_REGION} \
+    -storage-access-key=${AWS_ACCESS_KEY_ID} \
+    -storage-secret-key=${AWS_SECRET_ACCESS_KEY} \
     -storage-public-url=${STORAGE_PUBLIC_URL} \
     -es-addresses=${ELASTICSEARCH_ADDRESS} \
     -mail-host=${MAIL_HOST} \
