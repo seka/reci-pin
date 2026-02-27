@@ -9,6 +9,7 @@ import (
 	"log"
 	"time"
 
+	domainErrors "github.com/seka/reci-pin/backend/internal/domain/errors"
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
 	"github.com/seka/reci-pin/backend/internal/domain/validation"
@@ -64,7 +65,7 @@ func (uc *signupInteractor) Execute(ctx context.Context, input SignupInput) (int
 		return 0, errors.New("registration pending for this email")
 	}
 
-	if !errors.Is(err, repository.ErrNotFound) {
+	if !errors.Is(err, domainErrors.ErrNotFound) {
 		return 0, fmt.Errorf("failed to check existing email: %w", err)
 	}
 

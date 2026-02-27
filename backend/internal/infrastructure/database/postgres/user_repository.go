@@ -6,9 +6,10 @@ import (
 
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
 
+	domainErrors "github.com/seka/reci-pin/backend/internal/domain/errors"
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	"github.com/seka/reci-pin/backend/internal/domain/repository"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/entity"
+	postgresErrors "github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres/errors"
 )
 
 type UserRepository struct {
@@ -29,17 +30,17 @@ func (r *UserRepository) Create(ctx context.Context, user *model.User) error {
 
 	rows, err := r.db.Query(ctx, query, e.Name)
 	if err != nil {
-		return MapError(err)
+		return postgresErrors.As(err)
 	}
 	defer rows.Close()
 
 	if !rows.Next() {
-		return repository.ErrInternal // Modified from generic error
+		return domainErrors.ErrInternal
 	}
 
 	err = rows.Scan(&e.ID, &e.CreatedAt, &e.UpdatedAt)
 	if err != nil {
-		return MapError(err)
+		return postgresErrors.As(err)
 	}
 
 	user.ID = e.ID
@@ -56,12 +57,12 @@ func (r *UserRepository) GetByID(ctx context.Context, id int64) (*model.User, er
 
 	rows, err := r.db.Query(ctx, query, id)
 	if err != nil {
-		return nil, MapError(err)
+		return nil, postgresErrors.As(err)
 	}
 	defer rows.Close()
 
 	if !rows.Next() {
-		return nil, repository.ErrNotFound
+		return nil, domainErrors.ErrNotFound
 	}
 
 	err = rows.Scan(
@@ -71,7 +72,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id int64) (*model.User, er
 		&e.UpdatedAt,
 	)
 	if err != nil {
-		return nil, MapError(err)
+		return nil, postgresErrors.As(err)
 	}
 
 	return e.ToModel(), nil

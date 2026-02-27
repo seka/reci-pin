@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	domainErrors "github.com/seka/reci-pin/backend/internal/domain/errors"
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/entity"
+	postgresErrors "github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres/errors"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -33,7 +35,7 @@ func (r *UserEmailCredentialRepository) Create(ctx context.Context, credential *
 		e.VerificationToken, e.VerificationTokenExpiresAt,
 	)
 	if err != nil {
-		return MapError(err)
+		return postgresErrors.As(err)
 	}
 	return nil
 }
@@ -47,12 +49,12 @@ func (r *UserEmailCredentialRepository) GetByEmail(ctx context.Context, email st
 	`
 	rows, err := r.db.Query(ctx, query, email)
 	if err != nil {
-		return nil, MapError(err)
+		return nil, postgresErrors.As(err)
 	}
 	defer rows.Close()
 
 	if !rows.Next() {
-		return nil, repository.ErrNotFound
+		return nil, domainErrors.ErrNotFound
 	}
 
 	var e entity.UserEmailCredential
@@ -61,7 +63,7 @@ func (r *UserEmailCredentialRepository) GetByEmail(ctx context.Context, email st
 		&e.VerificationToken, &e.VerificationTokenExpiresAt, &e.UpdatedAt,
 	)
 	if err != nil {
-		return nil, MapError(err)
+		return nil, postgresErrors.As(err)
 	}
 	return e.ToModel(), nil
 }
@@ -75,12 +77,12 @@ func (r *UserEmailCredentialRepository) GetByUserID(ctx context.Context, userID 
 	`
 	rows, err := r.db.Query(ctx, query, userID)
 	if err != nil {
-		return nil, MapError(err)
+		return nil, postgresErrors.As(err)
 	}
 	defer rows.Close()
 
 	if !rows.Next() {
-		return nil, repository.ErrNotFound
+		return nil, domainErrors.ErrNotFound
 	}
 
 	var e entity.UserEmailCredential
@@ -89,7 +91,7 @@ func (r *UserEmailCredentialRepository) GetByUserID(ctx context.Context, userID 
 		&e.VerificationToken, &e.VerificationTokenExpiresAt, &e.UpdatedAt,
 	)
 	if err != nil {
-		return nil, MapError(err)
+		return nil, postgresErrors.As(err)
 	}
 	return e.ToModel(), nil
 }
@@ -103,12 +105,12 @@ func (r *UserEmailCredentialRepository) GetByToken(ctx context.Context, token st
 	`
 	rows, err := r.db.Query(ctx, query, token)
 	if err != nil {
-		return nil, MapError(err)
+		return nil, postgresErrors.As(err)
 	}
 	defer rows.Close()
 
 	if !rows.Next() {
-		return nil, repository.ErrNotFound
+		return nil, domainErrors.ErrNotFound
 	}
 
 	var e entity.UserEmailCredential
@@ -117,7 +119,7 @@ func (r *UserEmailCredentialRepository) GetByToken(ctx context.Context, token st
 		&e.VerificationToken, &e.VerificationTokenExpiresAt, &e.UpdatedAt,
 	)
 	if err != nil {
-		return nil, MapError(err)
+		return nil, postgresErrors.As(err)
 	}
 	return e.ToModel(), nil
 }
@@ -135,7 +137,7 @@ func (r *UserEmailCredentialRepository) Update(ctx context.Context, credential *
 		e.VerificationToken, e.VerificationTokenExpiresAt,
 	)
 	if err != nil {
-		return MapError(err)
+		return postgresErrors.As(err)
 	}
 	return nil
 }
