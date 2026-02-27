@@ -2,6 +2,8 @@ package database
 
 import (
 	"context"
+
+	"github.com/seka/reci-pin/backend/internal/domain/repository"
 )
 
 // Database defines the interface for database operations
@@ -15,6 +17,9 @@ type Database interface {
 
 	// Execute executes INSERT/UPDATE/DELETE operations and returns affected rows count
 	Execute(ctx context.Context, query string, args ...any) (int64, error)
+
+	// TransactionManager returns the transaction manager for this database
+	TransactionManager() repository.TransactionManager
 
 	// Close closes the database connection
 	Close()

@@ -3,8 +3,10 @@ package postgres
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/seka/reci-pin/backend/config"
+	"github.com/seka/reci-pin/backend/internal/domain/repository"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
 )
 
@@ -31,16 +33,30 @@ func (p *Client) Connect(ctx context.Context) error {
 }
 
 func (p *Client) Query(ctx context.Context, query string, args ...any) (database.Rows, error) {
-	// pgx.Rows implements datastore.Rows implicitly
+	if tx, ok := getTx(ctx); ok {
+		return tx.Query(ctx, query, args...)
+	}
 	return p.pool.Query(ctx, query, args...)
 }
 
 func (p *Client) Execute(ctx context.Context, query string, args ...any) (int64, error) {
-	tag, err := p.pool.Exec(ctx, query, args...)
+	var tag pgconn.CommandTag
+	var err error
+
+	if tx, ok := getTx(ctx); ok {
+		tag, err = tx.Exec(ctx, query, args...)
+	} else {
+		tag, err = p.pool.Exec(ctx, query, args...)
+	}
+
 	if err != nil {
 		return 0, err
 	}
 	return tag.RowsAffected(), nil
+}
+
+func (p *Client) TransactionManager() repository.TransactionManager {
+	return NewTransactionManager(p.pool)
 }
 
 func (p *Client) Close() {
