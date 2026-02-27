@@ -10,6 +10,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	sdkconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/seka/reci-pin/backend/config"
 	"github.com/seka/reci-pin/backend/internal/domain/model"
@@ -27,7 +28,17 @@ type client struct {
 
 // NewClient creates a new StorageService backed by S3
 func NewClient(ctx context.Context, cfg config.Storage) (storage.Client, error) {
-	awsCfg, err := sdkconfig.LoadDefaultConfig(ctx)
+	var opts []func(*sdkconfig.LoadOptions) error
+	if cfg.Region != "" {
+		opts = append(opts, sdkconfig.WithRegion(cfg.Region))
+	}
+	if cfg.AccessKey != "" && cfg.SecretKey != "" {
+		opts = append(opts, sdkconfig.WithCredentialsProvider(
+			credentials.NewStaticCredentialsProvider(cfg.AccessKey, cfg.SecretKey, ""),
+		))
+	}
+
+	awsCfg, err := sdkconfig.LoadDefaultConfig(ctx, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load SDK config: %w", err)
 	}

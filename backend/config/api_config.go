@@ -43,6 +43,9 @@ func (c *Database) DSN() string {
 type Storage struct {
 	Bucket        string
 	Endpoint      string // Optional, for LocalStack
+	Region        string // Optional
+	AccessKey     string // Optional
+	SecretKey     string // Optional
 	PublicBaseURL string // Optional, for public access URL
 }
 

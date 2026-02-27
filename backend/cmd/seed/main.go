@@ -39,6 +39,9 @@ func init() {
 	// Storage
 	flag.StringVar(&cfg.Storage.Bucket, "storage-bucket", "recipin-bucket", "Storage bucket name")
 	flag.StringVar(&cfg.Storage.Endpoint, "storage-endpoint", "", "Storage endpoint (e.g. LocalStack)")
+	flag.StringVar(&cfg.Storage.Region, "storage-region", "us-east-1", "Storage region")
+	flag.StringVar(&cfg.Storage.AccessKey, "storage-access-key", "", "Storage access key")
+	flag.StringVar(&cfg.Storage.SecretKey, "storage-secret-key", "", "Storage secret key")
 	flag.StringVar(&cfg.Storage.PublicBaseURL, "storage-public-url", "", "Storage public base URL")
 
 	flag.BoolVar(&doClean, "clean", false, "Clean existing data before seeing")
