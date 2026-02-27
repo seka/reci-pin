@@ -56,12 +56,16 @@ func (uc *signupInteractor) Execute(ctx context.Context, input SignupInput) (int
 
 	// Check if email already exists
 	existingCred, err := uc.credentialRepo.GetByEmail(ctx, input.Email)
-	if err == nil && existingCred != nil {
+	if err == nil {
 		if existingCred.IsVerified() {
 			return 0, errors.New("user with this email already exists")
 		}
 		// TODO: 未認証ユーザーへの確認メール再送フローを実装する
 		return 0, errors.New("registration pending for this email")
+	}
+
+	if !errors.Is(err, repository.ErrNotFound) {
+		return 0, fmt.Errorf("failed to check existing email: %w", err)
 	}
 
 	// Hash password
@@ -105,7 +109,6 @@ func (uc *signupInteractor) Execute(ctx context.Context, input SignupInput) (int
 		userID = user.ID
 
 		// 検証用メール送信（現在はログ出力のみ）
-		// TODO: EmailSenderサービスの実装
 		log.Printf("==============================================")
 		log.Printf("Email Sent to: %s", input.Email)
 		log.Printf("Verification Link: /verify?token=%s", token)

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
+	"github.com/seka/reci-pin/backend/internal/domain/repository"
 	"github.com/seka/reci-pin/backend/internal/domain/repository/mock"
 
 	"github.com/seka/reci-pin/backend/internal/usecase/auth"
@@ -33,8 +34,7 @@ func TestSignupUseCase_Execute(t *testing.T) {
 				Name:     "Test User",
 			},
 			setup: func(mr *mock.MockUserRepository, mc *mock.MockUserEmailCredentialRepository, mtm *mock.MockTransactionManager) {
-				// Email credential check (not exists)
-				mc.EXPECT().GetByEmail(gomock.Any(), "test@example.com").Return(nil, errors.New("not found"))
+				mc.EXPECT().GetByEmail(gomock.Any(), "test@example.com").Return(nil, repository.ErrNotFound)
 
 				mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
 					func(ctx context.Context, fn func(context.Context) error) error {
@@ -42,14 +42,12 @@ func TestSignupUseCase_Execute(t *testing.T) {
 					},
 				)
 
-				// Create User (Profile)
 				mr.EXPECT().Create(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, user *model.User) error {
 						user.ID = 1
 						return nil
 					})
 
-				// Create Credential
 				mc.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
 			},
 			wantErr: false,
@@ -73,7 +71,7 @@ func TestSignupUseCase_Execute(t *testing.T) {
 			errMsg:  "user with this email already exists",
 		},
 		{
-			name: "異常系_メール重複エラー（Unverified - 今回の仕様ではエラー）",
+			name: "異常系_メール重複エラー（Unverified）",
 			input: auth.SignupInput{
 				Email:    "pending@example.com",
 				Password: "password123",
@@ -97,7 +95,7 @@ func TestSignupUseCase_Execute(t *testing.T) {
 				Name:     "Test User",
 			},
 			setup: func(mr *mock.MockUserRepository, mc *mock.MockUserEmailCredentialRepository, mtm *mock.MockTransactionManager) {
-				mc.EXPECT().GetByEmail(gomock.Any(), "test@example.com").Return(nil, errors.New("not found"))
+				mc.EXPECT().GetByEmail(gomock.Any(), "test@example.com").Return(nil, repository.ErrNotFound)
 
 				mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
 					func(ctx context.Context, fn func(context.Context) error) error {
@@ -111,19 +109,6 @@ func TestSignupUseCase_Execute(t *testing.T) {
 			errMsg:  "failed to create user profile",
 		},
 		{
-			name: "異常系_ユーザー作成失敗_パスワード要件満たさず",
-			input: auth.SignupInput{
-				Email:    "test@example.com",
-				Password: "weak",
-				Name:     "Test User",
-			},
-			setup: func(mr *mock.MockUserRepository, mc *mock.MockUserEmailCredentialRepository, mtm *mock.MockTransactionManager) {
-				// No repository calls expected as validation fails first
-			},
-			wantErr: true,
-			errMsg:  "validation failed",
-		},
-		{
 			name: "異常系_Credential作成失敗_ロールバック確認",
 			input: auth.SignupInput{
 				Email:    "rollback@example.com",
@@ -131,7 +116,7 @@ func TestSignupUseCase_Execute(t *testing.T) {
 				Name:     "Rollback User",
 			},
 			setup: func(mr *mock.MockUserRepository, mc *mock.MockUserEmailCredentialRepository, mtm *mock.MockTransactionManager) {
-				mc.EXPECT().GetByEmail(gomock.Any(), "rollback@example.com").Return(nil, errors.New("not found"))
+				mc.EXPECT().GetByEmail(gomock.Any(), "rollback@example.com").Return(nil, repository.ErrNotFound)
 
 				mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
 					func(ctx context.Context, fn func(context.Context) error) error {
@@ -144,6 +129,18 @@ func TestSignupUseCase_Execute(t *testing.T) {
 			},
 			wantErr: true,
 			errMsg:  "failed to create user credential",
+		},
+		{
+			name: "異常系_パスワード要件満たさず",
+			input: auth.SignupInput{
+				Email:    "test@example.com",
+				Password: "weak",
+				Name:     "Test User",
+			},
+			setup: func(mr *mock.MockUserRepository, mc *mock.MockUserEmailCredentialRepository, mtm *mock.MockTransactionManager) {
+			},
+			wantErr: true,
+			errMsg:  "validation failed",
 		},
 	}
 
