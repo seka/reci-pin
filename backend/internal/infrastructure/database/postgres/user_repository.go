@@ -7,6 +7,7 @@ import (
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
+	"github.com/seka/reci-pin/backend/internal/domain/repository"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/entity"
 )
 
@@ -28,17 +29,17 @@ func (r *UserRepository) Create(ctx context.Context, user *model.User) error {
 
 	rows, err := r.db.Query(ctx, query, e.Name)
 	if err != nil {
-		return fmt.Errorf("failed to create user: %w", err)
+		return MapError(err)
 	}
 	defer rows.Close()
 
 	if !rows.Next() {
-		return fmt.Errorf("failed to create user: no rows returned")
+		return repository.ErrInternal // Modified from generic error
 	}
 
 	err = rows.Scan(&e.ID, &e.CreatedAt, &e.UpdatedAt)
 	if err != nil {
-		return fmt.Errorf("failed to scan user: %w", err)
+		return MapError(err)
 	}
 
 	user.ID = e.ID
@@ -55,12 +56,12 @@ func (r *UserRepository) GetByID(ctx context.Context, id int64) (*model.User, er
 
 	rows, err := r.db.Query(ctx, query, id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get user by id: %w", err)
+		return nil, MapError(err)
 	}
 	defer rows.Close()
 
 	if !rows.Next() {
-		return nil, fmt.Errorf("user not found")
+		return nil, repository.ErrNotFound
 	}
 
 	err = rows.Scan(
@@ -70,7 +71,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id int64) (*model.User, er
 		&e.UpdatedAt,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to scan user: %w", err)
+		return nil, MapError(err)
 	}
 
 	return e.ToModel(), nil

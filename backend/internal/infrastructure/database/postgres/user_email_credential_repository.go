@@ -33,7 +33,7 @@ func (r *UserEmailCredentialRepository) Create(ctx context.Context, credential *
 		e.VerificationToken, e.VerificationTokenExpiresAt,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to create user email credential: %w", err)
+		return MapError(err)
 	}
 	return nil
 }
@@ -47,12 +47,12 @@ func (r *UserEmailCredentialRepository) GetByEmail(ctx context.Context, email st
 	`
 	rows, err := r.db.Query(ctx, query, email)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get credential by email: %w", err)
+		return nil, MapError(err)
 	}
 	defer rows.Close()
 
 	if !rows.Next() {
-		return nil, nil // Not found
+		return nil, repository.ErrNotFound
 	}
 
 	var e entity.UserEmailCredential
@@ -61,7 +61,7 @@ func (r *UserEmailCredentialRepository) GetByEmail(ctx context.Context, email st
 		&e.VerificationToken, &e.VerificationTokenExpiresAt, &e.UpdatedAt,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to scan credential: %w", err)
+		return nil, MapError(err)
 	}
 	return e.ToModel(), nil
 }
@@ -75,12 +75,12 @@ func (r *UserEmailCredentialRepository) GetByUserID(ctx context.Context, userID 
 	`
 	rows, err := r.db.Query(ctx, query, userID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get credential by user_id: %w", err)
+		return nil, MapError(err)
 	}
 	defer rows.Close()
 
 	if !rows.Next() {
-		return nil, nil
+		return nil, repository.ErrNotFound
 	}
 
 	var e entity.UserEmailCredential
@@ -89,7 +89,7 @@ func (r *UserEmailCredentialRepository) GetByUserID(ctx context.Context, userID 
 		&e.VerificationToken, &e.VerificationTokenExpiresAt, &e.UpdatedAt,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to scan credential: %w", err)
+		return nil, MapError(err)
 	}
 	return e.ToModel(), nil
 }
@@ -103,12 +103,12 @@ func (r *UserEmailCredentialRepository) GetByToken(ctx context.Context, token st
 	`
 	rows, err := r.db.Query(ctx, query, token)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get credential by token: %w", err)
+		return nil, MapError(err)
 	}
 	defer rows.Close()
 
 	if !rows.Next() {
-		return nil, nil
+		return nil, repository.ErrNotFound
 	}
 
 	var e entity.UserEmailCredential
@@ -117,7 +117,7 @@ func (r *UserEmailCredentialRepository) GetByToken(ctx context.Context, token st
 		&e.VerificationToken, &e.VerificationTokenExpiresAt, &e.UpdatedAt,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to scan credential: %w", err)
+		return nil, MapError(err)
 	}
 	return e.ToModel(), nil
 }
@@ -135,7 +135,7 @@ func (r *UserEmailCredentialRepository) Update(ctx context.Context, credential *
 		e.VerificationToken, e.VerificationTokenExpiresAt,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to update credential: %w", err)
+		return MapError(err)
 	}
 	return nil
 }

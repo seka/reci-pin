@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/seka/reci-pin/backend/internal/domain/model"
+	"github.com/seka/reci-pin/backend/internal/domain/repository"
 	mockPostgres "github.com/seka/reci-pin/backend/internal/infrastructure/database/mock"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 	"github.com/stretchr/testify/assert"
@@ -89,6 +90,7 @@ func TestUserEmailCredentialRepository_GetByEmail(t *testing.T) {
 		mocks   mocks
 		want    *model.UserEmailCredential
 		wantErr bool
+		errIs   error
 	}{
 		{
 			name: "Success",
@@ -102,7 +104,6 @@ func TestUserEmailCredentialRepository_GetByEmail(t *testing.T) {
 							*dest[0].(*int64) = 1
 							*dest[1].(*string) = "test@example.com"
 							*dest[2].(*string) = "hash"
-							// Fix pointer level for nullable time
 							if p, ok := dest[3].(**time.Time); ok {
 								*p = &parsedTime
 							}
@@ -122,23 +123,23 @@ func TestUserEmailCredentialRepository_GetByEmail(t *testing.T) {
 				UserID:       1,
 				Email:        "test@example.com",
 				PasswordHash: "hash",
-				// EmailVerifiedAt check omitted for brevity in comparison logic or handle carefully
 				VerificationToken: "token",
 			},
 			wantErr: false,
 		},
 		{
 			name: "Not Found",
-			args: args{email: "test@example.com"},
+			args: args{email: "notfound@example.com"},
 			mocks: mocks{
 				setup: func(m *mockPostgres.MockDatabase, r *mockPostgres.MockRows) {
 					r.EXPECT().Next().Return(false)
 					r.EXPECT().Close()
-					m.EXPECT().Query(gomock.Any(), gomock.Any(), "test@example.com").Return(r, nil)
+					m.EXPECT().Query(gomock.Any(), gomock.Any(), "notfound@example.com").Return(r, nil)
 				},
 			},
 			want:    nil,
-			wantErr: false, // Repository returns nil, nil for not found as per implementation
+			wantErr: true,
+			errIs:   repository.ErrNotFound,
 		},
 	}
 
@@ -156,6 +157,9 @@ func TestUserEmailCredentialRepository_GetByEmail(t *testing.T) {
 
 			if tt.wantErr {
 				assert.Error(t, err)
+				if tt.errIs != nil {
+					assert.True(t, errors.Is(err, tt.errIs))
+				}
 			} else {
 				assert.NoError(t, err)
 				if tt.want != nil {
