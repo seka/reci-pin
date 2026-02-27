@@ -41,7 +41,7 @@ func (tm *transactionManager) WithTransaction(ctx context.Context, fn func(ctx c
 }
 
 // getTx retrieves the transaction from the context, if any.
-func getTx(ctx context.Context) (pgx.Tx, bool) {
+func (tm *transactionManager) getTx(ctx context.Context) (pgx.Tx, bool) {
 	tx, ok := ctx.Value(txKey{}).(pgx.Tx)
 	return tx, ok
 }

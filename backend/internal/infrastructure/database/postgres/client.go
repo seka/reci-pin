@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/seka/reci-pin/backend/config"
@@ -10,9 +11,15 @@ import (
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
 )
 
+type pgxExecutor interface {
+	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
+	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
+}
+
 type Client struct {
-	cfg  config.Database
-	pool *pgxpool.Pool
+	cfg       config.Database
+	pool      *pgxpool.Pool
+	txManager repository.TransactionManager
 }
 
 func NewClient(cfg config.Database) database.Database {
@@ -29,26 +36,25 @@ func (p *Client) Connect(ctx context.Context) error {
 		return err
 	}
 	p.pool = pool
+	p.txManager = NewTransactionManager(pool)
 	return nil
 }
 
-func (p *Client) Query(ctx context.Context, query string, args ...any) (database.Rows, error) {
-	if tx, ok := getTx(ctx); ok {
-		return tx.Query(ctx, query, args...)
+func (p *Client) executor(ctx context.Context) pgxExecutor {
+	if tm, ok := p.txManager.(*transactionManager); ok {
+		if tx, ok := tm.getTx(ctx); ok {
+			return tx
+		}
 	}
-	return p.pool.Query(ctx, query, args...)
+	return p.pool
+}
+
+func (p *Client) Query(ctx context.Context, query string, args ...any) (database.Rows, error) {
+	return p.executor(ctx).Query(ctx, query, args...)
 }
 
 func (p *Client) Execute(ctx context.Context, query string, args ...any) (int64, error) {
-	var tag pgconn.CommandTag
-	var err error
-
-	if tx, ok := getTx(ctx); ok {
-		tag, err = tx.Exec(ctx, query, args...)
-	} else {
-		tag, err = p.pool.Exec(ctx, query, args...)
-	}
-
+	tag, err := p.executor(ctx).Exec(ctx, query, args...)
 	if err != nil {
 		return 0, err
 	}
@@ -56,7 +62,7 @@ func (p *Client) Execute(ctx context.Context, query string, args ...any) (int64,
 }
 
 func (p *Client) TransactionManager() repository.TransactionManager {
-	return NewTransactionManager(p.pool)
+	return p.txManager
 }
 
 func (p *Client) Close() {
