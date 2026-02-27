@@ -15,7 +15,7 @@ import (
 
 func TestVerifyEmailUseCase_Execute(t *testing.T) {
 	type mocks struct {
-		setup func(m *repositorymock.MockUserEmailCredentialRepository)
+		setup func(m *repositorymock.MockUserEmailCredentialRepository, mtm *repositorymock.MockTransactionManager)
 	}
 	type args struct {
 		token string
@@ -31,7 +31,7 @@ func TestVerifyEmailUseCase_Execute(t *testing.T) {
 			name: "Success",
 			args: args{token: "valid-token"},
 			mocks: mocks{
-				setup: func(m *repositorymock.MockUserEmailCredentialRepository) {
+				setup: func(m *repositorymock.MockUserEmailCredentialRepository, mtm *repositorymock.MockTransactionManager) {
 					expiresAt := time.Now().Add(1 * time.Hour)
 					cred := &model.UserEmailCredential{
 						UserID:                     1,
@@ -39,6 +39,11 @@ func TestVerifyEmailUseCase_Execute(t *testing.T) {
 						VerificationToken:          "valid-token",
 						VerificationTokenExpiresAt: &expiresAt,
 					}
+					mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+						func(ctx context.Context, fn func(context.Context) error) error {
+							return fn(ctx)
+						},
+					)
 					m.EXPECT().GetByToken(gomock.Any(), "valid-token").Return(cred, nil)
 					// Expect Update with cleared token and verified time
 					m.EXPECT().Update(gomock.Any(), gomock.AssignableToTypeOf(cred)).DoAndReturn(
@@ -57,7 +62,12 @@ func TestVerifyEmailUseCase_Execute(t *testing.T) {
 			name: "Invalid Token",
 			args: args{token: "invalid-token"},
 			mocks: mocks{
-				setup: func(m *repositorymock.MockUserEmailCredentialRepository) {
+				setup: func(m *repositorymock.MockUserEmailCredentialRepository, mtm *repositorymock.MockTransactionManager) {
+					mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+						func(ctx context.Context, fn func(context.Context) error) error {
+							return fn(ctx)
+						},
+					)
 					m.EXPECT().GetByToken(gomock.Any(), "invalid-token").Return(nil, errors.New("db error"))
 				},
 			},
@@ -68,7 +78,12 @@ func TestVerifyEmailUseCase_Execute(t *testing.T) {
 			name: "Already Verified",
 			args: args{token: "verified-token"},
 			mocks: mocks{
-				setup: func(m *repositorymock.MockUserEmailCredentialRepository) {
+				setup: func(m *repositorymock.MockUserEmailCredentialRepository, mtm *repositorymock.MockTransactionManager) {
+					mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+						func(ctx context.Context, fn func(context.Context) error) error {
+							return fn(ctx)
+						},
+					)
 					now := time.Now()
 					cred := &model.UserEmailCredential{
 						UserID:          1,
@@ -84,7 +99,12 @@ func TestVerifyEmailUseCase_Execute(t *testing.T) {
 			name: "Token Expired",
 			args: args{token: "expired-token"},
 			mocks: mocks{
-				setup: func(m *repositorymock.MockUserEmailCredentialRepository) {
+				setup: func(m *repositorymock.MockUserEmailCredentialRepository, mtm *repositorymock.MockTransactionManager) {
+					mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+						func(ctx context.Context, fn func(context.Context) error) error {
+							return fn(ctx)
+						},
+					)
 					expiresAt := time.Now().Add(-1 * time.Hour)
 					cred := &model.UserEmailCredential{
 						UserID:                     1,
@@ -101,7 +121,12 @@ func TestVerifyEmailUseCase_Execute(t *testing.T) {
 			name: "Update Error",
 			args: args{token: "valid-token"},
 			mocks: mocks{
-				setup: func(m *repositorymock.MockUserEmailCredentialRepository) {
+				setup: func(m *repositorymock.MockUserEmailCredentialRepository, mtm *repositorymock.MockTransactionManager) {
+					mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+						func(ctx context.Context, fn func(context.Context) error) error {
+							return fn(ctx)
+						},
+					)
 					expiresAt := time.Now().Add(1 * time.Hour)
 					cred := &model.UserEmailCredential{
 						UserID:                     1,
@@ -123,9 +148,10 @@ func TestVerifyEmailUseCase_Execute(t *testing.T) {
 			defer ctrl.Finish()
 
 			repo := repositorymock.NewMockUserEmailCredentialRepository(ctrl)
-			tt.mocks.setup(repo)
+			mtm := repositorymock.NewMockTransactionManager(ctrl)
+			tt.mocks.setup(repo, mtm)
 
-			uc := auth.NewVerifyEmailUseCase(repo)
+			uc := auth.NewVerifyEmailUseCase(repo, mtm)
 			err := uc.Execute(context.Background(), tt.args.token)
 
 			if tt.wantErr {

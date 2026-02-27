@@ -20,7 +20,7 @@ func TestCreateRecipeUseCase_Execute(t *testing.T) {
 	tests := []struct {
 		name    string
 		input   recipe.CreateRecipeInput
-		setup   func(*mockRepo.MockRecipeRepository, *mockSearcher.MockRecipeSearcher)
+		setup   func(*mockRepo.MockRecipeRepository, *mockSearcher.MockRecipeSearcher, *mockRepo.MockTransactionManager)
 		wantErr bool
 		errMsg  string
 	}{
@@ -33,7 +33,12 @@ func TestCreateRecipeUseCase_Execute(t *testing.T) {
 				Memo:   "Test memo",
 				TagIDs: []int64{},
 			},
-			setup: func(m *mockRepo.MockRecipeRepository, ms *mockSearcher.MockRecipeSearcher) {
+			setup: func(m *mockRepo.MockRecipeRepository, ms *mockSearcher.MockRecipeSearcher, mtm *mockRepo.MockTransactionManager) {
+				mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					},
+				)
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, r *model.Recipe) error {
@@ -55,7 +60,12 @@ func TestCreateRecipeUseCase_Execute(t *testing.T) {
 				Memo:   "Test memo",
 				TagIDs: []int64{1, 2},
 			},
-			setup: func(m *mockRepo.MockRecipeRepository, ms *mockSearcher.MockRecipeSearcher) {
+			setup: func(m *mockRepo.MockRecipeRepository, ms *mockSearcher.MockRecipeSearcher, mtm *mockRepo.MockTransactionManager) {
+				mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					},
+				)
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, r *model.Recipe) error {
@@ -80,7 +90,12 @@ func TestCreateRecipeUseCase_Execute(t *testing.T) {
 				Memo:   "Test memo",
 				TagIDs: []int64{},
 			},
-			setup: func(m *mockRepo.MockRecipeRepository, ms *mockSearcher.MockRecipeSearcher) {
+			setup: func(m *mockRepo.MockRecipeRepository, ms *mockSearcher.MockRecipeSearcher, mtm *mockRepo.MockTransactionManager) {
+				mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					},
+				)
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					Return(errors.New("database error"))
@@ -97,7 +112,12 @@ func TestCreateRecipeUseCase_Execute(t *testing.T) {
 				Memo:   "Test memo",
 				TagIDs: []int64{1},
 			},
-			setup: func(m *mockRepo.MockRecipeRepository, ms *mockSearcher.MockRecipeSearcher) {
+			setup: func(m *mockRepo.MockRecipeRepository, ms *mockSearcher.MockRecipeSearcher, mtm *mockRepo.MockTransactionManager) {
+				mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					},
+				)
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, r *model.Recipe) error {
@@ -115,11 +135,12 @@ func TestCreateRecipeUseCase_Execute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := mockRepo.NewMockRecipeRepository(ctrl)
-			mockSearcher := mockSearcher.NewMockRecipeSearcher(ctrl)
-			tt.setup(mockRepo, mockSearcher)
+			mRepo := mockRepo.NewMockRecipeRepository(ctrl)
+			mSearcher := mockSearcher.NewMockRecipeSearcher(ctrl)
+			mTxManager := mockRepo.NewMockTransactionManager(ctrl)
+			tt.setup(mRepo, mSearcher, mTxManager)
 
-			uc := recipe.NewCreateRecipeUseCase(mockRepo, mockSearcher)
+			uc := recipe.NewCreateRecipeUseCase(mRepo, mSearcher, mTxManager)
 			result, err := uc.Execute(context.Background(), tt.input)
 
 			if tt.wantErr {

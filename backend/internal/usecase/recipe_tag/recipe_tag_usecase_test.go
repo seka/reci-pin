@@ -21,7 +21,7 @@ func TestAddTagsUseCase_Execute(t *testing.T) {
 		recipeID int64
 		userID   int64
 		tagIDs   []int64
-		setup    func(*mock.MockRecipeRepository)
+		setup    func(*mock.MockRecipeRepository, *mock.MockTransactionManager)
 		wantErr  bool
 		errMsg   string
 	}{
@@ -30,7 +30,12 @@ func TestAddTagsUseCase_Execute(t *testing.T) {
 			recipeID: 1,
 			userID:   1,
 			tagIDs:   []int64{1, 2},
-			setup: func(m *mock.MockRecipeRepository) {
+			setup: func(m *mock.MockRecipeRepository, mtm *mock.MockTransactionManager) {
+				mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					},
+				)
 				m.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{ID: 1, UserID: 1}, nil)
@@ -45,7 +50,12 @@ func TestAddTagsUseCase_Execute(t *testing.T) {
 			recipeID: 999,
 			userID:   1,
 			tagIDs:   []int64{1},
-			setup: func(m *mock.MockRecipeRepository) {
+			setup: func(m *mock.MockRecipeRepository, mtm *mock.MockTransactionManager) {
+				mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					},
+				)
 				m.EXPECT().
 					GetByID(gomock.Any(), int64(999)).
 					Return(nil, errors.New("not found"))
@@ -58,7 +68,12 @@ func TestAddTagsUseCase_Execute(t *testing.T) {
 			recipeID: 1,
 			userID:   2,
 			tagIDs:   []int64{1},
-			setup: func(m *mock.MockRecipeRepository) {
+			setup: func(m *mock.MockRecipeRepository, mtm *mock.MockTransactionManager) {
+				mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					},
+				)
 				m.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{ID: 1, UserID: 1}, nil)
@@ -70,10 +85,11 @@ func TestAddTagsUseCase_Execute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := mock.NewMockRecipeRepository(ctrl)
-			tt.setup(mockRepo)
+			mRepo := mock.NewMockRecipeRepository(ctrl)
+			mTxMgr := mock.NewMockTransactionManager(ctrl)
+			tt.setup(mRepo, mTxMgr)
 
-			uc := recipe_tag.NewAddTagsUseCase(mockRepo)
+			uc := recipe_tag.NewAddTagsUseCase(mRepo, mTxMgr)
 			err := uc.Execute(context.Background(), tt.recipeID, tt.userID, tt.tagIDs)
 
 			if tt.wantErr {
@@ -95,7 +111,7 @@ func TestRemoveTagsUseCase_Execute(t *testing.T) {
 		recipeID int64
 		userID   int64
 		tagIDs   []int64
-		setup    func(*mock.MockRecipeRepository)
+		setup    func(*mock.MockRecipeRepository, *mock.MockTransactionManager)
 		wantErr  bool
 		errMsg   string
 	}{
@@ -104,7 +120,12 @@ func TestRemoveTagsUseCase_Execute(t *testing.T) {
 			recipeID: 1,
 			userID:   1,
 			tagIDs:   []int64{1, 2},
-			setup: func(m *mock.MockRecipeRepository) {
+			setup: func(m *mock.MockRecipeRepository, mtm *mock.MockTransactionManager) {
+				mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					},
+				)
 				m.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{ID: 1, UserID: 1}, nil)
@@ -119,7 +140,12 @@ func TestRemoveTagsUseCase_Execute(t *testing.T) {
 			recipeID: 999,
 			userID:   1,
 			tagIDs:   []int64{1},
-			setup: func(m *mock.MockRecipeRepository) {
+			setup: func(m *mock.MockRecipeRepository, mtm *mock.MockTransactionManager) {
+				mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					},
+				)
 				m.EXPECT().
 					GetByID(gomock.Any(), int64(999)).
 					Return(nil, errors.New("not found"))
@@ -132,7 +158,12 @@ func TestRemoveTagsUseCase_Execute(t *testing.T) {
 			recipeID: 1,
 			userID:   2,
 			tagIDs:   []int64{1},
-			setup: func(m *mock.MockRecipeRepository) {
+			setup: func(m *mock.MockRecipeRepository, mtm *mock.MockTransactionManager) {
+				mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					},
+				)
 				m.EXPECT().
 					GetByID(gomock.Any(), int64(1)).
 					Return(&model.Recipe{ID: 1, UserID: 1}, nil)
@@ -144,10 +175,11 @@ func TestRemoveTagsUseCase_Execute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := mock.NewMockRecipeRepository(ctrl)
-			tt.setup(mockRepo)
+			mRepo := mock.NewMockRecipeRepository(ctrl)
+			mTxMgr := mock.NewMockTransactionManager(ctrl)
+			tt.setup(mRepo, mTxMgr)
 
-			uc := recipe_tag.NewRemoveTagsUseCase(mockRepo)
+			uc := recipe_tag.NewRemoveTagsUseCase(mRepo, mTxMgr)
 			err := uc.Execute(context.Background(), tt.recipeID, tt.userID, tt.tagIDs)
 
 			if tt.wantErr {

@@ -21,7 +21,7 @@ func TestSignupUseCase_Execute(t *testing.T) {
 	tests := []struct {
 		name    string
 		input   auth.SignupInput
-		setup   func(*mock.MockUserRepository, *mock.MockUserEmailCredentialRepository)
+		setup   func(*mock.MockUserRepository, *mock.MockUserEmailCredentialRepository, *mock.MockTransactionManager)
 		wantErr bool
 		errMsg  string
 	}{
@@ -32,9 +32,15 @@ func TestSignupUseCase_Execute(t *testing.T) {
 				Password: "password123",
 				Name:     "Test User",
 			},
-			setup: func(mr *mock.MockUserRepository, mc *mock.MockUserEmailCredentialRepository) {
+			setup: func(mr *mock.MockUserRepository, mc *mock.MockUserEmailCredentialRepository, mtm *mock.MockTransactionManager) {
 				// Email credential check (not exists)
 				mc.EXPECT().GetByEmail(gomock.Any(), "test@example.com").Return(nil, errors.New("not found"))
+
+				mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					},
+				)
 
 				// Create User (Profile)
 				mr.EXPECT().Create(gomock.Any(), gomock.Any()).
@@ -55,7 +61,7 @@ func TestSignupUseCase_Execute(t *testing.T) {
 				Password: "password123",
 				Name:     "Test User",
 			},
-			setup: func(mr *mock.MockUserRepository, mc *mock.MockUserEmailCredentialRepository) {
+			setup: func(mr *mock.MockUserRepository, mc *mock.MockUserEmailCredentialRepository, mtm *mock.MockTransactionManager) {
 				now := time.Now()
 				mc.EXPECT().GetByEmail(gomock.Any(), "duplicate@example.com").
 					Return(&model.UserEmailCredential{
@@ -73,7 +79,7 @@ func TestSignupUseCase_Execute(t *testing.T) {
 				Password: "password123",
 				Name:     "Test User",
 			},
-			setup: func(mr *mock.MockUserRepository, mc *mock.MockUserEmailCredentialRepository) {
+			setup: func(mr *mock.MockUserRepository, mc *mock.MockUserEmailCredentialRepository, mtm *mock.MockTransactionManager) {
 				mc.EXPECT().GetByEmail(gomock.Any(), "pending@example.com").
 					Return(&model.UserEmailCredential{
 						Email:           "pending@example.com",
@@ -90,8 +96,15 @@ func TestSignupUseCase_Execute(t *testing.T) {
 				Password: "password123",
 				Name:     "Test User",
 			},
-			setup: func(mr *mock.MockUserRepository, mc *mock.MockUserEmailCredentialRepository) {
+			setup: func(mr *mock.MockUserRepository, mc *mock.MockUserEmailCredentialRepository, mtm *mock.MockTransactionManager) {
 				mc.EXPECT().GetByEmail(gomock.Any(), "test@example.com").Return(nil, errors.New("not found"))
+
+				mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					},
+				)
+
 				mr.EXPECT().Create(gomock.Any(), gomock.Any()).Return(errors.New("db error"))
 			},
 			wantErr: true,
@@ -104,7 +117,7 @@ func TestSignupUseCase_Execute(t *testing.T) {
 				Password: "weak",
 				Name:     "Test User",
 			},
-			setup: func(mr *mock.MockUserRepository, mc *mock.MockUserEmailCredentialRepository) {
+			setup: func(mr *mock.MockUserRepository, mc *mock.MockUserEmailCredentialRepository, mtm *mock.MockTransactionManager) {
 				// No repository calls expected as validation fails first
 			},
 			wantErr: true,
@@ -116,9 +129,10 @@ func TestSignupUseCase_Execute(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockUserRepo := mock.NewMockUserRepository(ctrl)
 			mockCredRepo := mock.NewMockUserEmailCredentialRepository(ctrl)
-			tt.setup(mockUserRepo, mockCredRepo)
+			mockTxManager := mock.NewMockTransactionManager(ctrl)
+			tt.setup(mockUserRepo, mockCredRepo, mockTxManager)
 
-			uc := auth.NewSignupUseCase(mockUserRepo, mockCredRepo)
+			uc := auth.NewSignupUseCase(mockUserRepo, mockCredRepo, mockTxManager)
 			userID, err := uc.Execute(context.Background(), tt.input)
 
 			if tt.wantErr {

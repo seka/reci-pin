@@ -24,7 +24,7 @@ func TestChangePasswordUseCase_Execute(t *testing.T) {
 	tests := []struct {
 		name    string
 		input   auth.ChangePasswordInput
-		setup   func(credRepo *repositorymock.MockUserEmailCredentialRepository, emailSender *emailmock.MockEmailClient)
+		setup   func(credRepo *repositorymock.MockUserEmailCredentialRepository, emailSender *emailmock.MockEmailClient, txMgr *repositorymock.MockTransactionManager)
 		wantErr bool
 	}{
 		{
@@ -33,7 +33,12 @@ func TestChangePasswordUseCase_Execute(t *testing.T) {
 				CurrentPassword: currentPassword,
 				NewPassword:     newPassword,
 			},
-			setup: func(credRepo *repositorymock.MockUserEmailCredentialRepository, emailSender *emailmock.MockEmailClient) {
+			setup: func(credRepo *repositorymock.MockUserEmailCredentialRepository, emailSender *emailmock.MockEmailClient, txMgr *repositorymock.MockTransactionManager) {
+				txMgr.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					},
+				)
 				credRepo.EXPECT().GetByUserID(gomock.Any(), int64(1)).Return(&model.UserEmailCredential{
 					UserID:       1,
 					Email:        "test@example.com",
@@ -50,7 +55,7 @@ func TestChangePasswordUseCase_Execute(t *testing.T) {
 				CurrentPassword: currentPassword,
 				NewPassword:     "short",
 			},
-			setup: func(credRepo *repositorymock.MockUserEmailCredentialRepository, emailSender *emailmock.MockEmailClient) {
+			setup: func(credRepo *repositorymock.MockUserEmailCredentialRepository, emailSender *emailmock.MockEmailClient, txMgr *repositorymock.MockTransactionManager) {
 				// No calls expected
 			},
 			wantErr: true,
@@ -61,7 +66,12 @@ func TestChangePasswordUseCase_Execute(t *testing.T) {
 				CurrentPassword: "wrongPassword",
 				NewPassword:     newPassword,
 			},
-			setup: func(credRepo *repositorymock.MockUserEmailCredentialRepository, emailSender *emailmock.MockEmailClient) {
+			setup: func(credRepo *repositorymock.MockUserEmailCredentialRepository, emailSender *emailmock.MockEmailClient, txMgr *repositorymock.MockTransactionManager) {
+				txMgr.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					},
+				)
 				credRepo.EXPECT().GetByUserID(gomock.Any(), int64(1)).Return(&model.UserEmailCredential{
 					UserID:       1,
 					Email:        "test@example.com",
@@ -76,7 +86,12 @@ func TestChangePasswordUseCase_Execute(t *testing.T) {
 				CurrentPassword: currentPassword,
 				NewPassword:     newPassword,
 			},
-			setup: func(credRepo *repositorymock.MockUserEmailCredentialRepository, emailSender *emailmock.MockEmailClient) {
+			setup: func(credRepo *repositorymock.MockUserEmailCredentialRepository, emailSender *emailmock.MockEmailClient, txMgr *repositorymock.MockTransactionManager) {
+				txMgr.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					},
+				)
 				credRepo.EXPECT().GetByUserID(gomock.Any(), int64(1)).Return(nil, nil)
 			},
 			wantErr: true,
@@ -87,7 +102,12 @@ func TestChangePasswordUseCase_Execute(t *testing.T) {
 				CurrentPassword: currentPassword,
 				NewPassword:     newPassword,
 			},
-			setup: func(credRepo *repositorymock.MockUserEmailCredentialRepository, emailSender *emailmock.MockEmailClient) {
+			setup: func(credRepo *repositorymock.MockUserEmailCredentialRepository, emailSender *emailmock.MockEmailClient, txMgr *repositorymock.MockTransactionManager) {
+				txMgr.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					},
+				)
 				credRepo.EXPECT().GetByUserID(gomock.Any(), int64(1)).Return(nil, errors.New("db error"))
 			},
 			wantErr: true,
@@ -98,7 +118,12 @@ func TestChangePasswordUseCase_Execute(t *testing.T) {
 				CurrentPassword: currentPassword,
 				NewPassword:     newPassword,
 			},
-			setup: func(credRepo *repositorymock.MockUserEmailCredentialRepository, emailSender *emailmock.MockEmailClient) {
+			setup: func(credRepo *repositorymock.MockUserEmailCredentialRepository, emailSender *emailmock.MockEmailClient, txMgr *repositorymock.MockTransactionManager) {
+				txMgr.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					},
+				)
 				credRepo.EXPECT().GetByUserID(gomock.Any(), int64(1)).Return(&model.UserEmailCredential{
 					UserID:       1,
 					Email:        "test@example.com",
@@ -117,10 +142,11 @@ func TestChangePasswordUseCase_Execute(t *testing.T) {
 
 			mockCredRepo := repositorymock.NewMockUserEmailCredentialRepository(ctrl)
 			mockEmailClient := emailmock.NewMockEmailClient(ctrl)
+			mockTxMgr := repositorymock.NewMockTransactionManager(ctrl)
 
-			tt.setup(mockCredRepo, mockEmailClient)
+			tt.setup(mockCredRepo, mockEmailClient, mockTxMgr)
 
-			uc := auth.NewChangePasswordUseCase(mockCredRepo, mockEmailClient)
+			uc := auth.NewChangePasswordUseCase(mockCredRepo, mockEmailClient, mockTxMgr)
 			err := uc.Execute(context.Background(), 1, tt.input)
 
 			if tt.wantErr {
