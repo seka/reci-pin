@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
+	domainErrors "github.com/seka/reci-pin/backend/internal/domain/errors"
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	"github.com/seka/reci-pin/backend/internal/domain/repository"
 	"github.com/seka/reci-pin/backend/internal/domain/repository/mock"
 
 	"github.com/seka/reci-pin/backend/internal/usecase/auth"
@@ -34,7 +34,7 @@ func TestSignupUseCase_Execute(t *testing.T) {
 				Name:     "Test User",
 			},
 			setup: func(mr *mock.MockUserRepository, mc *mock.MockUserEmailCredentialRepository, mtm *mock.MockTransactionManager) {
-				mc.EXPECT().GetByEmail(gomock.Any(), "test@example.com").Return(nil, repository.ErrNotFound)
+				mc.EXPECT().GetByEmail(gomock.Any(), "test@example.com").Return(nil, domainErrors.ErrNotFound)
 
 				mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
 					func(ctx context.Context, fn func(context.Context) error) error {
@@ -95,7 +95,7 @@ func TestSignupUseCase_Execute(t *testing.T) {
 				Name:     "Test User",
 			},
 			setup: func(mr *mock.MockUserRepository, mc *mock.MockUserEmailCredentialRepository, mtm *mock.MockTransactionManager) {
-				mc.EXPECT().GetByEmail(gomock.Any(), "test@example.com").Return(nil, repository.ErrNotFound)
+				mc.EXPECT().GetByEmail(gomock.Any(), "test@example.com").Return(nil, domainErrors.ErrNotFound)
 
 				mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
 					func(ctx context.Context, fn func(context.Context) error) error {
@@ -116,7 +116,7 @@ func TestSignupUseCase_Execute(t *testing.T) {
 				Name:     "Rollback User",
 			},
 			setup: func(mr *mock.MockUserRepository, mc *mock.MockUserEmailCredentialRepository, mtm *mock.MockTransactionManager) {
-				mc.EXPECT().GetByEmail(gomock.Any(), "rollback@example.com").Return(nil, repository.ErrNotFound)
+				mc.EXPECT().GetByEmail(gomock.Any(), "rollback@example.com").Return(nil, domainErrors.ErrNotFound)
 
 				mtm.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).DoAndReturn(
 					func(ctx context.Context, fn func(context.Context) error) error {

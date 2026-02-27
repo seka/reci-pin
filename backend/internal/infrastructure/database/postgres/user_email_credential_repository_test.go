@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
+	domainErrors "github.com/seka/reci-pin/backend/internal/domain/errors"
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	"github.com/seka/reci-pin/backend/internal/domain/repository"
 	mockPostgres "github.com/seka/reci-pin/backend/internal/infrastructure/database/mock"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
 	"github.com/stretchr/testify/assert"
@@ -139,7 +139,7 @@ func TestUserEmailCredentialRepository_GetByEmail(t *testing.T) {
 			},
 			want:    nil,
 			wantErr: true,
-			errIs:   repository.ErrNotFound,
+			errIs:   domainErrors.ErrNotFound,
 		},
 	}
 

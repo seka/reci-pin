@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	domainErrors "github.com/seka/reci-pin/backend/internal/domain/errors"
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	mockPostgres "github.com/seka/reci-pin/backend/internal/infrastructure/database/mock"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres"
@@ -153,6 +154,9 @@ func TestUserRepository_GetByID(t *testing.T) {
 
 			if tt.wantErr {
 				assert.Error(t, err)
+				if tt.name == "Not Found" {
+					assert.True(t, errors.Is(err, domainErrors.ErrNotFound))
+				}
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, tt.want.ID, got.ID)
