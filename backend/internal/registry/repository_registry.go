@@ -15,17 +15,20 @@ type Repository interface {
 	NewUserEmailCredentialRepository() repository.UserEmailCredentialRepository
 	NewPasswordResetTokenRepository() repository.PasswordResetTokenRepository
 	NewRefreshTokenRepository() repository.RefreshTokenRepository
+	TransactionManager() repository.TransactionManager
 }
 
 // repositoryRegistry implements the Repository interface
 type repositoryRegistry struct {
 	db database.Database
+	tm repository.TransactionManager
 }
 
 // NewRepository creates a new Repository registry
 func NewRepository(db database.Database) Repository {
 	return &repositoryRegistry{
 		db: db,
+		tm: db.TransactionManager(),
 	}
 }
 
@@ -55,4 +58,8 @@ func (r *repositoryRegistry) NewPasswordResetTokenRepository() repository.Passwo
 
 func (r *repositoryRegistry) NewRefreshTokenRepository() repository.RefreshTokenRepository {
 	return postgres.NewRefreshTokenRepository(r.db)
+}
+
+func (r *repositoryRegistry) TransactionManager() repository.TransactionManager {
+	return r.tm
 }

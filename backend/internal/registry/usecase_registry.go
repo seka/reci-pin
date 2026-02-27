@@ -74,7 +74,7 @@ func NewUseCase(repo Repository, storage storage.Client, searcher Searcher, emai
 
 // Auth UseCases
 func (u *useCaseRegistry) NewSignupUseCase() auth.SignupUseCase {
-	return auth.NewSignupUseCase(u.repo.NewUserRepository(), u.repo.NewUserEmailCredentialRepository())
+	return auth.NewSignupUseCase(u.repo.NewUserRepository(), u.repo.NewUserEmailCredentialRepository(), u.repo.TransactionManager())
 }
 
 func (u *useCaseRegistry) NewLoginUseCase() auth.LoginUseCase {
@@ -107,7 +107,7 @@ func (u *useCaseRegistry) NewGetUserUseCase() auth.GetUserUseCase {
 }
 
 func (u *useCaseRegistry) NewVerifyEmailUseCase() auth.VerifyEmailUseCase {
-	return auth.NewVerifyEmailUseCase(u.repo.NewUserEmailCredentialRepository())
+	return auth.NewVerifyEmailUseCase(u.repo.NewUserEmailCredentialRepository(), u.repo.TransactionManager())
 }
 
 func (u *useCaseRegistry) NewWithdrawUseCase() auth.WithdrawUseCase {
@@ -115,7 +115,7 @@ func (u *useCaseRegistry) NewWithdrawUseCase() auth.WithdrawUseCase {
 }
 
 func (u *useCaseRegistry) NewChangePasswordUseCase() auth.ChangePasswordUseCase {
-	return auth.NewChangePasswordUseCase(u.repo.NewUserEmailCredentialRepository(), u.emailClient)
+	return auth.NewChangePasswordUseCase(u.repo.NewUserEmailCredentialRepository(), u.emailClient, u.repo.TransactionManager())
 }
 
 func (u *useCaseRegistry) NewRequestPasswordResetUseCase() auth.RequestPasswordResetUseCase {
@@ -123,12 +123,12 @@ func (u *useCaseRegistry) NewRequestPasswordResetUseCase() auth.RequestPasswordR
 }
 
 func (u *useCaseRegistry) NewResetPasswordUseCase() auth.ResetPasswordUseCase {
-	return auth.NewResetPasswordUseCase(u.repo.NewPasswordResetTokenRepository(), u.repo.NewUserEmailCredentialRepository())
+	return auth.NewResetPasswordUseCase(u.repo.NewPasswordResetTokenRepository(), u.repo.NewUserEmailCredentialRepository(), u.repo.TransactionManager())
 }
 
 // Recipe UseCases
 func (u *useCaseRegistry) NewCreateRecipeUseCase() recipe.CreateRecipeUseCase {
-	return recipe.NewCreateRecipeUseCase(u.repo.NewRecipeRepository(), u.searcher.NewRecipeSearchRepository())
+	return recipe.NewCreateRecipeUseCase(u.repo.NewRecipeRepository(), u.searcher.NewRecipeSearchRepository(), u.repo.TransactionManager())
 }
 
 func (u *useCaseRegistry) NewGetRecipeUseCase() recipe.GetRecipeUseCase {
@@ -158,11 +158,11 @@ func (u *useCaseRegistry) NewSearchRecipesUseCase() recipe.SearchRecipesUseCase 
 
 // Recipe Tag UseCases
 func (u *useCaseRegistry) NewAddTagsUseCase() recipe_tag.AddTagsUseCase {
-	return recipe_tag.NewAddTagsUseCase(u.repo.NewRecipeRepository())
+	return recipe_tag.NewAddTagsUseCase(u.repo.NewRecipeRepository(), u.repo.TransactionManager())
 }
 
 func (u *useCaseRegistry) NewRemoveTagsUseCase() recipe_tag.RemoveTagsUseCase {
-	return recipe_tag.NewRemoveTagsUseCase(u.repo.NewRecipeRepository())
+	return recipe_tag.NewRemoveTagsUseCase(u.repo.NewRecipeRepository(), u.repo.TransactionManager())
 }
 
 // Recipe Image UseCase
