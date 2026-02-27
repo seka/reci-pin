@@ -14,22 +14,28 @@ type RemoveTagsUseCase interface {
 
 type removeTagsInteractor struct {
 	recipeRepo repository.RecipeRepository
+	txManager  repository.TransactionManager
 }
 
-func NewRemoveTagsUseCase(recipeRepo repository.RecipeRepository) RemoveTagsUseCase {
-	return &removeTagsInteractor{recipeRepo: recipeRepo}
+func NewRemoveTagsUseCase(recipeRepo repository.RecipeRepository, txManager repository.TransactionManager) RemoveTagsUseCase {
+	return &removeTagsInteractor{
+		recipeRepo: recipeRepo,
+		txManager:  txManager,
+	}
 }
 
 func (uc *removeTagsInteractor) Execute(ctx context.Context, recipeID, userID int64, tagIDs []int64) error {
-	// Verify ownership
-	recipe, err := uc.recipeRepo.GetByID(ctx, recipeID)
-	if err != nil {
-		return fmt.Errorf("failed to get recipe: %w", err)
-	}
+	return uc.txManager.WithTransaction(ctx, func(txCtx context.Context) error {
+		// Verify ownership
+		recipe, err := uc.recipeRepo.GetByID(txCtx, recipeID)
+		if err != nil {
+			return fmt.Errorf("failed to get recipe: %w", err)
+		}
 
-	if recipe.UserID != userID {
-		return errors.New("unauthorized access to recipe")
-	}
+		if recipe.UserID != userID {
+			return errors.New("unauthorized access to recipe")
+		}
 
-	return uc.recipeRepo.RemoveTags(ctx, recipeID, tagIDs)
+		return uc.recipeRepo.RemoveTags(txCtx, recipeID, tagIDs)
+	})
 }

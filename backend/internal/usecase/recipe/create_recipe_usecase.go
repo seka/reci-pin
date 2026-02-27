@@ -17,15 +17,18 @@ type CreateRecipeUseCase interface {
 type createRecipeInteractor struct {
 	recipeRepo repository.RecipeRepository
 	searchRepo searcher.RecipeSearcher
+	txManager  repository.TransactionManager
 }
 
 func NewCreateRecipeUseCase(
 	recipeRepo repository.RecipeRepository,
 	searchRepo searcher.RecipeSearcher,
+	txManager repository.TransactionManager,
 ) CreateRecipeUseCase {
 	return &createRecipeInteractor{
 		recipeRepo: recipeRepo,
 		searchRepo: searchRepo,
+		txManager:  txManager,
 	}
 }
 
@@ -49,19 +52,26 @@ func (uc *createRecipeInteractor) Execute(ctx context.Context, input CreateRecip
 		Memo:   input.Memo,
 	}
 
-	if err := uc.recipeRepo.Create(ctx, recipe); err != nil {
-		return nil, fmt.Errorf("failed to create recipe: %w", err)
-	}
+	err := uc.txManager.WithTransaction(ctx, func(txCtx context.Context) error {
+		if err := uc.recipeRepo.Create(txCtx, recipe); err != nil {
+			return fmt.Errorf("failed to create recipe: %w", err)
+		}
 
-	// Add tags if provided
-	if len(input.TagIDs) > 0 {
-		if err := uc.recipeRepo.AddTags(ctx, recipe.ID, input.TagIDs); err != nil {
-			return nil, fmt.Errorf("failed to add tags to recipe: %w", err)
+		// Add tags if provided
+		if len(input.TagIDs) > 0 {
+			if err := uc.recipeRepo.AddTags(txCtx, recipe.ID, input.TagIDs); err != nil {
+				return fmt.Errorf("failed to add tags to recipe: %w", err)
+			}
+			// Set tags to recipe for indexing (only ID is needed for current implementation)
+			for _, tagID := range input.TagIDs {
+				recipe.Tags = append(recipe.Tags, model.Tag{ID: tagID})
+			}
 		}
-		// Set tags to recipe for indexing (only ID is needed for current implementation)
-		for _, tagID := range input.TagIDs {
-			recipe.Tags = append(recipe.Tags, model.Tag{ID: tagID})
-		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
 	}
 
 	// Index recipe for search
