@@ -304,27 +304,54 @@ func (r *RecipeRepository) BulkGetTags(ctx context.Context, recipeIDs []int64) (
 }
 
 func (r *RecipeRepository) AddTags(ctx context.Context, recipeID int64, tagIDs []int64) error {
-	for _, tagID := range tagIDs {
-		query := `
-			INSERT INTO recipe_tags (recipe_id, tag_id)
-			VALUES ($1, $2)
-			ON CONFLICT (recipe_id, tag_id) DO NOTHING
-		`
-		_, err := r.db.Execute(ctx, query, recipeID, tagID)
-		if err != nil {
-			return fmt.Errorf("failed to add tag to recipe: %w", err)
-		}
+	if len(tagIDs) == 0 {
+		return nil
+	}
+
+	placeholders := make([]string, len(tagIDs))
+	args := make([]any, 0, len(tagIDs)+1)
+	args = append(args, recipeID)
+
+	for i, tagID := range tagIDs {
+		placeholders[i] = fmt.Sprintf("($1, $%d)", i+2)
+		args = append(args, tagID)
+	}
+
+	query := fmt.Sprintf(`
+		INSERT INTO recipe_tags (recipe_id, tag_id)
+		VALUES %s
+		ON CONFLICT (recipe_id, tag_id) DO NOTHING
+	`, strings.Join(placeholders, ","))
+
+	_, err := r.db.Execute(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("failed to add tags to recipe: %w", err)
 	}
 	return nil
 }
 
 func (r *RecipeRepository) RemoveTags(ctx context.Context, recipeID int64, tagIDs []int64) error {
-	for _, tagID := range tagIDs {
-		query := `DELETE FROM recipe_tags WHERE recipe_id = $1 AND tag_id = $2`
-		_, err := r.db.Execute(ctx, query, recipeID, tagID)
-		if err != nil {
-			return fmt.Errorf("failed to remove tag from recipe: %w", err)
-		}
+	if len(tagIDs) == 0 {
+		return nil
+	}
+
+	placeholders := make([]string, len(tagIDs))
+	args := make([]any, 0, len(tagIDs)+1)
+	args = append(args, recipeID)
+
+	for i, tagID := range tagIDs {
+		placeholders[i] = fmt.Sprintf("$%d", i+2)
+		args = append(args, tagID)
+	}
+
+	query := fmt.Sprintf(`
+		DELETE FROM recipe_tags 
+		WHERE recipe_id = $1 AND tag_id IN (%s)
+	`, strings.Join(placeholders, ","))
+
+	_, err := r.db.Execute(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("failed to remove tags from recipe: %w", err)
 	}
 	return nil
 }
