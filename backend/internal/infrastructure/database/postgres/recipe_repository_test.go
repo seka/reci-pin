@@ -291,3 +291,124 @@ func TestRecipeRepository_Update(t *testing.T) {
 		})
 	}
 }
+func TestRecipeRepository_AddTags(t *testing.T) {
+	type args struct {
+		recipeID int64
+		tagIDs   []int64
+	}
+	type mocks struct {
+		setup func(m *mockPostgres.MockDatabase)
+	}
+	tests := []struct {
+		name    string
+		args    args
+		mocks   mocks
+		wantErr bool
+	}{
+		{
+			name: "Success with multiple tags",
+			args: args{
+				recipeID: 100,
+				tagIDs:   []int64{1, 2, 3},
+			},
+			mocks: mocks{
+				setup: func(m *mockPostgres.MockDatabase) {
+					m.EXPECT().Execute(gomock.Any(), gomock.Any(), int64(100), int64(1), int64(2), int64(3)).Return(int64(3), nil)
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Success with empty tags",
+			args: args{
+				recipeID: 100,
+				tagIDs:   []int64{},
+			},
+			mocks: mocks{
+				setup: func(m *mockPostgres.MockDatabase) {
+					// No Execute call expected
+				},
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockDB := mockPostgres.NewMockDatabase(ctrl)
+			tt.mocks.setup(mockDB)
+
+			repo := postgres.NewRecipeRepository(mockDB)
+			err := repo.AddTags(context.Background(), tt.args.recipeID, tt.args.tagIDs)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestRecipeRepository_RemoveTags(t *testing.T) {
+	type args struct {
+		recipeID int64
+		tagIDs   []int64
+	}
+	type mocks struct {
+		setup func(m *mockPostgres.MockDatabase)
+	}
+	tests := []struct {
+		name    string
+		args    args
+		mocks   mocks
+		wantErr bool
+	}{
+		{
+			name: "Success with multiple tags",
+			args: args{
+				recipeID: 100,
+				tagIDs:   []int64{1, 2, 3},
+			},
+			mocks: mocks{
+				setup: func(m *mockPostgres.MockDatabase) {
+					m.EXPECT().Execute(gomock.Any(), gomock.Any(), int64(100), int64(1), int64(2), int64(3)).Return(int64(3), nil)
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Success with empty tags",
+			args: args{
+				recipeID: 100,
+				tagIDs:   []int64{},
+			},
+			mocks: mocks{
+				setup: func(m *mockPostgres.MockDatabase) {
+					// No Execute call expected
+				},
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockDB := mockPostgres.NewMockDatabase(ctrl)
+			tt.mocks.setup(mockDB)
+
+			repo := postgres.NewRecipeRepository(mockDB)
+			err := repo.RemoveTags(context.Background(), tt.args.recipeID, tt.args.tagIDs)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
