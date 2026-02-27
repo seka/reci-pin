@@ -6,7 +6,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { RecipeService } from './recipe.service';
 import { Recipe, Tag, RecipeImage, RecipeFormModel } from '../models/recipe.model';
-import { vi, expect, describe, it, beforeEach, afterEach } from 'vitest';
+import { expect, describe, it, beforeEach, afterEach } from 'vitest';
 
 import { lastValueFrom } from 'rxjs';
 
@@ -154,24 +154,20 @@ describe('RecipeService', () => {
     const mockImage: RecipeImage = { id: 1, recipeId: 1, imageUrl: 'url', createdAt: '' };
     const mockResponse = { image: mockImage, uploadUrl: 'http://upload' };
 
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
-      ok: true,
-    } as unknown as Response);
-
     const uploadPromise = lastValueFrom(service.uploadImage(1, file));
 
-    const req = httpMock.expectOne('/api/recipes/1/images');
-    expect(req.request.method).toBe('POST');
-    req.flush(mockResponse);
+    // 1. Mock API call to get upload URL
+    const reqApi = httpMock.expectOne('/api/recipes/1/images');
+    expect(reqApi.request.method).toBe('POST');
+    reqApi.flush(mockResponse);
+
+    // 2. Mock direct storage PUT call
+    const reqStorage = httpMock.expectOne('http://upload');
+    expect(reqStorage.request.method).toBe('PUT');
+    expect(reqStorage.request.body).toBe(file);
+    reqStorage.flush(null);
 
     const result = await uploadPromise;
-
     expect(result).toEqual(mockImage);
-    expect(fetchSpy).toHaveBeenCalledWith('http://upload', expect.objectContaining({
-      method: 'PUT',
-      body: file
-    }));
-
-    fetchSpy.mockRestore();
   });
 });

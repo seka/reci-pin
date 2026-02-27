@@ -1,7 +1,14 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, switchMap, from, map } from 'rxjs';
-import { Recipe, Tag, RecipeImage, RecipeFormModel, RecipeSearchFormModel, TagFormModel } from '../models/recipe.model';
+import { HttpClient, HttpBackend } from '@angular/common/http';
+import { Observable, switchMap, map } from 'rxjs';
+import {
+  Recipe,
+  Tag,
+  RecipeImage,
+  RecipeFormModel,
+  RecipeSearchFormModel,
+  TagFormModel,
+} from '../models/recipe.model';
 import {
   CreateRecipeImageRequest,
   toCreateRecipeRequest,
@@ -24,6 +31,8 @@ export class RecipeService {
   private readonly API_URL = '/api/recipes';
   private readonly TAG_API_URL = '/api/tags';
   private readonly http = inject(HttpClient);
+  private readonly handler = inject(HttpBackend);
+  private readonly externalHttp = new HttpClient(this.handler);
 
   createRecipe(form: RecipeFormModel): Observable<Recipe> {
     const data = toCreateRecipeRequest(form);
@@ -40,7 +49,9 @@ export class RecipeService {
 
   searchRecipes(form: RecipeSearchFormModel): Observable<Recipe[]> {
     const data = toSearchRecipeRequest(form);
-    return this.http.post<RecipeResponse[]>(`${this.API_URL}/search`, data).pipe(map(toRecipeModels));
+    return this.http
+      .post<RecipeResponse[]>(`${this.API_URL}/search`, data)
+      .pipe(map(toRecipeModels));
   }
 
   updateRecipe(id: number, form: RecipeFormModel): Observable<Recipe> {
@@ -74,16 +85,11 @@ export class RecipeService {
       .pipe(
         switchMap((res) => {
           const uploadUrl = res.uploadUrl;
-          return from(
-            fetch(uploadUrl, {
-              method: 'PUT',
+          return this.externalHttp
+            .put(uploadUrl, file, {
               headers: { 'Content-Type': file.type },
-              body: file,
-            }).then((r) => {
-              if (!r.ok) throw new Error(`S3 upload failed: ${r.status}`);
-              return toRecipeImageModel(res);
-            }),
-          );
+            })
+            .pipe(map(() => toRecipeImageModel(res)));
         }),
       );
   }
