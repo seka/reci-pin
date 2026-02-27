@@ -21,14 +21,12 @@ type Repository interface {
 // repositoryRegistry implements the Repository interface
 type repositoryRegistry struct {
 	db database.Database
-	tm repository.TransactionManager
 }
 
 // NewRepository creates a new Repository registry
 func NewRepository(db database.Database) Repository {
 	return &repositoryRegistry{
 		db: db,
-		tm: db.TransactionManager(),
 	}
 }
 
@@ -61,5 +59,5 @@ func (r *repositoryRegistry) NewRefreshTokenRepository() repository.RefreshToken
 }
 
 func (r *repositoryRegistry) TransactionManager() repository.TransactionManager {
-	return r.tm
+	return r.db.TransactionManager()
 }
