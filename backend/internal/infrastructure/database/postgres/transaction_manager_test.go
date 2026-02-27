@@ -35,11 +35,15 @@ func (m *mockTx) Exec(ctx context.Context, sql string, arguments ...any) (pgconn
 
 // mockBeginner is a handwritten mock for txBeginner
 type mockBeginner struct {
-	tx  *mockTx
-	err error
+	tx        *mockTx
+	err       error
+	BeginFunc func(ctx context.Context) (pgx.Tx, error)
 }
 
 func (m *mockBeginner) Begin(ctx context.Context) (pgx.Tx, error) {
+	if m.BeginFunc != nil {
+		return m.BeginFunc(ctx)
+	}
 	return m.tx, m.err
 }
 
@@ -85,5 +89,29 @@ func TestWithTransaction(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.Equal(t, expectedErr, err)
+	})
+
+	t.Run("Nested_ReusesTransaction", func(t *testing.T) {
+		tx := &mockTx{}
+		beginner := &mockBeginner{tx: tx}
+		tm := &transactionManager{pool: beginner}
+
+		// Counter to verify Begin is only called once
+		beginCount := 0
+		beginner.BeginFunc = func(ctx context.Context) (pgx.Tx, error) {
+			beginCount++
+			return tx, nil
+		}
+
+		err := tm.WithTransaction(context.Background(), func(ctx context.Context) error {
+			// Second call should reuse the transaction
+			return tm.WithTransaction(ctx, func(nestedCtx context.Context) error {
+				return nil
+			})
+		})
+
+		assert.NoError(t, err)
+		assert.Equal(t, 1, beginCount, "Begin should be called exactly once")
+		assert.True(t, tx.committed)
 	})
 }

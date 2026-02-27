@@ -26,6 +26,11 @@ func NewTransactionManager(pool *pgxpool.Pool) repository.TransactionManager {
 
 // WithTransaction executes the given function within a database transaction.
 func (tm *transactionManager) WithTransaction(ctx context.Context, fn func(ctx context.Context) error) error {
+	// If a transaction is already present in the context, reuse it.
+	if _, ok := tm.getTx(ctx); ok {
+		return fn(ctx)
+	}
+
 	tx, err := tm.pool.Begin(ctx)
 	if err != nil {
 		return err
