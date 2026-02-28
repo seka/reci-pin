@@ -2,7 +2,6 @@ import { ApplicationConfig, provideZoneChangeDetection, isDevMode } from '@angul
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors, withFetch } from '@angular/common/http';
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideTransloco } from '@jsverse/transloco';
 
 import { routes } from './app.routes';
@@ -16,7 +15,6 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(),
     provideRouter(routes),
     provideHttpClient(withFetch(), withInterceptors([caseConverterInterceptor, authInterceptor])),
-    provideClientHydration(withEventReplay()),
     provideTransloco({
       config: {
         availableLangs: ['ja', 'en'],

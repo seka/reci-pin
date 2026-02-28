@@ -34,17 +34,15 @@ COPY . .
 RUN yarn ng build --configuration production
 
 
-# --- Production Runner Stage (SSR) ---
-FROM node:20-alpine AS prod
+# --- Production Runner Stage (Nginx) ---
+FROM nginx:alpine AS prod
 
-WORKDIR /app
+# Copy static files from build stage
+COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
 
-# Copy output from build stage
-COPY --from=build /app/dist/frontend/server ./server
-COPY --from=build /app/dist/frontend/browser ./browser
+# Custom nginx config to handle SPA routing
+RUN printf 'server {\n    listen 80;\n    location / {\n        root /usr/share/nginx/html;\n        index index.html index.htm;\n        try_files $uri $uri/ /index.html;\n    }\n}\n' > /etc/nginx/conf.d/default.conf
 
-# The SSR server usually runs on port 4000 by default
-EXPOSE 4000
+EXPOSE 80
 
-# Start the SSR server
-CMD ["node", "server/server.mjs"]
+CMD ["nginx", "-g", "daemon off;"]

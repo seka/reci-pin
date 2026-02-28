@@ -31,16 +31,8 @@
               },
               "src/assets"
             ],
-            "styles": [
-              "src/styles.scss"
-            ],
-            "polyfills": [
-              "zone.js"
-            ],
-            "server": "src/main.server.ts",
-            "ssr": {
-              "entry": "src/server.ts"
-            },
+            "styles": ["src/styles.scss"],
+            "polyfills": ["zone.js"],
             "prerender": false
           },
           "configurations": {
@@ -69,8 +61,7 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
-          "options": {
-          },
+          "options": {},
           "configurations": {
             "production": {
               "buildTarget": "frontend:build:production"
@@ -84,10 +75,7 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": [
-              "src/**/*.ts",
-              "src/**/*.html"
-            ]
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
           }
         },
         "test": {
@@ -99,12 +87,7 @@
             "configDir": ".storybook",
             "browserTarget": "frontend:build",
             "compodoc": true,
-            "compodocArgs": [
-              "-e",
-              "json",
-              "-d",
-              "."
-            ],
+            "compodocArgs": ["-e", "json", "-d", "."],
             "port": 6006
           }
         },
@@ -114,12 +97,7 @@
             "configDir": ".storybook",
             "browserTarget": "frontend:build",
             "compodoc": true,
-            "compodocArgs": [
-              "-e",
-              "json",
-              "-d",
-              "."
-            ],
+            "compodocArgs": ["-e", "json", "-d", "."],
             "outputDir": "storybook-static"
           }
         }
