@@ -5,7 +5,6 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
-import { PLATFORM_ID } from '@angular/core';
 import { AuthService } from './auth.service';
 import { User, UserData } from '../models/user.model';
 import { AuthResponse } from './responses/auth.response';
@@ -34,7 +33,6 @@ describe('AuthService', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: Router, useValue: routerMock },
-        { provide: PLATFORM_ID, useValue: 'browser' },
       ],
     });
     service = TestBed.inject(AuthService);
@@ -64,9 +62,11 @@ describe('AuthService', () => {
     initTestBed();
     const mockResponse: AuthResponse = { token: '', user: userData };
 
-    service.login({ email: 'test@example.com', password: 'password' } as LoginFormModel).subscribe((user) => {
-      expect(user).toEqual(mockUser);
-    });
+    service
+      .login({ email: 'test@example.com', password: 'password' } as LoginFormModel)
+      .subscribe((user) => {
+        expect(user).toEqual(mockUser);
+      });
 
     const req = httpMock.expectOne('/api/auth/login');
     req.flush(mockResponse);

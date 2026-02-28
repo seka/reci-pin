@@ -5,7 +5,7 @@ import { guestGuard } from './guest.guard';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { PLATFORM_ID, Injector, runInInjectionContext } from '@angular/core';
+import { Injector, runInInjectionContext } from '@angular/core';
 
 describe('guestGuard', () => {
   let mockAuthService: { isLoggedIn: ReturnType<typeof vi.fn> };
@@ -20,7 +20,6 @@ describe('guestGuard', () => {
       providers: [
         { provide: AuthService, useValue: mockAuthService },
         { provide: Router, useValue: mockRouter },
-        { provide: PLATFORM_ID, useValue: 'browser' },
       ],
     });
   });

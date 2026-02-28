@@ -7,7 +7,7 @@ import { TranslocoTestingModule } from '@jsverse/transloco';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { AuthService } from './core/services/auth.service';
 import { of, BehaviorSubject } from 'rxjs';
-import { PLATFORM_ID, NO_ERRORS_SCHEMA } from '@angular/core';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
 describe.skip('App', () => {
@@ -22,7 +22,6 @@ describe.skip('App', () => {
       ],
       providers: [
         provideRouter([]),
-        { provide: PLATFORM_ID, useValue: 'browser' },
         {
           provide: AuthService,
           useValue: {
