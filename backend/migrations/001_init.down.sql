@@ -1,0 +1,6 @@
+DROP TABLE IF EXISTS recipe_tags;
+DROP TABLE IF EXISTS recipe_images;
+DROP TABLE IF EXISTS recipes;
+DROP TABLE IF EXISTS tags;
+DROP TABLE IF EXISTS user_email_credentials;
+DROP TABLE IF EXISTS users;

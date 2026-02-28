@@ -1,4 +1,4 @@
-CREATE TABLE user_refresh_tokens (
+CREATE TABLE IF NOT EXISTS user_refresh_tokens (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     token_hash TEXT NOT NULL,
@@ -9,5 +9,5 @@ CREATE TABLE user_refresh_tokens (
     ip_address TEXT
 );
 
-CREATE INDEX idx_user_refresh_tokens_user_id ON user_refresh_tokens(user_id);
-CREATE INDEX idx_user_refresh_tokens_token_hash ON user_refresh_tokens(token_hash);
+CREATE INDEX IF NOT EXISTS idx_user_refresh_tokens_user_id ON user_refresh_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_refresh_tokens_token_hash ON user_refresh_tokens(token_hash);
