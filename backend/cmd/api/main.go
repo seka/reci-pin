@@ -88,6 +88,11 @@ func main() {
 	}
 	defer db.Close()
 
+	// Run Migrations
+	if err := postgres.RunMigrations(cfg.Database.DSN()); err != nil {
+		log.Fatalf("migration error: %v", err)
+	}
+
 	// Start Elasticsearch
 	esClient, err := es.NewClient(cfg.SearchEngine)
 	if err != nil {
