@@ -1,8 +1,0 @@
-./auth_token.go
-./password_reset_token.go
-./recipe.go
-./recipe_image.go
-./refresh_token.go
-./tag.go
-./user.go
-./user_email_credential.go

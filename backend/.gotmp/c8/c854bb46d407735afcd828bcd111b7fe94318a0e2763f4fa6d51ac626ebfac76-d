@@ -1,3 +1,0 @@
-./create_tag_usecase.go
-./delete_tag_usecase.go
-./get_all_tags_usecase.go

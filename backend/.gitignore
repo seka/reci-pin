@@ -1,11 +1,11 @@
 # Backend (Go) binaries and caches
-/tmp/
-/.gotmp/
-/.cocache/
-/.gomodcache/
-/.gocache/
-/.air/
-/vendor/
+tmp/
+.gotmp/
+.cocache/
+.gomodcache/
+.gocache/
+.air/
+vendor/
 *.exe
 *.exe~
 *.dll
@@ -15,12 +15,12 @@
 *.out
 
 # Generated binaries
-/api
-/integration_test
-/seed
-/stress_test
-/sync_es
-/main
+api
+integration_test
+seed
+stress_test
+sync_es
+main
 cmd/api/api
 cmd/integration_test/integration_test
 cmd/seed/seed
