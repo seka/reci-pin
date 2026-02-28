@@ -44,14 +44,17 @@ func RunMigrations(dsn string) error {
 
 func findMigrationsPath() string {
 	// 1. Check current directory
-	if _, err := os.Stat("migrations"); err == nil {
-		path, _ := filepath.Abs("migrations")
+	// Use filepath.Join for cross-platform compatibility
+	migrationsDir := "migrations"
+	if _, err := os.Stat(migrationsDir); err == nil {
+		path, _ := filepath.Abs(migrationsDir)
 		return path
 	}
 
 	// 2. Check parent directory (if run from cmd/api)
-	if _, err := os.Stat("../../migrations"); err == nil {
-		path, _ := filepath.Abs("../../migrations")
+	parentMigrationsDir := filepath.Join("..", "..", "migrations")
+	if _, err := os.Stat(parentMigrationsDir); err == nil {
+		path, _ := filepath.Abs(parentMigrationsDir)
 		return path
 	}
 
