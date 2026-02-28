@@ -41,3 +41,6 @@ libpeerconnection.log
 connect.lock
 /typings/
 /tmp/
+
+# Compodoc
+/documentation.json
