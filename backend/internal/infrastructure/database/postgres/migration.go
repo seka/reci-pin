@@ -12,6 +12,8 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
+const defaultMigrationsDir = "migrations"
+
 // RunMigrations executes all up migrations in the migrations directory.
 func RunMigrations(dsn string) error {
 	// Find migrations directory
@@ -45,14 +47,13 @@ func RunMigrations(dsn string) error {
 func findMigrationsPath() string {
 	// 1. Check current directory
 	// Use filepath.Join for cross-platform compatibility
-	migrationsDir := "migrations"
-	if _, err := os.Stat(migrationsDir); err == nil {
-		path, _ := filepath.Abs(migrationsDir)
+	if _, err := os.Stat(defaultMigrationsDir); err == nil {
+		path, _ := filepath.Abs(defaultMigrationsDir)
 		return path
 	}
 
 	// 2. Check parent directory (if run from cmd/api)
-	parentMigrationsDir := filepath.Join("..", "..", "migrations")
+	parentMigrationsDir := filepath.Join("..", "..", defaultMigrationsDir)
 	if _, err := os.Stat(parentMigrationsDir); err == nil {
 		path, _ := filepath.Abs(parentMigrationsDir)
 		return path
