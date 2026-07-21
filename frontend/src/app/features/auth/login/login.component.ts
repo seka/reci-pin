@@ -1,11 +1,5 @@
-import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import {
-  FormBuilder,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { Component, inject, signal } from '@angular/core';
+import { email, form, FormField, FormRoot, maxLength, required } from '@angular/forms/signals';
 import { Router, RouterModule } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { AuthService } from '../../../core/services/auth.service';
@@ -19,11 +13,10 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
 
 @Component({
   selector: 'app-login',
-  standalone: true,
   imports: [
-    FormsModule,
+    FormField,
+    FormRoot,
     RouterModule,
-    ReactiveFormsModule,
     TranslocoPipe,
     AuthCardComponent,
     InputComponent,
@@ -32,43 +25,34 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
     AlertComponent,
   ],
   templateUrl: './login.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './login.component.scss',
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
-  private readonly fb = inject(FormBuilder);
   private readonly translate = inject(TranslocoService);
 
-  loginForm!: FormGroup;
   errorMessage = '';
 
   protected readonly VALIDATION_RULES = VALIDATION_RULES;
 
-  ngOnInit() {
-    this.loginForm = this.fb.group({
-      email: [
-        '',
-        [
-          Validators.required,
-          Validators.email,
-          Validators.maxLength(VALIDATION_RULES.EMAIL.MAX_LENGTH),
-        ],
-      ],
-      password: [
-        '',
-        [Validators.required, Validators.maxLength(VALIDATION_RULES.PASSWORD.MAX_LENGTH)],
-      ],
-    });
-  }
+  private readonly model = signal<LoginFormModel>({ email: '', password: '' });
+
+  protected readonly loginForm = form(this.model, (path) => {
+    required(path.email);
+    email(path.email);
+    maxLength(path.email, VALIDATION_RULES.EMAIL.MAX_LENGTH);
+
+    required(path.password);
+    maxLength(path.password, VALIDATION_RULES.PASSWORD.MAX_LENGTH);
+  });
 
   onSubmit() {
-    if (this.loginForm.invalid) {
+    if (this.loginForm().invalid()) {
       return;
     }
 
-    this.authService.login(this.loginForm.value as LoginFormModel).subscribe({
+    this.authService.login(this.loginForm().value()).subscribe({
       next: () => {
         this.router.navigate(['/recipes']);
       },
