@@ -1,4 +1,4 @@
-import { Component, inject, ViewChild } from '@angular/core';
+import { Component, inject, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { RecipeService } from '../../../core/services/recipe.service';
@@ -11,6 +11,7 @@ import {
   selector: 'app-recipe-create',
   standalone: true,
   imports: [CommonModule, RecipeFormComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './recipe-create.component.html',
 })
 export class RecipeCreateComponent {

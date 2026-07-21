@@ -7,6 +7,7 @@ import {
   Injector,
   Output,
   EventEmitter,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import {
   ControlValueAccessor,
@@ -26,6 +27,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
   imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, TranslocoPipe],
   templateUrl: './input.component.html',
   styleUrl: './input.component.scss',
+  changeDetection: ChangeDetectionStrategy.Eager,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

@@ -1,4 +1,11 @@
-import { Component, inject, OnInit, ElementRef, ViewChild } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  ElementRef,
+  ViewChild,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { CommonModule, AsyncPipe } from '@angular/common';
@@ -46,6 +53,7 @@ import { EmptyStateComponent } from '../../shared/components/molecules/empty-sta
     EmptyStateComponent,
   ],
   templateUrl: './recipes.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './recipes.component.scss',
 })
 export class RecipesComponent implements OnInit {

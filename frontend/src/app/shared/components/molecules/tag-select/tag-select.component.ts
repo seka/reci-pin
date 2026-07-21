@@ -1,4 +1,13 @@
-import { Component, Input, forwardRef, inject, ElementRef, ViewChild, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  forwardRef,
+  inject,
+  ElementRef,
+  ViewChild,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import {
   ControlValueAccessor,
   NG_VALUE_ACCESSOR,
@@ -39,6 +48,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
     },
   ],
   templateUrl: './tag-select.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './tag-select.component.scss',
 })
 export class TagSelectComponent implements ControlValueAccessor, OnInit {
@@ -55,9 +65,9 @@ export class TagSelectComponent implements ControlValueAccessor, OnInit {
   private readonly recipeService = inject(RecipeService);
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  onChange: (value: number[]) => void = () => { };
+  onChange: (value: number[]) => void = () => {};
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  onTouched: () => void = () => { };
+  onTouched: () => void = () => {};
 
   constructor() {
     this.filteredTags = this.tagCtrl.valueChanges.pipe(
