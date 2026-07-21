@@ -592,18 +592,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/cdk@npm:^21.1.2":
-  version: 21.1.2
-  resolution: "@angular/cdk@npm:21.1.2"
+"@angular/cdk@npm:^22.0.5":
+  version: 22.0.5
+  resolution: "@angular/cdk@npm:22.0.5"
   dependencies:
     parse5: "npm:^8.0.0"
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/common": ^21.0.0 || ^22.0.0
-    "@angular/core": ^21.0.0 || ^22.0.0
-    "@angular/platform-browser": ^21.0.0 || ^22.0.0
+    "@angular/common": ^22.0.0 || ^23.0.0
+    "@angular/core": ^22.0.0 || ^23.0.0
+    "@angular/platform-browser": ^22.0.0 || ^23.0.0
     rxjs: ^6.5.3 || ^7.4.0
-  checksum: 10c0/970e3e8b269645df2f93eecc37573bb0c71681534a15a1f674557cead34470fa8c464e770a6ddb12df2548f7dc0f6d7a23ec5d5fa561faa06a88bd22bbb6a7c7
+  checksum: 10c0/999470c518a62e2d8eba2aa44175d6e6631a168f6b1f184bdaec3c9afe2c55d3f9f3dabfc9bdd919db46110bf12a8332c4d7c0be4ab36485959d0eb23115b436
   languageName: node
   linkType: hard
 
@@ -715,19 +715,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/material@npm:^21.1.2":
-  version: 21.1.2
-  resolution: "@angular/material@npm:21.1.2"
+"@angular/material@npm:^22.0.5":
+  version: 22.0.5
+  resolution: "@angular/material@npm:22.0.5"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/cdk": 21.1.2
-    "@angular/common": ^21.0.0 || ^22.0.0
-    "@angular/core": ^21.0.0 || ^22.0.0
-    "@angular/forms": ^21.0.0 || ^22.0.0
-    "@angular/platform-browser": ^21.0.0 || ^22.0.0
+    "@angular/cdk": 22.0.5
+    "@angular/common": ^22.0.0 || ^23.0.0
+    "@angular/core": ^22.0.0 || ^23.0.0
+    "@angular/forms": ^22.0.0 || ^23.0.0
+    "@angular/platform-browser": ^22.0.0 || ^23.0.0
     rxjs: ^6.5.3 || ^7.4.0
-  checksum: 10c0/29e264f07ed16f805f47b9a17130a409e6e66a43c7c2e9d5df7a1132520d44d09b0c751aee4ec020db4614fc84cba218882dad769e8a7de95608564c5acc25a1
+  checksum: 10c0/e4130fdaaa49065ba8fc23d9099ee2ab918482c18b06221c45f16d2de682ca2aede9737fe8f8bd40b2f89e5444387b0d5f3894da3ee91d151035ff1e8e0bc499
   languageName: node
   linkType: hard
 
@@ -10240,14 +10240,14 @@ __metadata:
     "@angular-devkit/core": "npm:^22.0.7"
     "@angular/animations": "npm:^22.0.7"
     "@angular/build": "npm:^22.0.7"
-    "@angular/cdk": "npm:^21.1.2"
+    "@angular/cdk": "npm:^22.0.5"
     "@angular/cli": "npm:^22.0.7"
     "@angular/common": "npm:^22.0.7"
     "@angular/compiler": "npm:^22.0.7"
     "@angular/compiler-cli": "npm:^22.0.7"
     "@angular/core": "npm:^22.0.7"
     "@angular/forms": "npm:^22.0.7"
-    "@angular/material": "npm:^21.1.2"
+    "@angular/material": "npm:^22.0.5"
     "@angular/platform-browser": "npm:^22.0.7"
     "@angular/platform-browser-dynamic": "npm:^22.0.7"
     "@angular/router": "npm:^22.0.7"
