@@ -1,4 +1,4 @@
-import { Meta, StoryObj, moduleMetadata, applicationConfig } from '@storybook/angular';
+import { Meta, StoryObj, moduleMetadata, applicationConfig } from '@storybook/angular-vite';
 import { provideRouter } from '@angular/router';
 import { APP_BASE_HREF } from '@angular/common';
 import { of } from 'rxjs';

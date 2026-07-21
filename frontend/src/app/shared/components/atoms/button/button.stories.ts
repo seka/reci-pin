@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from '@storybook/angular';
+import { Meta, StoryObj } from '@storybook/angular-vite';
 import { ButtonComponent } from './button.component';
 
 // Define custom args type to include 'label' which is used in the template but not a component input

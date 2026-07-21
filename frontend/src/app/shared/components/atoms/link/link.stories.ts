@@ -1,8 +1,8 @@
 import { provideRouter } from '@angular/router';
-import { applicationConfig } from '@storybook/angular';
-import { Meta, StoryObj } from '@storybook/angular';
+import { applicationConfig } from '@storybook/angular-vite';
+import { Meta, StoryObj } from '@storybook/angular-vite';
 import { LinkComponent } from './link.component';
-import { moduleMetadata } from '@storybook/angular';
+import { moduleMetadata } from '@storybook/angular-vite';
 import { RouterModule } from '@angular/router';
 
 const meta: Meta<LinkComponent> = {

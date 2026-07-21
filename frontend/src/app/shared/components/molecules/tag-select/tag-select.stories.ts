@@ -1,7 +1,7 @@
-import { applicationConfig } from '@storybook/angular';
+import { applicationConfig } from '@storybook/angular-vite';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import {} from '@angular/platform-browser/animations';
-import { moduleMetadata, Meta, StoryObj } from '@storybook/angular';
+import { moduleMetadata, Meta, StoryObj } from '@storybook/angular-vite';
 import { TagSelectComponent } from './tag-select.component';
 
 const meta: Meta<TagSelectComponent> = {

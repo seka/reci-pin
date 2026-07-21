@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from '@storybook/angular';
+import { Meta, StoryObj } from '@storybook/angular-vite';
 import { AlertComponent } from './alert.component';
 
 const meta: Meta<AlertComponent> = {

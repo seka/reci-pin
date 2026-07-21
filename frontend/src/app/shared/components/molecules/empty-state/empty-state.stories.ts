@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from '@storybook/angular';
+import { Meta, StoryObj } from '@storybook/angular-vite';
 import { EmptyStateComponent } from './empty-state.component';
 
 const meta: Meta<EmptyStateComponent> = {
