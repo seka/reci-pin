@@ -1,86 +1,78 @@
-import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import {
-  FormBuilder,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+  email,
+  form,
+  FormField,
+  FormRoot,
+  maxLength,
+  minLength,
+  pattern,
+  required,
+} from '@angular/forms/signals';
 import { Router, RouterModule } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { AuthService } from '../../../core/services/auth.service';
+import { SignupFormModel } from '../../../core/models/auth.model';
 import { AuthCardComponent } from '../../../shared/components/organisms/auth-card/auth-card.component';
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
 import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
 import { VALIDATION_RULES } from '../../../core/constants/validation.constants';
 import { AlertComponent } from '../../../shared/components/atoms/alert/alert.component';
+import { LinkComponent } from '../../../shared/components/atoms/link/link.component';
 import { ApiError } from '../../../core/models/api-error.model';
 
 @Component({
   selector: 'app-signup',
-  standalone: true,
   imports: [
-    FormsModule,
+    FormField,
+    FormRoot,
     RouterModule,
-    ReactiveFormsModule,
     TranslocoPipe,
     AuthCardComponent,
     InputComponent,
     ButtonComponent,
     AlertComponent,
+    LinkComponent,
   ],
   templateUrl: './signup.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './signup.component.scss',
 })
-export class SignupComponent implements OnInit {
+export class SignupComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
-  private readonly fb = inject(FormBuilder).nonNullable;
   private readonly translate = inject(TranslocoService);
 
-  signupForm!: FormGroup;
   fieldErrors: Record<string, string[]> = {};
   errorMessage = '';
 
   protected readonly VALIDATION_RULES = VALIDATION_RULES;
 
-  ngOnInit() {
-    this.signupForm = this.fb.group({
-      name: [
-        '',
-        [Validators.required, Validators.maxLength(VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH)],
-      ],
-      email: [
-        '',
-        [
-          Validators.required,
-          Validators.email,
-          Validators.maxLength(VALIDATION_RULES.EMAIL.MAX_LENGTH),
-        ],
-      ],
-      password: [
-        '',
-        [
-          Validators.required,
-          Validators.minLength(VALIDATION_RULES.PASSWORD.MIN_LENGTH),
-          Validators.maxLength(VALIDATION_RULES.PASSWORD.MAX_LENGTH),
-          Validators.pattern(/[a-zA-Z]/),
-          Validators.pattern(/[0-9]/),
-        ],
-      ],
-    });
-  }
+  private readonly model = signal<SignupFormModel>({ name: '', email: '', password: '' });
+
+  protected readonly signupForm = form(this.model, (path) => {
+    required(path.name);
+    maxLength(path.name, VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH);
+
+    required(path.email);
+    email(path.email);
+    maxLength(path.email, VALIDATION_RULES.EMAIL.MAX_LENGTH);
+
+    required(path.password);
+    minLength(path.password, VALIDATION_RULES.PASSWORD.MIN_LENGTH);
+    maxLength(path.password, VALIDATION_RULES.PASSWORD.MAX_LENGTH);
+    pattern(path.password, /[a-zA-Z]/);
+    pattern(path.password, /[0-9]/);
+  });
 
   onSubmit() {
-    if (this.signupForm.invalid) {
+    if (this.signupForm().invalid()) {
       return;
     }
 
     this.fieldErrors = {}; // Reset errors
     this.errorMessage = '';
 
-    this.authService.signup(this.signupForm.getRawValue()).subscribe({
+    this.authService.signup(this.signupForm().value()).subscribe({
       next: () => {
         this.router.navigate(['/recipes']);
       },
