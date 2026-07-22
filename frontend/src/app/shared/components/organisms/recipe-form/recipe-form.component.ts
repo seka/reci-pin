@@ -7,9 +7,9 @@ import {
   OnInit,
   Output,
   SimpleChanges,
-  ChangeDetectionStrategy,
+  signal,
 } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { form, FormField, FormRoot, maxLength, required } from '@angular/forms/signals';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -32,10 +32,10 @@ export interface RecipeFormSubmitEvent {
 
 @Component({
   selector: 'app-recipe-form',
-  standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule,
+    FormField,
+    FormRoot,
     RouterModule,
     MatCardModule,
     MatIconModule,
@@ -47,11 +47,9 @@ export interface RecipeFormSubmitEvent {
     TextareaComponent,
   ],
   templateUrl: './recipe-form.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './recipe-form.component.scss',
 })
 export class RecipeFormComponent implements OnInit, OnChanges {
-  private readonly fb = inject(FormBuilder).nonNullable;
   private readonly recipeService = inject(RecipeService);
   private readonly translate = inject(TranslocoService);
 
@@ -65,7 +63,6 @@ export class RecipeFormComponent implements OnInit, OnChanges {
 
   @Output() save = new EventEmitter<RecipeFormSubmitEvent>();
 
-  recipeForm: FormGroup;
   tags: Tag[] = [];
   fieldErrors: Record<string, string[]> = {};
   selectedFile: File | null = null;
@@ -75,21 +72,20 @@ export class RecipeFormComponent implements OnInit, OnChanges {
 
   protected readonly VALIDATION_RULES = VALIDATION_RULES;
 
-  constructor() {
-    this.recipeForm = this.fb.group({
-      name: [
-        '',
-        [Validators.required, Validators.maxLength(VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH)],
-      ],
-      url: ['', [Validators.maxLength(VALIDATION_RULES.RECIPE.URL_MAX_LENGTH)]],
-      memo: ['', Validators.maxLength(VALIDATION_RULES.RECIPE.MEMO_MAX_LENGTH)],
-      tagIds: [[] as number[]],
-    });
-  }
+  private readonly model = signal<RecipeFormModel>({ name: '', url: '', memo: '', tagIds: [] });
+
+  protected readonly recipeForm = form(this.model, (path) => {
+    required(path.name);
+    maxLength(path.name, VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH);
+
+    maxLength(path.url, VALIDATION_RULES.RECIPE.URL_MAX_LENGTH);
+
+    maxLength(path.memo, VALIDATION_RULES.RECIPE.MEMO_MAX_LENGTH);
+  });
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['initialData'] && this.initialData) {
-      this.recipeForm.patchValue({
+      this.model.set({
         name: this.initialData.name || '',
         url: this.initialData.url || '',
         memo: this.initialData.memo || '',
@@ -102,12 +98,13 @@ export class RecipeFormComponent implements OnInit, OnChanges {
   }
 
   onUrlBlur() {
-    const urlControl = this.recipeForm.get('url');
-    if (urlControl?.value) {
-      let url = urlControl.value.trim();
+    const urlField = this.recipeForm.url;
+    const currentValue = urlField().value();
+    if (currentValue) {
+      let url = currentValue.trim();
       if (url && !url.includes('://')) {
         url = 'https://' + url;
-        urlControl.setValue(url);
+        urlField().value.set(url);
       }
     }
   }
@@ -178,9 +175,9 @@ export class RecipeFormComponent implements OnInit, OnChanges {
 
   onSubmit() {
     this.fieldErrors = {};
-    if (this.recipeForm.valid) {
+    if (this.recipeForm().valid()) {
       this.save.emit({
-        formData: this.recipeForm.getRawValue(),
+        formData: this.recipeForm().value(),
         file: this.selectedFile,
       });
     }
