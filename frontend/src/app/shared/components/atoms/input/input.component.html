@@ -41,7 +41,8 @@
         <div class="error-line">
           {{
             'VALIDATION.MIN_LENGTH'
-              | transloco: { min: control?.errors?.['minlength']?.requiredLength }
+              | transloco
+                : { min: $safeNavigationMigration(control?.errors?.['minlength']?.requiredLength) }
           }}
         </div>
       }

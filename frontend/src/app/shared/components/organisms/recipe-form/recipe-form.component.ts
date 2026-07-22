@@ -7,6 +7,7 @@ import {
   OnInit,
   Output,
   SimpleChanges,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -46,6 +47,7 @@ export interface RecipeFormSubmitEvent {
     TextareaComponent,
   ],
   templateUrl: './recipe-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './recipe-form.component.scss',
 })
 export class RecipeFormComponent implements OnInit, OnChanges {

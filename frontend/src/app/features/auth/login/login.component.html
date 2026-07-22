@@ -1,9 +1,9 @@
 <app-auth-card [title]="'FEATURES.AUTH.LOGIN.SUBMIT' | transloco">
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+  <form [formRoot]="loginForm" (ngSubmit)="onSubmit()">
     <app-input
       [label]="'FEATURES.AUTH.LOGIN.EMAIL' | transloco"
       type="email"
-      formControlName="email"
+      [formField]="loginForm.email"
       [required]="true"
       [maxLength]="VALIDATION_RULES.EMAIL.MAX_LENGTH"
     ></app-input>
@@ -12,7 +12,7 @@
       <app-input
         [label]="'FEATURES.AUTH.LOGIN.PASSWORD' | transloco"
         type="password"
-        formControlName="password"
+        [formField]="loginForm.password"
         [required]="true"
         [maxLength]="VALIDATION_RULES.PASSWORD.MAX_LENGTH"
       ></app-input>
@@ -23,7 +23,7 @@
         variant="primary"
         type="submit"
         class="submit-btn"
-        [disabled]="loginForm.invalid"
+        [disabled]="loginForm().invalid()"
         >{{ 'FEATURES.AUTH.LOGIN.SUBMIT' | transloco }}</app-button
       >
     </div>

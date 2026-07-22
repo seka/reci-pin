@@ -1,4 +1,4 @@
-import { Meta, StoryObj, moduleMetadata, applicationConfig } from '@storybook/angular';
+import { Meta, StoryObj, moduleMetadata, applicationConfig } from '@storybook/angular-vite';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';

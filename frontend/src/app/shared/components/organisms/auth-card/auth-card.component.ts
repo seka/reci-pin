@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { HeadlineComponent } from '../../atoms/headline/headline.component';
@@ -8,6 +8,7 @@ import { HeadlineComponent } from '../../atoms/headline/headline.component';
   standalone: true,
   imports: [CommonModule, MatCardModule, HeadlineComponent],
   templateUrl: './auth-card.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './auth-card.component.scss',
 })
 export class AuthCardComponent {

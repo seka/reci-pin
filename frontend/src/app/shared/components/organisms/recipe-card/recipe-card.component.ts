@@ -1,4 +1,11 @@
-import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  inject,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -22,6 +29,7 @@ import { ConfirmDialogComponent } from '../../molecules/confirm-dialog/confirm-d
     RouterModule,
   ],
   templateUrl: './recipe-card.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './recipe-card.component.scss',
 })
 export class RecipeCardComponent {

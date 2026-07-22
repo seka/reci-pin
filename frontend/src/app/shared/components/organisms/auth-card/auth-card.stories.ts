@@ -1,4 +1,4 @@
-import { Meta, StoryObj, moduleMetadata } from '@storybook/angular';
+import { Meta, StoryObj, moduleMetadata } from '@storybook/angular-vite';
 import { MatCardModule } from '@angular/material/card';
 import { AuthCardComponent } from './auth-card.component';
 import { HeadlineComponent } from '../../atoms/headline/headline.component';

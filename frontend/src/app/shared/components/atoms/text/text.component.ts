@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 
 @Component({
@@ -6,6 +6,7 @@ import { NgTemplateOutlet } from '@angular/common';
   standalone: true,
   imports: [NgTemplateOutlet],
   templateUrl: './text.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './text.component.scss',
 })
 export class TextComponent {

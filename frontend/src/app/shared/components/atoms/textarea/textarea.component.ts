@@ -1,4 +1,12 @@
-import { Component, forwardRef, inject, Input, OnInit, Injector } from '@angular/core';
+import {
+  Component,
+  forwardRef,
+  inject,
+  Input,
+  OnInit,
+  Injector,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import {
   ControlValueAccessor,
   NG_VALUE_ACCESSOR,
@@ -17,6 +25,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
   imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, TranslocoPipe],
   templateUrl: './textarea.component.html',
   styleUrl: './textarea.component.scss',
+  changeDetection: ChangeDetectionStrategy.Eager,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

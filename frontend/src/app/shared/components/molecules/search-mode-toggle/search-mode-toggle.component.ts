@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -8,6 +8,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
   standalone: true,
   imports: [FormsModule, MatButtonToggleModule, TranslocoPipe],
   templateUrl: './search-mode-toggle.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './search-mode-toggle.component.scss',
 })
 export class SearchModeToggleComponent {

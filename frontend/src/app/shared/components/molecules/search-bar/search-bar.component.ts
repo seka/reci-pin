@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { ButtonComponent } from '../../atoms/button/button.component';
@@ -9,6 +9,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
   standalone: true,
   imports: [CommonModule, MatIconModule, ButtonComponent, TranslocoPipe],
   templateUrl: './search-bar.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './search-bar.component.scss',
 })
 export class SearchBarComponent {

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin, Observable, of, switchMap } from 'rxjs';
@@ -15,6 +15,7 @@ import { RecipeFormModel } from '../../../core/models/recipe.model';
   standalone: true,
   imports: [CommonModule, RecipeFormComponent],
   templateUrl: './recipe-edit.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './recipe-edit.component.scss',
 })
 export class RecipeEditComponent implements OnInit {

@@ -1,11 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { AuthService } from '../../../core/services/auth.service';
@@ -29,6 +24,7 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
     AlertComponent,
   ],
   templateUrl: './request-password-reset.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./request-password-reset.component.scss'],
 })
 export class RequestPasswordResetComponent {

@@ -1,9 +1,9 @@
-import { applicationConfig } from '@storybook/angular';
+import { applicationConfig } from '@storybook/angular-vite';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { Meta, StoryObj } from '@storybook/angular';
+import { Meta, StoryObj } from '@storybook/angular-vite';
 import { SearchModeToggleComponent } from './search-mode-toggle.component';
 import {} from '@angular/platform-browser/animations';
-import { moduleMetadata } from '@storybook/angular';
+import { moduleMetadata } from '@storybook/angular-vite';
 
 const meta: Meta<SearchModeToggleComponent> = {
   title: 'Shared/Molecules/SearchModeToggle',

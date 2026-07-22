@@ -1,7 +1,7 @@
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
-import { applicationConfig } from '@storybook/angular';
-import { Meta, StoryObj, moduleMetadata } from '@storybook/angular';
+import { applicationConfig } from '@storybook/angular-vite';
+import { Meta, StoryObj, moduleMetadata } from '@storybook/angular-vite';
 import { SettingsComponent } from './settings.component';
 import { TranslocoModule } from '@jsverse/transloco';
 import { RouterModule } from '@angular/router';

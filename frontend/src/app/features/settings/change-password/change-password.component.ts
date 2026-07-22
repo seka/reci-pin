@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -32,6 +32,7 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
     AlertComponent,
   ],
   templateUrl: './change-password.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './change-password.component.scss',
 })
 export class ChangePasswordComponent {
@@ -98,28 +99,25 @@ export class ChangePasswordComponent {
     this.isProcessing = true;
     this.errorMessage = '';
 
-
-    this.authService
-      .changePassword(this.form.getRawValue())
-      .subscribe({
-        next: () => {
-          alert(this.translate.translate('FEATURES.SETTINGS.CHANGE_PASSWORD.SUCCESS'));
-          this.router.navigate(['/settings']);
-        },
-        error: (err) => {
-          this.isProcessing = false;
-          // Backend returns bad request for incorrect password or validation errors
-          if (err.status === 400 || err.status === 401) {
-            this.errorMessage = this.translate.translate(
-              'FEATURES.SETTINGS.CHANGE_PASSWORD.FAILED_INVALID',
-            );
-          } else {
-            this.errorMessage = this.translate.translate(
-              'FEATURES.SETTINGS.CHANGE_PASSWORD.FAILED_ERROR',
-            );
-          }
-          console.error(err);
-        },
-      });
+    this.authService.changePassword(this.form.getRawValue()).subscribe({
+      next: () => {
+        alert(this.translate.translate('FEATURES.SETTINGS.CHANGE_PASSWORD.SUCCESS'));
+        this.router.navigate(['/settings']);
+      },
+      error: (err) => {
+        this.isProcessing = false;
+        // Backend returns bad request for incorrect password or validation errors
+        if (err.status === 400 || err.status === 401) {
+          this.errorMessage = this.translate.translate(
+            'FEATURES.SETTINGS.CHANGE_PASSWORD.FAILED_INVALID',
+          );
+        } else {
+          this.errorMessage = this.translate.translate(
+            'FEATURES.SETTINGS.CHANGE_PASSWORD.FAILED_ERROR',
+          );
+        }
+        console.error(err);
+      },
+    });
   }
 }

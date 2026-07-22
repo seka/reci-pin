@@ -1,4 +1,4 @@
-import { Meta, StoryObj, applicationConfig } from '@storybook/angular';
+import { Meta, StoryObj, applicationConfig } from '@storybook/angular-vite';
 import { provideRouter } from '@angular/router';
 import { APP_BASE_HREF } from '@angular/common';
 import { LogoComponent } from './logo.component';
