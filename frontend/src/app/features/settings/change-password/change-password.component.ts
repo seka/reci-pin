@@ -1,12 +1,15 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators,
-  AbstractControl,
-  ValidationErrors,
-} from '@angular/forms';
+  FieldTree,
+  form,
+  FormField,
+  FormRoot,
+  maxLength,
+  minLength,
+  required,
+  validate,
+} from '@angular/forms/signals';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
@@ -17,12 +20,19 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { LinkComponent } from '../../../shared/components/atoms/link/link.component';
 import { AlertComponent } from '../../../shared/components/atoms/alert/alert.component';
 
+interface ChangePasswordFormValue {
+  currentPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
+}
+
 @Component({
   selector: 'app-change-password',
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule,
+    FormField,
+    FormRoot,
     RouterModule,
     InputComponent,
     ButtonComponent,
@@ -32,11 +42,9 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
     AlertComponent,
   ],
   templateUrl: './change-password.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './change-password.component.scss',
 })
 export class ChangePasswordComponent {
-  private fb = inject(FormBuilder).nonNullable;
   private authService = inject(AuthService);
   private router = inject(Router);
   private translate = inject(TranslocoService);
@@ -46,60 +54,58 @@ export class ChangePasswordComponent {
 
   protected readonly VALIDATION_RULES = VALIDATION_RULES;
 
-  form = this.fb.group(
-    {
-      currentPassword: [
-        '',
-        [Validators.required, Validators.maxLength(VALIDATION_RULES.PASSWORD.MAX_LENGTH)],
-      ],
-      newPassword: [
-        '',
-        [
-          Validators.required,
-          Validators.minLength(VALIDATION_RULES.PASSWORD.MIN_LENGTH),
-          Validators.maxLength(VALIDATION_RULES.PASSWORD.MAX_LENGTH),
-        ],
-      ],
-      confirmNewPassword: [
-        '',
-        [Validators.required, Validators.maxLength(VALIDATION_RULES.PASSWORD.MAX_LENGTH)],
-      ],
-    },
-    { validators: this.passwordMatchValidator },
-  );
+  private readonly model = signal<ChangePasswordFormValue>({
+    currentPassword: '',
+    newPassword: '',
+    confirmNewPassword: '',
+  });
 
-  private passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
-    const newPassword = control.get('newPassword')?.value;
-    const confirmPassword = control.get('confirmNewPassword')?.value;
-    return newPassword === confirmPassword ? null : { mismatch: true };
-  }
+  protected readonly form = form(this.model, (path) => {
+    required(path.currentPassword);
+    maxLength(path.currentPassword, VALIDATION_RULES.PASSWORD.MAX_LENGTH);
 
-  getErrorMessage(controlName: string): string | null {
-    const control = this.form.get(controlName);
-    if (control?.touched && control?.errors) {
-      if (control.errors['required']) return this.translate.translate('VALIDATION.REQUIRED');
-      if (control.errors['minlength'])
-        return this.translate.translate('VALIDATION.MIN_LENGTH', {
-          min: VALIDATION_RULES.PASSWORD.MIN_LENGTH,
-        });
-      if (control.errors['maxlength'])
-        return this.translate.translate('VALIDATION.MAX_LENGTH', {
-          max: VALIDATION_RULES.PASSWORD.MAX_LENGTH,
-        });
-      if (controlName === 'confirmNewPassword' && this.form.errors?.['mismatch']) {
-        return this.translate.translate('VALIDATION.PASSWORD_MISMATCH');
+    required(path.newPassword);
+    minLength(path.newPassword, VALIDATION_RULES.PASSWORD.MIN_LENGTH);
+    maxLength(path.newPassword, VALIDATION_RULES.PASSWORD.MAX_LENGTH);
+
+    required(path.confirmNewPassword);
+    maxLength(path.confirmNewPassword, VALIDATION_RULES.PASSWORD.MAX_LENGTH);
+    validate(path.confirmNewPassword, (ctx) =>
+      ctx.valueOf(path.newPassword) === ctx.value() ? null : { kind: 'mismatch' },
+    );
+  });
+
+  getErrorMessage(field: FieldTree<string>): string | null {
+    const state = field();
+    if (!state.touched() || state.errors().length === 0) {
+      return null;
+    }
+    for (const err of state.errors()) {
+      switch (err.kind) {
+        case 'required':
+          return this.translate.translate('VALIDATION.REQUIRED');
+        case 'minLength':
+          return this.translate.translate('VALIDATION.MIN_LENGTH', {
+            min: VALIDATION_RULES.PASSWORD.MIN_LENGTH,
+          });
+        case 'maxLength':
+          return this.translate.translate('VALIDATION.MAX_LENGTH', {
+            max: VALIDATION_RULES.PASSWORD.MAX_LENGTH,
+          });
+        case 'mismatch':
+          return this.translate.translate('VALIDATION.PASSWORD_MISMATCH');
       }
     }
     return null;
   }
 
   onSubmit() {
-    if (this.form.invalid) return;
+    if (this.form().invalid()) return;
 
     this.isProcessing = true;
     this.errorMessage = '';
 
-    this.authService.changePassword(this.form.getRawValue()).subscribe({
+    this.authService.changePassword(this.form().value()).subscribe({
       next: () => {
         alert(this.translate.translate('FEATURES.SETTINGS.CHANGE_PASSWORD.SUCCESS'));
         this.router.navigate(['/settings']);
