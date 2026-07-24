@@ -65,6 +65,7 @@ export class RecipesComponent {
 
   protected readonly recipesResource = rxResource({
     params: () => this.recipesParams(),
+    defaultValue: [],
     stream: ({ params }) =>
       params === null
         ? this.recipeService.getUserRecipes()
@@ -72,6 +73,7 @@ export class RecipesComponent {
   });
 
   protected readonly tagsResource = rxResource({
+    defaultValue: [],
     stream: () => this.recipeService.getAllTags(),
   });
 
@@ -108,7 +110,7 @@ export class RecipesComponent {
   onDeleteRecipe(id: number): void {
     this.recipeService.deleteRecipe(id).subscribe({
       next: () => {
-        this.recipesResource.update((recipes) => (recipes ?? []).filter((r) => r.id !== id));
+        this.recipesResource.update((recipes) => recipes.filter((r) => r.id !== id));
       },
       error: (err: Error) => console.error('Failed to delete recipe', err),
     });
@@ -121,7 +123,8 @@ export class RecipesComponent {
 
     // If matches an existing tag, select it
     if (value) {
-      const existingTag = (this.tagsResource.value() ?? []).find(
+      const availableTags = this.tagsResource.value();
+      const existingTag = availableTags.find(
         (tag) => tag.name.toLowerCase() === value.toLowerCase(),
       );
 
@@ -154,18 +157,21 @@ export class RecipesComponent {
   }
 
   getTagName(id: number): string {
-    return (this.tagsResource.value() ?? []).find((t) => t.id === id)?.name || '';
+    const availableTags = this.tagsResource.value();
+    return availableTags.find((t) => t.id === id)?.name || '';
   }
 
   private filterTags(value: string): Tag[] {
     const filterValue = value.toLowerCase();
-    return (this.tagsResource.value() ?? []).filter(
+    const availableTags = this.tagsResource.value();
+    return availableTags.filter(
       (tag) =>
         tag.name.toLowerCase().includes(filterValue) && !this.selectedTagIds.includes(tag.id),
     );
   }
 
   private getUnselectedTags(): Tag[] {
-    return (this.tagsResource.value() ?? []).filter((tag) => !this.selectedTagIds.includes(tag.id));
+    const availableTags = this.tagsResource.value();
+    return availableTags.filter((tag) => !this.selectedTagIds.includes(tag.id));
   }
 }
