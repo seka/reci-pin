@@ -1,11 +1,12 @@
 import {
   Component,
   inject,
-  OnInit,
+  signal,
   ElementRef,
   ViewChild,
   ChangeDetectionStrategy,
 } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { CommonModule, AsyncPipe } from '@angular/common';
@@ -22,7 +23,7 @@ import { Observable, startWith, map } from 'rxjs';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 
 import { RecipeService } from '../../core/services/recipe.service';
-import { Recipe, Tag } from '../../core/models/recipe.model';
+import { Tag } from '../../core/models/recipe.model';
 import { RecipeCardComponent } from '../../shared/components/organisms/recipe-card/recipe-card.component';
 import { HeadlineComponent } from '../../shared/components/atoms/headline/headline.component';
 import { ButtonComponent } from '../../shared/components/atoms/button/button.component';
@@ -56,11 +57,24 @@ import { EmptyStateComponent } from '../../shared/components/molecules/empty-sta
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './recipes.component.scss',
 })
-export class RecipesComponent implements OnInit {
+export class RecipesComponent {
   private readonly recipeService = inject(RecipeService);
 
-  recipes: Recipe[] = [];
-  availableTags: Tag[] = [];
+  // null means "no search criteria" -> load the unfiltered recipe list
+  private readonly recipesParams = signal<{ query: string; tagIds: number[] } | null>(null);
+
+  protected readonly recipesResource = rxResource({
+    params: () => this.recipesParams(),
+    stream: ({ params }) =>
+      params === null
+        ? this.recipeService.getUserRecipes()
+        : this.recipeService.searchRecipes(params),
+  });
+
+  protected readonly tagsResource = rxResource({
+    stream: () => this.recipeService.getAllTags(),
+  });
+
   searchQuery = '';
   selectedTagIds: number[] = [];
 
@@ -84,44 +98,17 @@ export class RecipesComponent implements OnInit {
     );
   }
 
-  ngOnInit() {
-    this.loadRecipes();
-    this.loadTags();
-  }
-
-  loadRecipes() {
-    this.recipeService.getUserRecipes().subscribe({
-      next: (recipes) => (this.recipes = recipes),
-      error: (err: Error) => console.error('Failed to load recipes', err),
-    });
-  }
-
-  loadTags() {
-    this.recipeService.getAllTags().subscribe({
-      next: (tags) => (this.availableTags = tags),
-      error: (err: Error) => console.error('Failed to load tags', err),
-    });
-  }
-
   search() {
     const query = this.searchMode === 'keyword' ? this.searchQuery : '';
     const tagIds = this.searchMode === 'tag' ? this.selectedTagIds : [];
 
-    this.recipeService
-      .searchRecipes({
-        query: query || '',
-        tagIds: tagIds,
-      })
-      .subscribe({
-        next: (recipes) => (this.recipes = recipes),
-        error: (err: Error) => console.error('Failed to search recipes', err),
-      });
+    this.recipesParams.set({ query: query || '', tagIds });
   }
 
   onDeleteRecipe(id: number): void {
     this.recipeService.deleteRecipe(id).subscribe({
       next: () => {
-        this.recipes = this.recipes.filter((r) => r.id !== id);
+        this.recipesResource.update((recipes) => (recipes ?? []).filter((r) => r.id !== id));
       },
       error: (err: Error) => console.error('Failed to delete recipe', err),
     });
@@ -134,7 +121,7 @@ export class RecipesComponent implements OnInit {
 
     // If matches an existing tag, select it
     if (value) {
-      const existingTag = this.availableTags.find(
+      const existingTag = (this.tagsResource.value() ?? []).find(
         (tag) => tag.name.toLowerCase() === value.toLowerCase(),
       );
 
@@ -167,18 +154,18 @@ export class RecipesComponent implements OnInit {
   }
 
   getTagName(id: number): string {
-    return this.availableTags.find((t) => t.id === id)?.name || '';
+    return (this.tagsResource.value() ?? []).find((t) => t.id === id)?.name || '';
   }
 
   private filterTags(value: string): Tag[] {
     const filterValue = value.toLowerCase();
-    return this.availableTags.filter(
+    return (this.tagsResource.value() ?? []).filter(
       (tag) =>
         tag.name.toLowerCase().includes(filterValue) && !this.selectedTagIds.includes(tag.id),
     );
   }
 
   private getUnselectedTags(): Tag[] {
-    return this.availableTags.filter((tag) => !this.selectedTagIds.includes(tag.id));
+    return (this.tagsResource.value() ?? []).filter((tag) => !this.selectedTagIds.includes(tag.id));
   }
 }

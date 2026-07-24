@@ -67,9 +67,9 @@
     }
   </div>
 
-  @if (recipes.length > 0) {
+  @if ((recipesResource.value() ?? []).length > 0) {
     <div class="recipes-grid">
-      @for (recipe of recipes; track recipe.id) {
+      @for (recipe of recipesResource.value() ?? []; track recipe.id) {
         <app-recipe-card
           [recipe]="recipe"
           (delete)="onDeleteRecipe($event)"
