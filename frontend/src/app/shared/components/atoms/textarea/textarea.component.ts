@@ -41,7 +41,9 @@ export class TextareaComponent implements ControlValueAccessor, OnInit {
   @Input() placeholder = '';
   @Input() rows = 4;
   @Input() required = false;
-  @Input() maxLength: number | null = null;
+  // Signal Forms の maxLength() バリデータは metadata を number | undefined として公開し、
+  // [formField] 経由でこの Input に自動バインドされるため undefined も許容する。
+  @Input() maxLength: number | null | undefined = null;
   @Input() showCounter = false;
   @Input() errorMessage: string | string[] | null = null;
 
