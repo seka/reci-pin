@@ -1,9 +1,9 @@
-import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, inject, signal } from '@angular/core';
+import { disabled, form, FormField, FormRoot, maxLength, minLength, required } from '@angular/forms/signals';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { AuthService } from '../../../core/services/auth.service';
+import { PasswordResetConfirmFormModel } from '../../../core/models/auth.model';
 import { AuthCardComponent } from '../../../shared/components/organisms/auth-card/auth-card.component';
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
 import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
@@ -12,10 +12,9 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
 
 @Component({
   selector: 'app-reset-password',
-  standalone: true,
   imports: [
-    CommonModule,
-    ReactiveFormsModule,
+    FormField,
+    FormRoot,
     RouterModule,
     TranslocoPipe,
     AuthCardComponent,
@@ -24,26 +23,23 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
     AlertComponent,
   ],
   templateUrl: './reset-password.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./reset-password.component.scss'],
 })
-export class ResetPasswordComponent implements OnInit {
+export class ResetPasswordComponent {
   private readonly authService = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly translate = inject(TranslocoService);
-  private readonly fb = inject(FormBuilder).nonNullable;
 
-  form: FormGroup = this.fb.group({
-    token: ['', [Validators.required]],
-    newPassword: [
-      '',
-      [
-        Validators.required,
-        Validators.minLength(VALIDATION_RULES.PASSWORD.MIN_LENGTH),
-        Validators.maxLength(VALIDATION_RULES.PASSWORD.MAX_LENGTH),
-      ],
-    ],
+  private readonly model = signal<PasswordResetConfirmFormModel>({ token: '', newPassword: '' });
+
+  protected readonly form = form(this.model, (path) => {
+    required(path.token);
+
+    required(path.newPassword);
+    minLength(path.newPassword, VALIDATION_RULES.PASSWORD.MIN_LENGTH);
+    maxLength(path.newPassword, 200);
+    disabled(path.newPassword, { when: (ctx) => !ctx.valueOf(path.token) });
   });
 
   token = '';
@@ -52,11 +48,11 @@ export class ResetPasswordComponent implements OnInit {
   isLoading = false;
   protected readonly VALIDATION_RULES = VALIDATION_RULES;
 
-  ngOnInit() {
+  constructor() {
     this.route.queryParams.subscribe((params) => {
       this.token = params['token'] || '';
       if (this.token) {
-        this.form.patchValue({ token: this.token });
+        this.model.update((m) => ({ ...m, token: this.token }));
       } else {
         this.errorMessage = this.translate.translate('FEATURES.AUTH.RESET_PASSWORD.INVALID_LINK');
       }
@@ -64,13 +60,13 @@ export class ResetPasswordComponent implements OnInit {
   }
 
   onSubmit() {
-    if (this.form.invalid) return;
+    if (this.form().invalid()) return;
 
     this.isLoading = true;
     this.message = '';
     this.errorMessage = '';
 
-    this.authService.resetPassword(this.form.getRawValue()).subscribe({
+    this.authService.resetPassword(this.form().value()).subscribe({
       next: (res) => {
         this.message = res.message;
         this.isLoading = false;
