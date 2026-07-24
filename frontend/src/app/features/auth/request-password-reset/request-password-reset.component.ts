@@ -1,9 +1,9 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, inject, signal } from '@angular/core';
+import { email, form, FormField, FormRoot, maxLength, required } from '@angular/forms/signals';
 import { RouterModule } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { AuthService } from '../../../core/services/auth.service';
+import { PasswordResetFormModel } from '../../../core/models/auth.model';
 import { AuthCardComponent } from '../../../shared/components/organisms/auth-card/auth-card.component';
 import { InputComponent } from '../../../shared/components/atoms/input/input.component';
 import { ButtonComponent } from '../../../shared/components/atoms/button/button.component';
@@ -12,10 +12,9 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
 
 @Component({
   selector: 'app-request-password-reset',
-  standalone: true,
   imports: [
-    CommonModule,
-    ReactiveFormsModule,
+    FormField,
+    FormRoot,
     RouterModule,
     TranslocoPipe,
     AuthCardComponent,
@@ -24,23 +23,18 @@ import { AlertComponent } from '../../../shared/components/atoms/alert/alert.com
     AlertComponent,
   ],
   templateUrl: './request-password-reset.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./request-password-reset.component.scss'],
 })
 export class RequestPasswordResetComponent {
   private readonly authService = inject(AuthService);
   private readonly translate = inject(TranslocoService);
-  private readonly fb = inject(FormBuilder).nonNullable;
 
-  form: FormGroup = this.fb.group({
-    email: [
-      '',
-      [
-        Validators.required,
-        Validators.email,
-        Validators.maxLength(VALIDATION_RULES.EMAIL.MAX_LENGTH),
-      ],
-    ],
+  private readonly model = signal<PasswordResetFormModel>({ email: '' });
+
+  protected readonly form = form(this.model, (path) => {
+    required(path.email);
+    email(path.email);
+    maxLength(path.email, 200);
   });
 
   message = '';
@@ -49,13 +43,13 @@ export class RequestPasswordResetComponent {
   protected readonly VALIDATION_RULES = VALIDATION_RULES;
 
   onSubmit() {
-    if (this.form.invalid) return;
+    if (this.form().invalid()) return;
 
     this.isLoading = true;
     this.message = '';
     this.errorMessage = '';
 
-    this.authService.requestPasswordReset(this.form.getRawValue()).subscribe({
+    this.authService.requestPasswordReset(this.form().value()).subscribe({
       next: (res) => {
         this.message = res.message;
         this.isLoading = false;
