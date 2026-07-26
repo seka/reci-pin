@@ -15,7 +15,8 @@
     "EDIT": "Edit",
     "KEYWORD": "Keyword",
     "TAG": "Tag",
-    "SEARCH": "Search"
+    "SEARCH": "Search",
+    "LOADING": "Loading..."
   },
   "VALIDATION": {
     "REQUIRED": "This field is required",

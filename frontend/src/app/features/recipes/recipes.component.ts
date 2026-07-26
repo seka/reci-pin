@@ -31,6 +31,7 @@ import { ButtonComponent } from '../../shared/components/atoms/button/button.com
 import { InputComponent } from '../../shared/components/atoms/input/input.component';
 import { SearchBarComponent } from '../../shared/components/molecules/search-bar/search-bar.component';
 import { EmptyStateComponent } from '../../shared/components/molecules/empty-state/empty-state.component';
+import { LoadingStateComponent } from '../../shared/components/molecules/loading-state/loading-state.component';
 
 @Component({
   selector: 'app-recipes',
@@ -53,6 +54,7 @@ import { EmptyStateComponent } from '../../shared/components/molecules/empty-sta
     InputComponent,
     SearchBarComponent,
     EmptyStateComponent,
+    LoadingStateComponent,
   ],
   templateUrl: './recipes.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
