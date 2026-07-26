@@ -1,6 +1,7 @@
 import {
   Component,
   inject,
+  Injector,
   signal,
   ElementRef,
   ViewChild,
@@ -59,11 +60,13 @@ import { EmptyStateComponent } from '../../shared/components/molecules/empty-sta
 })
 export class RecipesComponent {
   private readonly recipeService = inject(RecipeService);
+  private readonly injector = inject(Injector);
 
   // null means "no search criteria" -> load the unfiltered recipe list
   private readonly recipesParams = signal<{ query: string; tagIds: number[] } | null>(null);
 
   protected readonly recipesResource = rxResource({
+    injector: this.injector,
     params: () => this.recipesParams(),
     defaultValue: [],
     stream: ({ params }) =>
@@ -73,6 +76,7 @@ export class RecipesComponent {
   });
 
   protected readonly tagsResource = rxResource({
+    injector: this.injector,
     defaultValue: [],
     stream: () => this.recipeService.getAllTags(),
   });
