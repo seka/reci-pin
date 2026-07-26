@@ -78,7 +78,14 @@
         ></app-recipe-card>
       }
     </div>
-  } @else {
+  } @else if (!recipesResource.isLoading()) {
+    <!--
+      recipesResource.value() defaults to [] while the initial fetch is still
+      pending (isLoading() === true), which would otherwise briefly render the
+      "no recipes yet" empty state before real data arrives. Gate on
+      isLoading() so the empty state is only shown once we actually know the
+      list is empty.
+    -->
     <app-empty-state
       icon="receipt_long"
       [title]="'FEATURES.RECIPES.RECIPES.EMPTY_TITLE' | transloco"
