@@ -1,4 +1,13 @@
-import { Component, inject, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  Injector,
+  ViewChild,
+  ChangeDetectionStrategy,
+} from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin, Observable, of, switchMap } from 'rxjs';
@@ -18,73 +27,98 @@ import { RecipeFormModel } from '../../../core/models/recipe.model';
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './recipe-edit.component.scss',
 })
-export class RecipeEditComponent implements OnInit {
+export class RecipeEditComponent {
   private readonly recipeService = inject(RecipeService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly injector = inject(Injector);
 
   @ViewChild(RecipeFormComponent) recipeFormComponent!: RecipeFormComponent;
 
-  isLoading = true;
   isSubmitting = false;
-  recipeId!: number;
-  originalTagIds: number[] = [];
 
-  initialData: Partial<RecipeFormModel> = {};
-  initialImagePreview: string | null = null;
+  // Resolved once from the route snapshot; null means the route was missing
+  // the `id` param, in which case we redirect away without ever calling
+  // getRecipe().
+  private readonly recipeId: number | null;
 
-  ngOnInit() {
+  protected readonly recipeResource = rxResource({
+    injector: this.injector,
+    params: () => this.recipeId,
+    stream: ({ params }) =>
+      params === null ? of(undefined) : this.recipeService.getRecipe(params),
+  });
+
+  // resource.value() throws (ResourceValueError) once the resource has
+  // settled into the 'error' status, so every derived computed() here must
+  // check hasValue() first rather than relying on optional chaining alone.
+
+  protected readonly initialData = computed<Partial<RecipeFormModel>>(() => {
+    if (!this.recipeResource.hasValue()) return {};
+    const recipe = this.recipeResource.value();
+    if (!recipe) return {};
+    return {
+      name: recipe.name,
+      url: recipe.url,
+      memo: recipe.memo,
+      tagIds: recipe.tags?.map((t) => t.id) || [],
+    };
+  });
+
+  private readonly originalTagIds = computed<number[]>(() => {
+    if (!this.recipeResource.hasValue()) return [];
+    return this.recipeResource.value()?.tags?.map((t) => t.id) || [];
+  });
+
+  protected readonly initialImagePreview = computed<string | null>(() => {
+    if (!this.recipeResource.hasValue()) return null;
+    const recipe = this.recipeResource.value();
+    return recipe?.images && recipe.images.length > 0 ? recipe.images[0].imageUrl : null;
+  });
+
+  constructor() {
     const idParam = this.route.snapshot.paramMap.get('id');
     if (!idParam) {
+      this.recipeId = null;
       this.router.navigate(['/recipes']);
-      return;
+    } else {
+      this.recipeId = Number(idParam);
     }
 
-    this.recipeId = Number(idParam);
-    this.recipeService.getRecipe(this.recipeId).subscribe({
-      next: (recipe) => {
-        this.initialData = {
-          name: recipe.name,
-          url: recipe.url,
-          memo: recipe.memo,
-          tagIds: recipe.tags?.map((t) => t.id) || [],
-        };
-        this.originalTagIds = recipe.tags?.map((t) => t.id) || [];
-        if (recipe.images && recipe.images.length > 0) {
-          this.initialImagePreview = recipe.images[0].imageUrl;
-        }
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Failed to load recipe for edit', err);
+    effect(() => {
+      const error = this.recipeResource.error();
+      if (error) {
+        console.error('Failed to load recipe for edit', error);
         this.router.navigate(['/recipes']);
-      },
+      }
     });
   }
 
   onSave(event: RecipeFormSubmitEvent) {
     this.isSubmitting = true;
     const formData = event.formData;
+    const originalTagIds = this.originalTagIds();
 
     this.recipeService
-      .updateRecipe(this.recipeId, formData)
+      .updateRecipe(this.recipeId!, formData)
       .pipe(
         switchMap(() => {
           let tagUpdates$: Observable<void[] | RecipeImage | null> = of(null);
           const currentTagIds: number[] = formData.tagIds || [];
-          const tagsToAdd = currentTagIds.filter((id) => !this.originalTagIds.includes(id));
-          const tagsToRemove = this.originalTagIds.filter((id) => !currentTagIds.includes(id));
+          const tagsToAdd = currentTagIds.filter((id) => !originalTagIds.includes(id));
+          const tagsToRemove = originalTagIds.filter((id) => !currentTagIds.includes(id));
 
           const ops = [];
-          if (tagsToAdd.length > 0) ops.push(this.recipeService.addTags(this.recipeId, tagsToAdd));
+          if (tagsToAdd.length > 0)
+            ops.push(this.recipeService.addTags(this.recipeId!, tagsToAdd));
           if (tagsToRemove.length > 0)
-            ops.push(this.recipeService.removeTags(this.recipeId, tagsToRemove));
+            ops.push(this.recipeService.removeTags(this.recipeId!, tagsToRemove));
           if (ops.length > 0) tagUpdates$ = forkJoin(ops);
 
           return tagUpdates$.pipe(
             switchMap(() => {
               if (event.file) {
-                return this.recipeService.uploadImage(this.recipeId, event.file);
+                return this.recipeService.uploadImage(this.recipeId!, event.file);
               }
               return of(null);
             }),

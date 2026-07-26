@@ -1,4 +1,11 @@
-@if (isLoading) {
+@if (recipeResource.isLoading() || recipeResource.error()) {
+  <!--
+    Also cover the error state here: recipeResource.value() throws once the
+    resource has settled into 'error' status, so the recipe-form branch below
+    must never render while an error is present. The effect() in the
+    component redirects away shortly after an error occurs; showing the
+    loading text in the meantime avoids a jarring blank flash.
+  -->
   <div class="loading-container">Loading...</div>
 } @else {
   <app-recipe-form
@@ -6,8 +13,8 @@
     submitLabelKey="COMPONENTS.ORGANISMS.RECIPE_FORM.SAVE"
     submittingLabelKey="COMPONENTS.ORGANISMS.RECIPE_FORM.SAVING"
     [isSubmitting]="isSubmitting"
-    [initialData]="initialData"
-    [initialImagePreview]="initialImagePreview"
+    [initialData]="initialData()"
+    [initialImagePreview]="initialImagePreview()"
     (save)="onSave($event)"
   ></app-recipe-form>
 }
