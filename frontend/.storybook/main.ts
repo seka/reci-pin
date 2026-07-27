@@ -11,6 +11,7 @@ const config: StorybookConfig = {
     "@storybook/addon-vitest",
     "@storybook/addon-mcp"
   ],
+  "staticDirs": [{ from: "../src/assets", to: "/assets" }, "../public"],
   "framework": "@storybook/angular-vite"
 };
 export default config;

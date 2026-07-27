@@ -15,7 +15,8 @@
     "EDIT": "編集",
     "KEYWORD": "キーワード",
     "TAG": "タグ",
-    "SEARCH": "検索"
+    "SEARCH": "検索",
+    "LOADING": "読み込み中..."
   },
   "VALIDATION": {
     "REQUIRED": "必須項目です",
