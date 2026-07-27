@@ -114,8 +114,9 @@ export class RecipeEditComponent {
 
           const ops = [];
           if (tagsToAdd.length > 0) ops.push(this.recipeService.addTags(recipeId, tagsToAdd));
-          if (tagsToRemove.length > 0)
+          if (tagsToRemove.length > 0) {
             ops.push(this.recipeService.removeTags(recipeId, tagsToRemove));
+          }
           if (ops.length > 0) tagUpdates$ = forkJoin(ops);
 
           return tagUpdates$.pipe(
