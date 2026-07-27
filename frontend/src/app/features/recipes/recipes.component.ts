@@ -1,11 +1,13 @@
 import {
   Component,
   inject,
-  OnInit,
+  Injector,
+  signal,
   ElementRef,
   ViewChild,
   ChangeDetectionStrategy,
 } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { CommonModule, AsyncPipe } from '@angular/common';
@@ -22,13 +24,14 @@ import { Observable, startWith, map } from 'rxjs';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 
 import { RecipeService } from '../../core/services/recipe.service';
-import { Recipe, Tag } from '../../core/models/recipe.model';
+import { Tag } from '../../core/models/recipe.model';
 import { RecipeCardComponent } from '../../shared/components/organisms/recipe-card/recipe-card.component';
 import { HeadlineComponent } from '../../shared/components/atoms/headline/headline.component';
 import { ButtonComponent } from '../../shared/components/atoms/button/button.component';
 import { InputComponent } from '../../shared/components/atoms/input/input.component';
 import { SearchBarComponent } from '../../shared/components/molecules/search-bar/search-bar.component';
 import { EmptyStateComponent } from '../../shared/components/molecules/empty-state/empty-state.component';
+import { LoadingStateComponent } from '../../shared/components/molecules/loading-state/loading-state.component';
 
 @Component({
   selector: 'app-recipes',
@@ -51,16 +54,35 @@ import { EmptyStateComponent } from '../../shared/components/molecules/empty-sta
     InputComponent,
     SearchBarComponent,
     EmptyStateComponent,
+    LoadingStateComponent,
   ],
   templateUrl: './recipes.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './recipes.component.scss',
 })
-export class RecipesComponent implements OnInit {
+export class RecipesComponent {
   private readonly recipeService = inject(RecipeService);
+  private readonly injector = inject(Injector);
 
-  recipes: Recipe[] = [];
-  availableTags: Tag[] = [];
+  // null means "no search criteria" -> load the unfiltered recipe list
+  private readonly recipesParams = signal<{ query: string; tagIds: number[] } | null>(null);
+
+  protected readonly recipesResource = rxResource({
+    injector: this.injector,
+    params: () => this.recipesParams(),
+    defaultValue: [],
+    stream: ({ params }) =>
+      params === null
+        ? this.recipeService.getUserRecipes()
+        : this.recipeService.searchRecipes(params),
+  });
+
+  protected readonly tagsResource = rxResource({
+    injector: this.injector,
+    defaultValue: [],
+    stream: () => this.recipeService.getAllTags(),
+  });
+
   searchQuery = '';
   selectedTagIds: number[] = [];
 
@@ -84,44 +106,17 @@ export class RecipesComponent implements OnInit {
     );
   }
 
-  ngOnInit() {
-    this.loadRecipes();
-    this.loadTags();
-  }
-
-  loadRecipes() {
-    this.recipeService.getUserRecipes().subscribe({
-      next: (recipes) => (this.recipes = recipes),
-      error: (err: Error) => console.error('Failed to load recipes', err),
-    });
-  }
-
-  loadTags() {
-    this.recipeService.getAllTags().subscribe({
-      next: (tags) => (this.availableTags = tags),
-      error: (err: Error) => console.error('Failed to load tags', err),
-    });
-  }
-
   search() {
     const query = this.searchMode === 'keyword' ? this.searchQuery : '';
     const tagIds = this.searchMode === 'tag' ? this.selectedTagIds : [];
 
-    this.recipeService
-      .searchRecipes({
-        query: query || '',
-        tagIds: tagIds,
-      })
-      .subscribe({
-        next: (recipes) => (this.recipes = recipes),
-        error: (err: Error) => console.error('Failed to search recipes', err),
-      });
+    this.recipesParams.set({ query: query || '', tagIds });
   }
 
   onDeleteRecipe(id: number): void {
     this.recipeService.deleteRecipe(id).subscribe({
       next: () => {
-        this.recipes = this.recipes.filter((r) => r.id !== id);
+        this.recipesResource.update((recipes) => recipes.filter((r) => r.id !== id));
       },
       error: (err: Error) => console.error('Failed to delete recipe', err),
     });
@@ -134,7 +129,8 @@ export class RecipesComponent implements OnInit {
 
     // If matches an existing tag, select it
     if (value) {
-      const existingTag = this.availableTags.find(
+      const availableTags = this.tagsResource.value();
+      const existingTag = availableTags.find(
         (tag) => tag.name.toLowerCase() === value.toLowerCase(),
       );
 
@@ -167,18 +163,21 @@ export class RecipesComponent implements OnInit {
   }
 
   getTagName(id: number): string {
-    return this.availableTags.find((t) => t.id === id)?.name || '';
+    const availableTags = this.tagsResource.value();
+    return availableTags.find((t) => t.id === id)?.name || '';
   }
 
   private filterTags(value: string): Tag[] {
     const filterValue = value.toLowerCase();
-    return this.availableTags.filter(
+    const availableTags = this.tagsResource.value();
+    return availableTags.filter(
       (tag) =>
         tag.name.toLowerCase().includes(filterValue) && !this.selectedTagIds.includes(tag.id),
     );
   }
 
   private getUnselectedTags(): Tag[] {
-    return this.availableTags.filter((tag) => !this.selectedTagIds.includes(tag.id));
+    const availableTags = this.tagsResource.value();
+    return availableTags.filter((tag) => !this.selectedTagIds.includes(tag.id));
   }
 }

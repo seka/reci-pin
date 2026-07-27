@@ -1,4 +1,5 @@
 import 'zone.js';
+import '../src/styles.scss';
 import type { Preview } from '@storybook/angular-vite';
 import { setCompodocJson } from '@storybook/addon-docs/angular';
 import { applicationConfig } from '@storybook/angular-vite';

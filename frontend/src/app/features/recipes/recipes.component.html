@@ -67,6 +67,7 @@
     }
   </div>
 
+  @let recipes = recipesResource.value();
   @if (recipes.length > 0) {
     <div class="recipes-grid">
       @for (recipe of recipes; track recipe.id) {
@@ -77,7 +78,16 @@
         ></app-recipe-card>
       }
     </div>
+  } @else if (recipesResource.isLoading()) {
+    <app-loading-state [message]="'COMMON.LOADING' | transloco" />
   } @else {
+    <!--
+      recipesResource.value() defaults to [] while the initial fetch is still
+      pending (isLoading() === true), which would otherwise briefly render the
+      "no recipes yet" empty state before real data arrives. The isLoading()
+      branch above takes care of that case, so by the time we get here we
+      know the list is genuinely empty.
+    -->
     <app-empty-state
       icon="receipt_long"
       [title]="'FEATURES.RECIPES.RECIPES.EMPTY_TITLE' | transloco"
