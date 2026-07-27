@@ -2,13 +2,14 @@ import {
   Component,
   EventEmitter,
   inject,
+  Injector,
   Input,
   OnChanges,
-  OnInit,
   Output,
   SimpleChanges,
   signal,
 } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { form, FormField, FormRoot, maxLength, required } from '@angular/forms/signals';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -16,7 +17,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { RecipeService } from '../../../../core/services/recipe.service';
-import { Tag, RecipeFormModel } from '../../../../core/models/recipe.model';
+import { RecipeFormModel } from '../../../../core/models/recipe.model';
 import { TagSelectComponent } from '../../molecules/tag-select/tag-select.component';
 import { ButtonComponent } from '../../atoms/button/button.component';
 import { HeadlineComponent } from '../../atoms/headline/headline.component';
@@ -49,9 +50,10 @@ export interface RecipeFormSubmitEvent {
   templateUrl: './recipe-form.component.html',
   styleUrl: './recipe-form.component.scss',
 })
-export class RecipeFormComponent implements OnInit, OnChanges {
+export class RecipeFormComponent implements OnChanges {
   private readonly recipeService = inject(RecipeService);
   private readonly translate = inject(TranslocoService);
+  private readonly injector = inject(Injector);
 
   @Input() titleKey: string = 'FEATURES.RECIPES.RECIPE_CREATE.TITLE';
   @Input() submitLabelKey: string = 'COMPONENTS.ORGANISMS.RECIPE_FORM.SAVE';
@@ -63,7 +65,12 @@ export class RecipeFormComponent implements OnInit, OnChanges {
 
   @Output() save = new EventEmitter<RecipeFormSubmitEvent>();
 
-  tags: Tag[] = [];
+  protected readonly tagsResource = rxResource({
+    injector: this.injector,
+    defaultValue: [],
+    stream: () => this.recipeService.getAllTags(),
+  });
+
   fieldErrors: Record<string, string[]> = {};
   selectedFile: File | null = null;
   imagePreview: string | null = null;
@@ -107,13 +114,6 @@ export class RecipeFormComponent implements OnInit, OnChanges {
         urlField().value.set(url);
       }
     }
-  }
-
-  ngOnInit() {
-    this.recipeService.getAllTags().subscribe({
-      next: (tags) => (this.tags = tags),
-      error: (err) => console.error('Failed to load tags', err),
-    });
   }
 
   onFileSelected(event: Event) {

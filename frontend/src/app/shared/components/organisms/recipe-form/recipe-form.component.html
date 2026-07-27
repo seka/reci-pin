@@ -42,7 +42,8 @@
           ></app-textarea>
         </div>
 
-        <app-tag-select [tags]="tags" [formField]="recipeForm.tagIds"> </app-tag-select>
+        <app-tag-select [tags]="tagsResource.value()" [formField]="recipeForm.tagIds">
+        </app-tag-select>
 
         <!-- Image Upload -->
         <div class="image-upload-section">
