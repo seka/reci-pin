@@ -10,6 +10,7 @@ import {
 import { rxResource } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { forkJoin, Observable, of, switchMap } from 'rxjs';
 import { RecipeService } from '../../../core/services/recipe.service';
 import { RecipeImage } from '../../../core/models/recipe.model';
@@ -18,14 +19,14 @@ import {
   RecipeFormSubmitEvent,
 } from '../../../shared/components/organisms/recipe-form/recipe-form.component';
 import { RecipeFormModel } from '../../../core/models/recipe.model';
+import { LoadingStateComponent } from '../../../shared/components/molecules/loading-state/loading-state.component';
 
 @Component({
   selector: 'app-recipe-edit',
   standalone: true,
-  imports: [CommonModule, RecipeFormComponent],
+  imports: [CommonModule, RecipeFormComponent, LoadingStateComponent, TranslocoPipe],
   templateUrl: './recipe-edit.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
-  styleUrl: './recipe-edit.component.scss',
 })
 export class RecipeEditComponent {
   private readonly recipeService = inject(RecipeService);
@@ -65,7 +66,7 @@ export class RecipeEditComponent {
     };
   });
 
-  private readonly originalTagIds = computed<number[]>(() => {
+  private readonly tagIds = computed<number[]>(() => {
     if (!this.recipeResource.hasValue()) return [];
     return this.recipeResource.value()?.tags?.map((t) => t.id) || [];
   });
@@ -95,30 +96,32 @@ export class RecipeEditComponent {
   }
 
   onSave(event: RecipeFormSubmitEvent) {
+    if (this.recipeId === null) return;
+    const recipeId = this.recipeId;
+
     this.isSubmitting = true;
     const formData = event.formData;
-    const originalTagIds = this.originalTagIds();
+    const tagIds = this.tagIds();
 
     this.recipeService
-      .updateRecipe(this.recipeId!, formData)
+      .updateRecipe(recipeId, formData)
       .pipe(
         switchMap(() => {
           let tagUpdates$: Observable<void[] | RecipeImage | null> = of(null);
           const currentTagIds: number[] = formData.tagIds || [];
-          const tagsToAdd = currentTagIds.filter((id) => !originalTagIds.includes(id));
-          const tagsToRemove = originalTagIds.filter((id) => !currentTagIds.includes(id));
+          const tagsToAdd = currentTagIds.filter((id) => !tagIds.includes(id));
+          const tagsToRemove = tagIds.filter((id) => !currentTagIds.includes(id));
 
           const ops = [];
-          if (tagsToAdd.length > 0)
-            ops.push(this.recipeService.addTags(this.recipeId!, tagsToAdd));
+          if (tagsToAdd.length > 0) ops.push(this.recipeService.addTags(recipeId, tagsToAdd));
           if (tagsToRemove.length > 0)
-            ops.push(this.recipeService.removeTags(this.recipeId!, tagsToRemove));
+            ops.push(this.recipeService.removeTags(recipeId, tagsToRemove));
           if (ops.length > 0) tagUpdates$ = forkJoin(ops);
 
           return tagUpdates$.pipe(
             switchMap(() => {
               if (event.file) {
-                return this.recipeService.uploadImage(this.recipeId!, event.file);
+                return this.recipeService.uploadImage(recipeId, event.file);
               }
               return of(null);
             }),

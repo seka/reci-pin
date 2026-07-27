@@ -6,7 +6,7 @@
     component redirects away shortly after an error occurs; showing the
     loading text in the meantime avoids a jarring blank flash.
   -->
-  <div class="loading-container">Loading...</div>
+  <app-loading-state [message]="'COMMON.LOADING' | transloco" />
 } @else {
   <app-recipe-form
     titleKey="FEATURES.RECIPES.RECIPE_EDIT.TITLE"
