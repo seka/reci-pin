@@ -7,12 +7,17 @@ import { TranslocoModule } from '@jsverse/transloco';
 import { RouterModule } from '@angular/router';
 import {} from '@angular/platform-browser/animations';
 import { RecipeService } from '../../../core/services/recipe.service';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 
 const mockRecipeService = {
   getRecipe: () =>
     of({ id: 1, name: 'Sample Recipe', url: 'https://example.com', memo: 'Sample memo', tags: [] }),
+  getAllTags: () => of([]),
+};
+
+const mockErrorRecipeService = {
+  getRecipe: () => throwError(() => new Error('Failed to fetch recipe')),
   getAllTags: () => of([]),
 };
 
@@ -45,4 +50,16 @@ type Story = StoryObj<RecipeEditComponent>;
 
 export const Default: Story = {
   args: {},
+};
+
+// Verifies that a failed getRecipe() call redirects away via the effect()
+// watching recipeResource.error(), same as the original subscribe(error)
+// callback did.
+export const LoadError: Story = {
+  args: {},
+  decorators: [
+    moduleMetadata({
+      providers: [{ provide: RecipeService, useValue: mockErrorRecipeService }],
+    }),
+  ],
 };
