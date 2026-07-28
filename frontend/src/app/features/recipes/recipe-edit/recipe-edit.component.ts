@@ -130,7 +130,10 @@ export class RecipeEditComponent {
         }),
       )
       .subscribe({
-        next: () => this.router.navigate(['/recipes']),
+        next: () => {
+          this.isSubmitting = false;
+          this.router.navigate(['/recipes']);
+        },
         error: (err) => {
           console.error('Failed to save recipe', err);
           this.isSubmitting = false;
