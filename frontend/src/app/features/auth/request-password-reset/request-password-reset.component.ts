@@ -37,26 +37,28 @@ export class RequestPasswordResetComponent {
     maxLength(path.email, 200);
   });
 
-  message = '';
-  errorMessage = '';
-  isLoading = false;
+  message = signal('');
+  errorMessage = signal('');
+  isLoading = signal(false);
   protected readonly VALIDATION_RULES = VALIDATION_RULES;
 
   onSubmit() {
     if (this.form().invalid()) return;
 
-    this.isLoading = true;
-    this.message = '';
-    this.errorMessage = '';
+    this.isLoading.set(true);
+    this.message.set('');
+    this.errorMessage.set('');
 
     this.authService.requestPasswordReset(this.form().value()).subscribe({
       next: (res) => {
-        this.message = res.message;
-        this.isLoading = false;
+        this.message.set(res.message);
+        this.isLoading.set(false);
       },
       error: (err) => {
-        this.errorMessage = this.translate.translate('FEATURES.AUTH.REQUEST_PASSWORD_RESET.FAILED');
-        this.isLoading = false;
+        this.errorMessage.set(
+          this.translate.translate('FEATURES.AUTH.REQUEST_PASSWORD_RESET.FAILED'),
+        );
+        this.isLoading.set(false);
         console.error(err);
       },
     });
