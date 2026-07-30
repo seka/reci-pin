@@ -45,12 +45,12 @@ interface ChangePasswordFormValue {
   styleUrl: './change-password.component.scss',
 })
 export class ChangePasswordComponent {
-  private authService = inject(AuthService);
-  private router = inject(Router);
-  private translate = inject(TranslocoService);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly translate = inject(TranslocoService);
 
-  isProcessing = false;
-  errorMessage = '';
+  protected readonly isProcessing = signal(false);
+  protected readonly errorMessage = signal('');
 
   protected readonly VALIDATION_RULES = VALIDATION_RULES;
 
@@ -102,8 +102,8 @@ export class ChangePasswordComponent {
   onSubmit() {
     if (this.form().invalid()) return;
 
-    this.isProcessing = true;
-    this.errorMessage = '';
+    this.isProcessing.set(true);
+    this.errorMessage.set('');
 
     this.authService.changePassword(this.form().value()).subscribe({
       next: () => {
@@ -111,15 +111,15 @@ export class ChangePasswordComponent {
         this.router.navigate(['/settings']);
       },
       error: (err) => {
-        this.isProcessing = false;
+        this.isProcessing.set(false);
         // Backend returns bad request for incorrect password or validation errors
         if (err.status === 400 || err.status === 401) {
-          this.errorMessage = this.translate.translate(
-            'FEATURES.SETTINGS.CHANGE_PASSWORD.FAILED_INVALID',
+          this.errorMessage.set(
+            this.translate.translate('FEATURES.SETTINGS.CHANGE_PASSWORD.FAILED_INVALID'),
           );
         } else {
-          this.errorMessage = this.translate.translate(
-            'FEATURES.SETTINGS.CHANGE_PASSWORD.FAILED_ERROR',
+          this.errorMessage.set(
+            this.translate.translate('FEATURES.SETTINGS.CHANGE_PASSWORD.FAILED_ERROR'),
           );
         }
         console.error(err);
