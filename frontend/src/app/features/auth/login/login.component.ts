@@ -32,7 +32,7 @@ export class LoginComponent {
   private readonly router = inject(Router);
   private readonly translate = inject(TranslocoService);
 
-  errorMessage = '';
+  protected readonly errorMessage = signal('');
 
   protected readonly VALIDATION_RULES = VALIDATION_RULES;
 
@@ -57,7 +57,7 @@ export class LoginComponent {
         this.router.navigate(['/recipes']);
       },
       error: () => {
-        this.errorMessage = this.translate.translate('FEATURES.AUTH.LOGIN.FAILED');
+        this.errorMessage.set(this.translate.translate('FEATURES.AUTH.LOGIN.FAILED'));
       },
     });
   }

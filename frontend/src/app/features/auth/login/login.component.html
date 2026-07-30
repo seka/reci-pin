@@ -1,5 +1,5 @@
 <app-auth-card [title]="'FEATURES.AUTH.LOGIN.SUBMIT' | transloco">
-  <form [formRoot]="loginForm" (ngSubmit)="onSubmit()">
+  <form [formRoot]="loginForm" (submit)="onSubmit()">
     <app-input
       [label]="'FEATURES.AUTH.LOGIN.EMAIL' | transloco"
       type="email"
@@ -34,7 +34,7 @@
       </app-link>
     </div>
 
-    <app-alert type="error" [message]="errorMessage"></app-alert>
+    <app-alert type="error" [message]="errorMessage()"></app-alert>
   </form>
 
   <div footer>
