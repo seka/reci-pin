@@ -42,8 +42,8 @@ export class SignupComponent {
   private readonly router = inject(Router);
   private readonly translate = inject(TranslocoService);
 
-  fieldErrors: Record<string, string[]> = {};
-  errorMessage = '';
+  protected readonly fieldErrors = signal<Record<string, string[]>>({});
+  protected readonly errorMessage = signal('');
 
   protected readonly VALIDATION_RULES = VALIDATION_RULES;
 
@@ -69,8 +69,8 @@ export class SignupComponent {
       return;
     }
 
-    this.fieldErrors = {}; // Reset errors
-    this.errorMessage = '';
+    this.fieldErrors.set({});
+    this.errorMessage.set('');
 
     this.authService.signup(this.signupForm().value()).subscribe({
       next: () => {
@@ -110,14 +110,14 @@ export class SignupComponent {
                   return this.translate.translate('VALIDATION.INVALID_INPUT');
               }
             });
-            this.fieldErrors[field] = messages;
+            this.fieldErrors.update((errors) => ({ ...errors, [field]: messages }));
           });
 
-          if (Object.keys(this.fieldErrors).length > 0) {
+          if (Object.keys(this.fieldErrors()).length > 0) {
             return;
           }
         }
-        this.errorMessage = this.translate.translate('FEATURES.AUTH.SIGNUP.FAILED');
+        this.errorMessage.set(this.translate.translate('FEATURES.AUTH.SIGNUP.FAILED'));
       },
     });
   }
