@@ -37,9 +37,9 @@ export class RequestPasswordResetComponent {
     maxLength(path.email, 200);
   });
 
-  message = signal('');
-  errorMessage = signal('');
-  isLoading = signal(false);
+  protected readonly message = signal('');
+  protected readonly errorMessage = signal('');
+  protected readonly isLoading = signal(false);
   protected readonly VALIDATION_RULES = VALIDATION_RULES;
 
   onSubmit() {
