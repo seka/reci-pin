@@ -71,11 +71,11 @@ export class RecipeFormComponent implements OnChanges {
     stream: () => this.recipeService.getAllTags(),
   });
 
-  fieldErrors: Record<string, string[]> = {};
-  selectedFile: File | null = null;
-  imagePreview: string | null = null;
-  imageError: string | null = null;
-  isDragover = false;
+  protected readonly fieldErrors = signal<Record<string, string[]>>({});
+  private readonly selectedFile = signal<File | null>(null);
+  protected readonly imagePreview = signal<string | null>(null);
+  protected readonly imageError = signal<string | null>(null);
+  protected readonly isDragover = signal(false);
 
   protected readonly VALIDATION_RULES = VALIDATION_RULES;
 
@@ -100,7 +100,7 @@ export class RecipeFormComponent implements OnChanges {
       });
     }
     if (changes['initialImagePreview'] && this.initialImagePreview) {
-      this.imagePreview = this.initialImagePreview;
+      this.imagePreview.set(this.initialImagePreview);
     }
   }
 
@@ -126,19 +126,19 @@ export class RecipeFormComponent implements OnChanges {
   onDragOver(event: DragEvent) {
     event.preventDefault();
     event.stopPropagation();
-    this.isDragover = true;
+    this.isDragover.set(true);
   }
 
   onDragLeave(event: DragEvent) {
     event.preventDefault();
     event.stopPropagation();
-    this.isDragover = false;
+    this.isDragover.set(false);
   }
 
   onDrop(event: DragEvent) {
     event.preventDefault();
     event.stopPropagation();
-    this.isDragover = false;
+    this.isDragover.set(false);
     if (event.dataTransfer?.files?.[0]) {
       this.handleFile(event.dataTransfer.files[0]);
     }
@@ -146,39 +146,39 @@ export class RecipeFormComponent implements OnChanges {
 
   removeImage(event: Event) {
     event.stopPropagation();
-    this.selectedFile = null;
-    this.imagePreview = null;
-    this.imageError = null;
+    this.selectedFile.set(null);
+    this.imagePreview.set(null);
+    this.imageError.set(null);
   }
 
   private handleFile(file: File) {
-    this.imageError = null;
+    this.imageError.set(null);
 
     if (!(VALIDATION_RULES.IMAGE.ALLOWED_TYPES as readonly string[]).includes(file.type)) {
-      this.imageError = 'JPEG, PNG, WebP のみアップロードできます';
+      this.imageError.set('JPEG, PNG, WebP のみアップロードできます');
       return;
     }
 
     if (file.size > VALIDATION_RULES.IMAGE.MAX_FILE_SIZE) {
-      this.imageError = 'ファイルサイズは50MB以下にしてください';
+      this.imageError.set('ファイルサイズは50MB以下にしてください');
       return;
     }
 
-    this.selectedFile = file;
+    this.selectedFile.set(file);
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      this.imagePreview = e.target?.result as string;
+      this.imagePreview.set(e.target?.result as string);
     };
     reader.readAsDataURL(file);
   }
 
   onSubmit() {
-    this.fieldErrors = {};
+    this.fieldErrors.set({});
     if (this.recipeForm().valid()) {
       this.save.emit({
         formData: this.recipeForm().value(),
-        file: this.selectedFile,
+        file: this.selectedFile(),
       });
     }
   }
@@ -202,7 +202,7 @@ export class RecipeFormComponent implements OnChanges {
               return this.translate.translate('VALIDATION.INVALID_INPUT');
           }
         });
-        this.fieldErrors[field] = messages;
+        this.fieldErrors.update((errors) => ({ ...errors, [field]: messages }));
       });
     }
     return hasValidationErrors;

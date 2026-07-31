@@ -6,7 +6,7 @@
       </mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <form [formRoot]="recipeForm" (ngSubmit)="onSubmit()">
+      <form [formRoot]="recipeForm" (submit)="onSubmit()">
         <div class="form-group">
           <app-input
             [label]="'COMPONENTS.ORGANISMS.RECIPE_FORM.NAME' | transloco"
@@ -15,7 +15,7 @@
             [required]="true"
             [maxLength]="VALIDATION_RULES.RECIPE.NAME_MAX_LENGTH"
             [showCounter]="true"
-            [errorMessage]="fieldErrors['name']"
+            [errorMessage]="fieldErrors()['name']"
           ></app-input>
         </div>
 
@@ -26,7 +26,7 @@
             placeholder="https://example.com/recipe"
             [required]="true"
             (blur)="onUrlBlur()"
-            [errorMessage]="fieldErrors['url']"
+            [errorMessage]="fieldErrors()['url']"
           ></app-input>
         </div>
 
@@ -38,7 +38,7 @@
             [rows]="4"
             [maxLength]="VALIDATION_RULES.RECIPE.MEMO_MAX_LENGTH"
             [showCounter]="true"
-            [errorMessage]="fieldErrors['memo']"
+            [errorMessage]="fieldErrors()['memo']"
           ></app-textarea>
         </div>
 
@@ -52,7 +52,7 @@
           }}</label>
           <div
             class="dropzone"
-            [class.dragover]="isDragover"
+            [class.dragover]="isDragover()"
             (dragover)="onDragOver($event)"
             (dragleave)="onDragLeave($event)"
             (drop)="onDrop($event)"
@@ -63,8 +63,8 @@
             role="button"
             [attr.aria-label]="'COMPONENTS.ORGANISMS.RECIPE_FORM.IMAGE' | transloco"
           >
-            @if (imagePreview) {
-              <img [src]="imagePreview" alt="Preview" class="preview-image" />
+            @if (imagePreview()) {
+              <img [src]="imagePreview()" alt="Preview" class="preview-image" />
               <button type="button" class="remove-btn" (click)="removeImage($event)">
                 <mat-icon>close</mat-icon>
               </button>
@@ -85,8 +85,8 @@
             (change)="onFileSelected($event)"
             hidden
           />
-          @if (imageError) {
-            <p class="image-error">{{ imageError }}</p>
+          @if (imageError()) {
+            <p class="image-error">{{ imageError() }}</p>
           }
         </div>
 
