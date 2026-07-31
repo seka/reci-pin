@@ -1,5 +1,13 @@
 import { Component, inject, signal } from '@angular/core';
-import { disabled, form, FormField, FormRoot, maxLength, minLength, required } from '@angular/forms/signals';
+import {
+  disabled,
+  form,
+  FormField,
+  FormRoot,
+  maxLength,
+  minLength,
+  required,
+} from '@angular/forms/signals';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { AuthService } from '../../../core/services/auth.service';
@@ -42,19 +50,20 @@ export class ResetPasswordComponent {
     disabled(path.newPassword, { when: (ctx) => !ctx.valueOf(path.token) });
   });
 
-  token = '';
-  message = '';
-  errorMessage = '';
-  isLoading = false;
+  protected readonly message = signal('');
+  protected readonly errorMessage = signal('');
+  protected readonly isLoading = signal(false);
   protected readonly VALIDATION_RULES = VALIDATION_RULES;
 
   constructor() {
     this.route.queryParams.subscribe((params) => {
-      this.token = params['token'] || '';
-      if (this.token) {
-        this.model.update((m) => ({ ...m, token: this.token }));
+      const token = params['token'] || '';
+      if (token) {
+        this.model.update((model) => ({ ...model, token }));
       } else {
-        this.errorMessage = this.translate.translate('FEATURES.AUTH.RESET_PASSWORD.INVALID_LINK');
+        this.errorMessage.set(
+          this.translate.translate('FEATURES.AUTH.RESET_PASSWORD.INVALID_LINK'),
+        );
       }
     });
   }
@@ -62,21 +71,23 @@ export class ResetPasswordComponent {
   onSubmit() {
     if (this.form().invalid()) return;
 
-    this.isLoading = true;
-    this.message = '';
-    this.errorMessage = '';
+    this.isLoading.set(true);
+    this.message.set('');
+    this.errorMessage.set('');
 
     this.authService.resetPassword(this.form().value()).subscribe({
       next: (res) => {
-        this.message = res.message;
-        this.isLoading = false;
+        this.message.set(res.message);
+        this.isLoading.set(false);
         setTimeout(() => {
           this.router.navigate(['/login']);
         }, 3000);
       },
       error: (err) => {
-        this.errorMessage = this.translate.translate('FEATURES.AUTH.RESET_PASSWORD.FAILED_EXPIRED');
-        this.isLoading = false;
+        this.errorMessage.set(
+          this.translate.translate('FEATURES.AUTH.RESET_PASSWORD.FAILED_EXPIRED'),
+        );
+        this.isLoading.set(false);
         console.error(err);
       },
     });
