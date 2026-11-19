@@ -44,7 +44,6 @@
     "@angular/compiler-cli": "~22.2.6",
     "@angular/platform-browser-dynamic": "~22.2.6",
     "@babel/runtime": "^7.29.14",
-    "@compodoc/compodoc": "^1.2.1",
     "@eslint/js": "^10.0.1",
     "@storybook/addon-a11y": "^10.6.7",
     "@storybook/addon-docs": "^10.6.7",
