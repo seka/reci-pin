@@ -1,6 +1,6 @@
 module github.com/seka/reci-pin/backend
 
-go 1.26.0
+go 1.26.11
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.41.1
