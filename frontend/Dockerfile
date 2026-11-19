@@ -1,5 +1,5 @@
 # Base Stage: Install dependencies
-FROM node:20-alpine AS base
+FROM node:24-alpine AS base
 
 WORKDIR /app
 
@@ -8,7 +8,6 @@ RUN corepack enable
 
 # Copy package files and yarn config
 COPY package.json yarn.lock .yarnrc.yml ./
-COPY .yarn ./.yarn
 
 # Install dependencies
 RUN yarn install
