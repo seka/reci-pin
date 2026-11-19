@@ -15,9 +15,9 @@ export GOMODCACHE=$(shell pwd)/.gomodcache
 .PHONY: bootstrap
 bootstrap: ## Install all development tools
 	@echo "Installing development tools..."
-	go install go.uber.org/mock/mockgen@latest
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-	go install github.com/air-verse/air@latest
+	go install go.uber.org/mock/mockgen@v0.6.0
+	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.15.0
+	go install github.com/air-verse/air@v1.67.4
 	@echo "All tools installed successfully!"
 
 # Go parameters
