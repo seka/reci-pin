@@ -94,11 +94,14 @@ describe('ResetPasswordComponent', () => {
   });
 
   it('tokenがない場合は無効リンクのメッセージを表示する', async () => {
+    // トークンなしで直接開いたとき、エラー欄に翻訳済みの文言が表示されることを確認する。
     TestBed.overrideProvider(ActivatedRoute, { useValue: { queryParams: of({}) } });
     const fixture = TestBed.createComponent(ResetPasswordComponent);
     fixture.autoDetectChanges();
     await fixture.whenStable();
 
-    expect(fixture.nativeElement.querySelector('.alert.error')?.textContent).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.alert.error')?.textContent).toContain(
+      'リンクが無効です',
+    );
   });
 });
