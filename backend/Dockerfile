@@ -30,7 +30,7 @@ CMD air -c .air.toml -- \
     -storage-access-key=${AWS_ACCESS_KEY_ID} \
     -storage-secret-key=${AWS_SECRET_ACCESS_KEY} \
     -storage-public-url=${STORAGE_PUBLIC_URL} \
-    -es-addresses=${ELASTICSEARCH_ADDRESS:-http://elasticsearch:9200} \
+    -es-addresses="${ELASTICSEARCH_ADDRESS:-http://${ES_HOST:-elasticsearch}:${ES_PORT:-9200}}" \
     -mail-host=${MAIL_HOST:-localhost} \
     -mail-port=${MAIL_PORT:-1025} \
     -mail-from=${MAIL_FROM:-no-reply@reci-pin.com}
