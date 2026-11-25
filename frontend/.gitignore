@@ -41,6 +41,3 @@ storybook-static/
 connect.lock
 typings/
 tmp/
-
-# Compodoc
-documentation.json

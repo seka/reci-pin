@@ -9,7 +9,7 @@ import {
   required,
 } from '@angular/forms/signals';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { AuthService } from '../../../core/services/auth.service';
 import { PasswordResetConfirmFormModel } from '../../../core/models/auth.model';
 import { AuthCardComponent } from '../../../shared/components/organisms/auth-card/auth-card.component';
@@ -37,7 +37,6 @@ export class ResetPasswordComponent {
   private readonly authService = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly translate = inject(TranslocoService);
 
   private readonly model = signal<PasswordResetConfirmFormModel>({ token: '', newPassword: '' });
 
@@ -51,20 +50,16 @@ export class ResetPasswordComponent {
   });
 
   protected readonly message = signal('');
-  protected readonly errorMessage = signal('');
+  // Keep the key until rendering so the message follows asynchronous language loading.
+  protected readonly errorKey = signal('');
   protected readonly isLoading = signal(false);
   protected readonly VALIDATION_RULES = VALIDATION_RULES;
 
   constructor() {
     this.route.queryParams.subscribe((params) => {
       const token = params['token'] || '';
-      if (token) {
-        this.model.update((model) => ({ ...model, token }));
-      } else {
-        this.errorMessage.set(
-          this.translate.translate('FEATURES.AUTH.RESET_PASSWORD.INVALID_LINK'),
-        );
-      }
+      this.model.update((model) => ({ ...model, token }));
+      this.errorKey.set(token ? '' : 'FEATURES.AUTH.RESET_PASSWORD.INVALID_LINK');
     });
   }
 
@@ -73,7 +68,7 @@ export class ResetPasswordComponent {
 
     this.isLoading.set(true);
     this.message.set('');
-    this.errorMessage.set('');
+    this.errorKey.set('');
 
     this.authService.resetPassword(this.form().value()).subscribe({
       next: (res) => {
@@ -84,9 +79,7 @@ export class ResetPasswordComponent {
         }, 3000);
       },
       error: (err) => {
-        this.errorMessage.set(
-          this.translate.translate('FEATURES.AUTH.RESET_PASSWORD.FAILED_EXPIRED'),
-        );
+        this.errorKey.set('FEATURES.AUTH.RESET_PASSWORD.FAILED_EXPIRED');
         this.isLoading.set(false);
         console.error(err);
       },
