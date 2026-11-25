@@ -25,12 +25,18 @@ func RunMigrations(dsn string) error {
 	}
 
 	sourceURL := fmt.Sprintf("file://%s", migrationsPath)
-	
+
 	m, err := migrate.New(sourceURL, dsn)
 	if err != nil {
 		return fmt.Errorf("failed to initialize migrate: %w", err)
 	}
-	defer m.Close()
+	// Report cleanup failures without changing the outcome of the migration.
+	defer func() {
+		sourceErr, databaseErr := m.Close()
+		if err := errors.Join(sourceErr, databaseErr); err != nil {
+			log.Printf("Failed to close migration resources: %v", err)
+		}
+	}()
 
 	if err := m.Up(); err != nil {
 		if errors.Is(err, migrate.ErrNoChange) {

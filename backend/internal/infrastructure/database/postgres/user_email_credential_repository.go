@@ -8,8 +8,8 @@ import (
 	"github.com/seka/reci-pin/backend/internal/domain/model"
 	"github.com/seka/reci-pin/backend/internal/domain/repository"
 	"github.com/seka/reci-pin/backend/internal/infrastructure/database"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/entity"
 	postgresErrors "github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres/errors"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/entity"
 	"golang.org/x/crypto/bcrypt"
 )
 

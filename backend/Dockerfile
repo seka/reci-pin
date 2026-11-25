@@ -1,5 +1,5 @@
 # Base stage
-FROM golang:1.26-alpine AS base
+FROM golang:1.26.11-alpine AS base
 WORKDIR /app
 RUN apk add --no-cache git
 COPY go.mod go.sum ./
@@ -9,7 +9,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 # Development stage
 FROM base AS dev
 RUN --mount=type=cache,target=/go/pkg/mod \
-    go install github.com/air-verse/air@latest
+    go install github.com/air-verse/air@v1.67.4
 COPY . .
 EXPOSE 8080
 CMD air -c .air.toml -- \

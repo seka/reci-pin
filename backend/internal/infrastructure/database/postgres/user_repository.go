@@ -8,8 +8,8 @@ import (
 
 	domainErrors "github.com/seka/reci-pin/backend/internal/domain/errors"
 	"github.com/seka/reci-pin/backend/internal/domain/model"
-	"github.com/seka/reci-pin/backend/internal/infrastructure/entity"
 	postgresErrors "github.com/seka/reci-pin/backend/internal/infrastructure/database/postgres/errors"
+	"github.com/seka/reci-pin/backend/internal/infrastructure/entity"
 )
 
 type UserRepository struct {
