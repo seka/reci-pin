@@ -92,7 +92,7 @@ func (uc *searchRecipesInteractor) Execute(ctx context.Context, input SearchReci
 	// Orchestrate: Assemble tags and public images for each recipe
 	for i := range recipes {
 		id := recipes[i].ID
-		
+
 		// Set tags
 		if tags, ok := tagsMap[id]; ok {
 			recipes[i].Tags = tags
