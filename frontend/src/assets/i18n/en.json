@@ -51,7 +51,8 @@
       },
       "REQUEST_PASSWORD_RESET": {
         "TITLE": "Forgot Password?",
-        "DESC": "Please enter your registered email address.<br>We will send you a link to reset your password.",
+        "DESC": "Please enter your registered email address.",
+        "LINK_NOTICE": "We will send you a link to reset your password.",
         "SUBMIT": "Send",
         "FAILED": "Request failed."
       },
