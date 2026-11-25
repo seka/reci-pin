@@ -8,6 +8,8 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 
 # Development stage
 FROM base AS dev
+# Install make so the README's seed command can run inside the development container.
+RUN apk add --no-cache make
 RUN --mount=type=cache,target=/go/pkg/mod \
     go install github.com/air-verse/air@v1.67.4
 COPY . .

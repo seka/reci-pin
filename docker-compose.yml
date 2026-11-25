@@ -34,6 +34,8 @@ services:
       JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
       JWT_EXPIRATION_HOURS: ${JWT_EXPIRATION_HOURS:-24}
       ELASTICSEARCH_ADDRESS: http://elasticsearch:9200
+      # The Makefile's seed task uses ES_HOST for the search index sync.
+      ES_HOST: elasticsearch
       STORAGE_ENDPOINT: http://localstack:4566
       STORAGE_PUBLIC_URL: https://localhost/storage
       AWS_REGION: us-east-1
